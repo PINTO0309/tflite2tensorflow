@@ -326,13 +326,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             activation = options['fused_activation_function']
             if activation == 'NONE':
-                output_tensor = tf.add(output_tensor, bias, name=output_detail['name'])
+                output_tensor = tf.add(output_tensor, bias, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU':
                 output_tensor = tf.add(output_tensor, bias)
-                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU6':
                 output_tensor = tf.add(output_tensor, bias)
-                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'].replace(';', '_'))
             else:
                 raise ValueError(activation)
 
@@ -383,13 +383,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             activation = options['fused_activation_function']
             if activation == 'NONE':
-                output_tensor = tf.add(output_tensor, bias, name=output_detail['name'])
+                output_tensor = tf.add(output_tensor, bias, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU':
                 output_tensor = tf.add(output_tensor, bias)
-                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU6':
                 output_tensor = tf.add(output_tensor, bias)
-                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'].replace(';', '_'))
             else:
                 raise ValueError(activation)
 
@@ -407,7 +407,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 ],
                 strides=[1, options['stride_h'], options['stride_w'], 1],
                 padding=options['padding'],
-                name=output_detail['name'])
+                name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** MAX_POOL_2D')
 
@@ -416,7 +416,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             paddings_detail = interpreter._get_tensor_details(op['inputs'][1])
             paddings_array = interpreter.get_tensor(paddings_detail['index'])
-            output_tensor = tf.pad(input_tensor, paddings_array, name=output_detail['name'])
+            output_tensor = tf.pad(input_tensor, paddings_array, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** PAD')
 
@@ -427,14 +427,14 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             paddings_array = interpreter.get_tensor(paddings_detail['index'])
             options = op['builtin_options']
             mode = options['mode']
-            output_tensor = tf.raw_ops.MirrorPad(input=input_tensor, paddings=paddings_array, mode=mode, name=output_detail['name'])
+            output_tensor = tf.raw_ops.MirrorPad(input=input_tensor, paddings=paddings_array, mode=mode, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** MIRROR_PAD')
 
         elif op_type == 'RELU':
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             input_tensor = tensors[op['inputs'][0]]
-            output_tensor = tf.nn.relu(input_tensor, name=output_detail['name'])
+            output_tensor = tf.nn.relu(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** RELU')
 
@@ -443,7 +443,8 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             alpha_detail = interpreter._get_tensor_details(op['inputs'][1])
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
             output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
-                                                  shared_axes=[1, 2])(input_tensor)
+                                                  shared_axes=[1, 2],
+                                                  name=output_detail['name'].replace(';', '_'))(input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** PRELU')
@@ -451,15 +452,21 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
         elif op_type == 'RELU6':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.nn.relu6(input_tensor, name=output_detail['name'])
+            output_tensor = tf.nn.relu6(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor 
             print('**************************************************************** RELU6')
 
         elif op_type == 'RESHAPE':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            options = op['builtin_options']
-            output_tensor = tf.reshape(input_tensor, options['new_shape'], name=output_detail['name'])
+            new_shape = None
+            try:
+                options = op['builtin_options']
+                new_shape = options['new_shape']
+            except:
+                shape_detail = interpreter._get_tensor_details(op['inputs'][1])
+                new_shape = interpreter.get_tensor(shape_detail['index'])
+            output_tensor = tf.reshape(input_tensor, new_shape, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** RESHAPE')
 
@@ -481,13 +488,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             activation = options['fused_activation_function']
             if activation == 'NONE':
-                output_tensor = tf.add(input_tensor_0, input_tensor_1, name=output_detail['name'])
+                output_tensor = tf.add(input_tensor_0, input_tensor_1, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU':
                 output_tensor = tf.add(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU6':
                 output_tensor = tf.add(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'].replace(';', '_'))
             else:
                 raise ValueError(activation)
 
@@ -512,13 +519,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             activation = options['fused_activation_function']
             if activation == 'NONE':
-                output_tensor = tf.math.subtract(input_tensor_0, input_tensor_1, name=output_detail['name'])
+                output_tensor = tf.math.subtract(input_tensor_0, input_tensor_1, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU':
                 output_tensor = tf.math.subtract(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU6':
                 output_tensor = tf.math.subtract(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'].replace(';', '_'))
             else:
                 raise ValueError(activation)
 
@@ -531,14 +538,14 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             output_tensor = tf.concat(inputs,
                                     options['axis'],
-                                    name=output_detail['name'])
+                                    name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** CONCATENATION')
 
         elif op_type == 'LOGISTIC':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.sigmoid(input_tensor, name=output_detail['name'])
+            output_tensor = tf.math.sigmoid(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** LOGISTIC')
 
@@ -550,15 +557,15 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             weights_array = interpreter.get_tensor(weights_detail['index'])
             weights_array = np.transpose(weights_array, (1, 2, 0, 3))
             output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
-            weights = tf.Variable(weights_array, name=weights_detail['name'])
-            shape = tf.Variable(output_shape_array, name=output_shape_detail['name'])
+            weights = tf.Variable(weights_array, name=weights_detail['name'].replace(';', '_'))
+            shape = tf.Variable(output_shape_array, name=output_shape_detail['name'].replace(';', '_'))
             options = op['builtin_options']
             output_tensor = tf.nn.conv2d_transpose(input_tensor,
                                                    weights,
                                                    shape,
                                                    [1, options['stride_h'], options['stride_w'], 1],
                                                    padding=options['padding'],
-                                                   name=output_detail['name'])
+                                                   name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** TRANSPOSE_CONV')
 
@@ -580,13 +587,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             activation = options['fused_activation_function']
             if activation == 'NONE':
-                output_tensor = tf.multiply(input_tensor_0, input_tensor_1, name=output_detail['name'])
+                output_tensor = tf.multiply(input_tensor_0, input_tensor_1, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU':
                 output_tensor = tf.multiply(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu(output_tensor, name=output_detail['name'].replace(';', '_'))
             elif activation == 'RELU6':
                 output_tensor = tf.multiply(input_tensor_0, input_tensor_1)
-                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'])
+                output_tensor = tf.nn.relu6(output_tensor, name=output_detail['name'].replace(';', '_'))
             else:
                 raise ValueError(activation)
 
@@ -596,7 +603,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
         elif op_type == 'HARD_SWISH':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = optimizing_hardswish_for_edgetpu(input_tensor, name=output_detail['name'])
+            output_tensor = optimizing_hardswish_for_edgetpu(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** HARD_SWISH')
 
@@ -610,7 +617,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             output_tensor = tf.keras.layers.AveragePooling2D(pool_size=pool_size,
                                                              strides=strides,
                                                              padding=padding,
-                                                             name=output_detail['name'])(input_tensor)
+                                                             name=output_detail['name'].replace(';', '_'))(input_tensor)
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** AVERAGE_POOL_2D')
 
@@ -625,7 +632,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                                                   use_bias=True,
                                                   kernel_initializer=tf.keras.initializers.Constant(weights),
                                                   bias_initializer=tf.keras.initializers.Constant(bias),
-                                                  name=output_detail['name'])(input_tensor)
+                                                  name=output_detail['name'].replace(';', '_'))(input_tensor)
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** FULLY_CONNECTED')
 
@@ -642,7 +649,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 else:
                     return tfv2.image.resize(x, [size_height, size_width], method='bilinear')
 
-            output_tensor = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height, 'size_width': size_width})(input_tensor)
+            output_tensor = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height, 'size_width': size_width}, name=output_detail['name'].replace(';', '_'))(input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** RESIZE_BILINEAR')
@@ -660,7 +667,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 else:
                     return tfv2.image.resize(x, [size_height, size_width], method='nearest')
 
-            output_tensor = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height, 'size_width': size_width})(input_tensor)
+            output_tensor = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height, 'size_width': size_width}, name=output_detail['name'].replace(';', '_'))(input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** RESIZE_NEAREST_NEIGHBOR')
@@ -682,7 +689,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             options = op['builtin_options']
             keepdims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.reduce_mean(input_tensor_0, input_tensor_1, keepdims=keepdims, name=output_detail['name'])
+            output_tensor = tf.math.reduce_mean(input_tensor_0, input_tensor_1, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** MEAN')
 
@@ -701,14 +708,14 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                     input_tensor_1 = interpreter.get_tensor(param['index'])
             
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.squared_difference(input_tensor_0, input_tensor_1, name=output_detail['name'])
+            output_tensor = tf.math.squared_difference(input_tensor_0, input_tensor_1, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** SQUARED_DIFFERENCE')
 
         elif op_type == 'RSQRT':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.rsqrt(input_tensor, name=output_detail['name'])
+            output_tensor = tf.math.rsqrt(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** RSQRT')
 
@@ -723,14 +730,14 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
         elif op_type == 'FLOOR':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.floor(input_tensor, name=output_detail['name'])
+            output_tensor = tf.math.floor(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** FLOOR')
 
         elif op_type == 'TANH':
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.tanh(input_tensor, name=output_detail['name'])
+            output_tensor = tf.math.tanh(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** TANH')
 
@@ -743,7 +750,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 weights_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(weights_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.divide(input_tensor1, input_tensor2, name=output_detail['name'])
+            output_tensor = tf.math.divide(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** DIV')
 
@@ -756,7 +763,7 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 weights_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(weights_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.floordiv(input_tensor1, input_tensor2, name=output_detail['name'])
+            output_tensor = tf.math.floordiv(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** FLOOR_DIV')
 
