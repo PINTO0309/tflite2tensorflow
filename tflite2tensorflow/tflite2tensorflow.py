@@ -265,7 +265,9 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
     tensors = {}
     input_details = interpreter.get_input_details()
 
-    pprint.pprint(input_details)
+    for input in input_details:
+        pprint.pprint(input)
+    
     for input_detail in input_details:
         tensors[input_detail['index']] = tf.placeholder(
             dtype=input_detail['dtype'],
@@ -289,13 +291,25 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 bias = interpreter.get_tensor(bias_detail['index'])
             elif len(op['inputs']) == 2:
                 input_tensor = tensors[op['inputs'][0]]
-                weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                try:
+                    weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                except:
+                    weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
                 bias_detail = interpreter._get_tensor_details(op['inputs'][2])
                 bias = interpreter.get_tensor(bias_detail['index'])
             elif len(op['inputs']) == 3:
                 input_tensor = tensors[op['inputs'][0]]
-                weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
-                bias = tensors[op['inputs'][2]]
+                try:
+                    weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                except:
+                    weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                try:
+                    bias = tensors[op['inputs'][2]]
+                except:
+                    bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    bias = interpreter.get_tensor(bias_detail['index'])
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -337,13 +351,25 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
                 bias = interpreter.get_tensor(bias_detail['index'])
             elif len(op['inputs']) == 2:
                 input_tensor = tensors[op['inputs'][0]]
-                weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                try:
+                    weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                except:
+                    weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
                 bias_detail = interpreter._get_tensor_details(op['inputs'][2])
                 bias = interpreter.get_tensor(bias_detail['index'])
             elif len(op['inputs']) == 3:
                 input_tensor = tensors[op['inputs'][0]]
-                weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
-                bias = tensors[op['inputs'][2]]
+                try:
+                    weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
+                except:
+                    weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                try:
+                    bias = tensors[op['inputs'][2]]
+                except:
+                    bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    bias = interpreter.get_tensor(bias_detail['index'])
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -861,8 +887,12 @@ def main():
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    print(input_details)
-    print(output_details)
+    print('inputs:')
+    for input in input_details:
+        pprint.pprint(input)
+    print('outputs:')
+    for output in output_details:
+        pprint.pprint(output)
 
     print(f'{Color.REVERCE}TensorFlow/Keras model building process starts{Color.RESET}', '=' * 38)
     make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizing_hardswish_for_edgetpu, replace_prelu_and_minmax)
