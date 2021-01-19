@@ -8,7 +8,7 @@
 |2|DEPTHWISE_CONV_2D|tf.nn.depthwise_conv2d||
 |3|MAX_POOL_2D|tf.nn.max_pool||
 |4|PAD|tf.pad||
-|5|MIRRORPAD|tf.raw_ops.MirrorPad||
+|5|MIRROR_PAD|tf.raw_ops.MirrorPad||
 |6|RELU|tf.nn.relu||
 |7|PRELU|tf.keras.layers.PReLU||
 |8|RELU6|tf.nn.relu6||
@@ -23,8 +23,8 @@
 |17|AVERAGE_POOL_2D|tf.keras.layers.AveragePooling2D||
 |18|FULLY_CONNECTED|tf.keras.layers.Dense||
 |19|RESIZE_BILINEAR|tf.image.resize Or tf.image.resize_bilinear||
-|20|RESIZE_NEARREST|tf.image.resize Or tf.image.resize_nearest_neighbor||
+|20|RESIZE_NEAREST_NEIGHBOR|tf.image.resize Or tf.image.resize_nearest_neighbor||
 |21|MEAN|tf.math.reduce_mean||
-|22|SQUAREDDIFFERENCE|tf.math.squared_difference||
+|22|SQUARED_DIFFERENCE|tf.math.squared_difference||
 |23|RSQRT|tf.math.rsqrt||
 |24|DEQUANTIZE|(const)||
