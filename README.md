@@ -28,3 +28,7 @@
 |22|SQUARED_DIFFERENCE|tf.math.squared_difference||
 |23|RSQRT|tf.math.rsqrt||
 |24|DEQUANTIZE|(const)||
+|25|FLOOR|tf.math.floor||
+|26|TANH|tf.math.tanh||
+|27|DIV|tf.math.divide||
+|28|FLOOR_DIV|tf.math.floordiv||

@@ -499,21 +499,13 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** SUB')
 
-        elif op_type == 'CONCATENATION':    # WIP
-            input_tensor_0 = tensors[op['inputs'][0]]
-            input_tensor_1 = tensors[op['inputs'][1]]
+        elif op_type == 'CONCATENATION':
+            inputs = [tensors[input] for input in op['inputs']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            try:
-                input_tensor_2 = tensors[op['inputs'][2]]
-                options = op['builtin_options']
-                output_tensor = tf.concat([input_tensor_0, input_tensor_1, input_tensor_2],
-                                        options['axis'],
-                                        name=output_detail['name'])
-            except:
-                options = op['builtin_options']
-                output_tensor = tf.concat([input_tensor_0, input_tensor_1],
-                                        options['axis'],
-                                        name=output_detail['name'])
+            options = op['builtin_options']
+            output_tensor = tf.concat(inputs,
+                                    options['axis'],
+                                    name=output_detail['name'])
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** CONCATENATION')
 
@@ -701,6 +693,46 @@ def make_graph(ops, op_types, interpreter, replace_swish_and_hardswish, optimizi
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
             print('**************************************************************** DEQUANTIZE')
+
+        elif op_type == 'FLOOR':
+            input_tensor = tensors[op['inputs'][0]]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.floor(input_tensor, name=output_detail['name'])
+            tensors[output_detail['index']] = output_tensor
+            print('**************************************************************** FLOOR')
+
+        elif op_type == 'TANH':
+            input_tensor = tensors[op['inputs'][0]]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.tanh(input_tensor, name=output_detail['name'])
+            tensors[output_detail['index']] = output_tensor
+            print('**************************************************************** TANH')
+
+        elif op_type == 'DIV':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.divide(input_tensor1, input_tensor2, name=output_detail['name'])
+            tensors[output_detail['index']] = output_tensor
+            print('**************************************************************** DIV')
+
+        elif op_type == 'FLOOR_DIV':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.floordiv(input_tensor1, input_tensor2, name=output_detail['name'])
+            tensors[output_detail['index']] = output_tensor
+            print('**************************************************************** FLOOR_DIV')
 
         else:
             print(f'The {op_type} layer is not yet implemented.')
