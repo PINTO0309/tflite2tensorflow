@@ -1,5 +1,12 @@
 # tflite2tensorflow
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/33194443/105187518-38ac0c00-5b76-11eb-869b-b518df146924.png" />
+</p>
+
 【WIP】 Generate saved_model and .pb from .tflite.
+
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/tflite2tensorflow?color=2BAF2B&label=Downloads%EF%BC%8FInstalled)](https://pypistats.org/packages/tflite2tensorflow) ![GitHub](https://img.shields.io/github/license/PINTO0309/tflite2tensorflow?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/tflite2tensorflow?color=2BAF2B)](https://pypi.org/project/tflite2tensorflow/)
 
 ## 1. Supported Layers
 |No.|TFLite Layer|TF Layer|Remarks|
@@ -32,3 +39,66 @@
 |26|TANH|tf.math.tanh||
 |27|DIV|tf.math.divide||
 |28|FLOOR_DIV|tf.math.floordiv||
+
+## 2. Environment
+- Python3.6+
+- TensorFlow v2.4.0+ or tf-nightly
+
+## 3. Setup
+To install using the Python Package Index (PyPI), use the following command.
+```
+$ pip3 install tflite2tensorflow --upgrade
+```
+To install with the latest source code of the main branch, use the following command.
+```
+$ pip3 install git+https://github.com/PINTO0309/tflite2tensorflow --upgrade
+```
+## 4. Usage / Execution sample
+### 4-1. Step 1 : Generating saved_model and FreezeGraph (.pb)
+```
+$ tflite2tensorflow \
+  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
+  --output_pb True
+```
+or
+```
+$ tflite2tensorflow \
+  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
+  --output_pb True \
+  --optimizing_hardswish_for_edgetpu True
+```
+### 4-2. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, and CoreML
+```
+$ tflite2tensorflow \
+  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
+  --output_no_quant_float32_tflite True \
+  --output_weight_quant_tflite True \
+  --output_float16_quant_tflite True \
+  --output_integer_quant_tflite True \
+  --string_formulas_for_normalization 'data / 255.0' \
+  --output_tfjs True \
+  --output_coreml True \
+  --output_tftrt True
+```
+or
+```
+$ tflite2tensorflow \
+  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
+  --output_no_quant_float32_tflite True \
+  --output_weight_quant_tflite True \
+  --output_float16_quant_tflite True \
+  --output_integer_quant_tflite True \
+  --output_edgetpu True \
+  --string_formulas_for_normalization 'data / 255.0' \
+  --output_tfjs True \
+  --output_coreml True \
+  --output_tftrt True
+```
