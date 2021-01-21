@@ -40,6 +40,9 @@
 |26|TANH|tf.math.tanh||
 |27|DIV|tf.math.divide||
 |28|FLOOR_DIV|tf.math.floordiv||
+|29|SUM|tf.math.reduce_sum||
+|30|POW|tf.math.pow||
+|31|SPLIT|tf.split||
 
 ## 2. Environment
 - Python3.6+

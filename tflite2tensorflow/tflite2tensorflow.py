@@ -617,12 +617,22 @@ def make_graph(ops,
 
         elif op_type == 'FULLY_CONNECTED':
             input_tensor = tensors[op['inputs'][0]]
-            weights = tensors[op['inputs'][1]].transpose(1,0)
-            bias = tensors[op['inputs'][2]]
-            output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
+            weights = None
+            bias = None
+            try:
+                weights = tensors[op['inputs'][1]].transpose(1,0)
+            except:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                weights = interpreter.get_tensor(weights_detail['index']).transpose(1,0)
+            try:
+                bias = tensors[op['inputs'][2]]
+            except:
+                bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                bias = interpreter.get_tensor(bias_detail['index'])
+            output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.keras.layers.Dense(units=output_shape_array.shape[3],
+            output_tensor = tf.keras.layers.Dense(units=output_shape_array.shape[len(output_shape_array.shape)-1],
                                                   use_bias=True,
                                                   kernel_initializer=tf.keras.initializers.Constant(weights),
                                                   bias_initializer=tf.keras.initializers.Constant(bias),
@@ -749,6 +759,59 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.floordiv(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SUM':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(axis_detail['index'])
+            options = op['builtin_options']
+            keep_dims = options['keep_dims']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.reduce_sum(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'POW':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.pow(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SPLIT':
+            input_tensor1 = None
+            input_tensor2 = None
+
+            if op['inputs'][0] < op['inputs'][1]:
+                input_tensor1 = tensors[op['inputs'][0]]
+                try:
+                    input_tensor2 = tensors[op['inputs'][1]]
+                except:
+                    axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
+            else:
+                input_tensor1 = tensors[op['inputs'][1]]
+                try:
+                    input_tensor2 = tensors[op['inputs'][0]]
+                except:
+                    axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                    input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
+
+            options = op['builtin_options']
+            num_splits = options['num_splits']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.split(input_tensor1, num_or_size_splits=num_splits, axis=input_tensor2, name=output_detail['name'].replace(';', '_'))
+
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
 
         else:
             print(f'The {op_type} layer is not yet implemented.')
