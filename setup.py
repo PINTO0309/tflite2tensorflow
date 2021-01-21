@@ -11,7 +11,7 @@ if __name__ == "__main__":
     setup(
         name="tflite2tensorflow",
         scripts=scripts,
-        version="0.1.0",
+        version="0.1.1",
         description="Generate saved_model and .pb from .tflite.",
         long_description=long_description,
         long_description_content_type="text/markdown",

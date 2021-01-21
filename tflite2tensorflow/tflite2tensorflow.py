@@ -444,9 +444,12 @@ def make_graph(ops,
             input_tensor = tensors[op['inputs'][0]]
             alpha_detail = interpreter._get_tensor_details(op['inputs'][1])
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
-            output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
-                                                  shared_axes=[1, 2],
-                                                  name=output_detail['name'].replace(';', '_'))(input_tensor)
+            if not replace_prelu_and_minmax:
+                output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
+                                                    shared_axes=[1, 2],
+                                                    name=output_detail['name'].replace(';', '_'))(input_tensor)
+            else:
+                output_tensor = tf.maximum(0.0, input_tensor) + alpha_array * tf.minimum(0.0, input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
 
@@ -778,7 +781,7 @@ def main():
     parser.add_argument('--output_tftrt', type=bool, default=False, help='tftrt model output switch')
     parser.add_argument('--output_coreml', type=bool, default=False, help='coreml model output switch')
     parser.add_argument('--output_edgetpu', type=bool, default=False, help='edgetpu model output switch')
-    parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='Replace swish and hard-swish with each other')
+    parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='[Future support] Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', type=bool, default=False, help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', type=bool, default=False, help='Replace prelu and minimum/maximum with each other')
     args = parser.parse_args()
