@@ -43,6 +43,11 @@
 |29|SUM|tf.math.reduce_sum||
 |30|POW|tf.math.pow||
 |31|SPLIT|tf.split||
+|32|SOFTMAX|tf.nn.softmax||
+|33|STRIDED_SLICE|tf.strided_slice||
+|34|TRANSPOSE|ttf.transpose||
+|35|SPACE_TO_DEPTH|tf.nn.space_to_depth||
+|36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
 
 ## 2. Environment
 - Python3.6+

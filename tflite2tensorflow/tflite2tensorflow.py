@@ -444,9 +444,17 @@ def make_graph(ops,
             input_tensor = tensors[op['inputs'][0]]
             alpha_detail = interpreter._get_tensor_details(op['inputs'][1])
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
+            alpha_len = len(alpha_array.shape)
+
+            shared_axes = []
+            if alpha_len < 4:
+                shared_axes = [val for val in range(len(input_tensor.shape) - 1)]
+            else:
+                shared_axes = None
+
             if not replace_prelu_and_minmax:
                 output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
-                                                    shared_axes=[1, 2],
+                                                    shared_axes=shared_axes,
                                                     name=output_detail['name'].replace(';', '_'))(input_tensor)
             else:
                 output_tensor = tf.maximum(0.0, input_tensor) + alpha_array * tf.minimum(0.0, input_tensor)
@@ -631,8 +639,21 @@ def make_graph(ops,
                 bias = interpreter.get_tensor(bias_detail['index'])
             output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
+
+            options = op['builtin_options']
+            activation = options['fused_activation_function']
+            if activation == 'NONE':
+                activation = None
+            elif activation == 'RELU':
+                activation = 'relu'
+            elif activation == 'RELU6':
+                activation = 'relu6'
+            else:
+                raise ValueError(activation)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.keras.layers.Dense(units=output_shape_array.shape[len(output_shape_array.shape)-1],
+                                                  activation=activation,
                                                   use_bias=True,
                                                   kernel_initializer=tf.keras.initializers.Constant(weights),
                                                   bias_initializer=tf.keras.initializers.Constant(bias),
@@ -812,6 +833,71 @@ def make_graph(ops,
 
             for output_index, output in zip(op['outputs'], output_tensor):
                 tensors[output_index] = output
+
+        elif op_type == 'SOFTMAX':
+            input_tensor = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            beta = options['beta']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.softmax(input_tensor, axis=beta, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'STRIDED_SLICE':
+            input_tensor1 = tensors[op['inputs'][0]]
+            begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+            input_tensor2 = interpreter.get_tensor(begin_detail['index'])     
+            end_detail = interpreter._get_tensor_details(op['inputs'][2])
+            input_tensor3 = interpreter.get_tensor(end_detail['index'])
+            strides_detail = interpreter._get_tensor_details(op['inputs'][3])
+            input_tensor4 = interpreter.get_tensor(strides_detail['index'])
+
+            options = op['builtin_options']
+            begin_mask = options['begin_mask']
+            ellipsis_mask = options['ellipsis_mask']
+            end_mask = options['end_mask']
+            new_axis_mask = options['new_axis_mask']
+            shrink_axis_mask = options['shrink_axis_mask']
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.strided_slice(input_=input_tensor1,
+                                             begin=input_tensor2,
+                                             end=input_tensor3,
+                                             strides=input_tensor4,
+                                             begin_mask=begin_mask,
+                                             end_mask=end_mask,
+                                             ellipsis_mask=ellipsis_mask,
+                                             new_axis_mask=new_axis_mask,
+                                             shrink_axis_mask=shrink_axis_mask,
+                                             name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'TRANSPOSE':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.transpose(input_tensor1, perm=input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor            
+
+        elif op_type == 'SPACE_TO_DEPTH':
+            input_tensor1 = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            block_size = options['block_size']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.space_to_depth(input_tensor1, block_size=block_size, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'DEPTH_TO_SPACE':
+            input_tensor1 = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            block_size = options['block_size']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.depth_to_space(input_tensor1, block_size=block_size, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
 
         else:
             print(f'The {op_type} layer is not yet implemented.')
