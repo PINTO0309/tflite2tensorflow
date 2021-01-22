@@ -48,6 +48,7 @@
 |34|TRANSPOSE|ttf.transpose||
 |35|SPACE_TO_DEPTH|tf.nn.space_to_depth||
 |36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
+|37|REDUCE_MAX|tf.math.reduce_max||
 
 ## 2. Environment
 - Python3.6+

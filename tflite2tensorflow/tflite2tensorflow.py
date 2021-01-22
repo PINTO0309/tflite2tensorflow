@@ -446,6 +446,10 @@ def make_graph(ops,
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
             alpha_len = len(alpha_array.shape)
 
+            print('+++++++++++++++++++++++++++++++++++++++++++ input_tensor.shape', np.squeeze(np.asarray(input_tensor.shape)))
+            if (np.asarray(input_tensor.shape)[0] == alpha_array.shape).all():
+                alpha_arraynp = np.expand_dims(alpha_arraynp, 0)
+
             shared_axes = []
             if alpha_len < 4:
                 shared_axes = [val for val in range(len(input_tensor.shape) - 1)]
@@ -453,6 +457,8 @@ def make_graph(ops,
                 shared_axes = None
 
             if not replace_prelu_and_minmax:
+                print('+++++++++++++++++++++++++++++++++++++++++++ alpha_array.shape', alpha_array.shape)
+                print('+++++++++++++++++++++++++++++++++++++++++++ shared_axes', shared_axes)
                 output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
                                                     shared_axes=shared_axes,
                                                     name=output_detail['name'].replace(';', '_'))(input_tensor)
@@ -837,9 +843,10 @@ def make_graph(ops,
         elif op_type == 'SOFTMAX':
             input_tensor = tensors[op['inputs'][0]]
             options = op['builtin_options']
-            beta = options['beta']
+            beta = int(options['beta'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.nn.softmax(input_tensor, axis=beta, name=output_detail['name'].replace(';', '_'))
+            # output_tensor = tf.nn.softmax(input_tensor, axis=beta, name=output_detail['name'].replace(';', '_'))
+            output_tensor = tf.nn.softmax(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'STRIDED_SLICE':
@@ -898,6 +905,20 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.nn.depth_to_space(input_tensor1, block_size=block_size, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'REDUCE_MAX':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+            options = op['builtin_options']
+            keep_dims = options['keep_dims']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor 
 
         else:
             print(f'The {op_type} layer is not yet implemented.')
