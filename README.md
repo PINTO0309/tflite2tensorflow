@@ -147,3 +147,8 @@ $ tflite2tensorflow \
   --output_coreml True \
   --output_tftrt True
 ```
+## 5. Sample image
+This is the result of converting MediaPipe's Meet Segmentation model (segm_full_v679.tflite / Float16 / Google Meet) to **`saved_model`** and then reconverting it to Float32 tflite. Replace the GPU-optimized **`Convolution2DTransposeBias`** layer with the standard **`TransposeConv`** and **`BiasAdd`** layers in a fully automatic manner. The weights and biases of the Float16 **`Dequantize`** layer are automatically back-quantized to Float32 precision. The generated **`saved_model`** in Float32 precision can be easily converted to **`Float16`**, **`INT8`**, **`EdgeTPU`**, **`TFJS`**, **`TF-TRT`**, **`CoreML`**, **`ONNX`**, and **`OpenVINO`**.
+|Before|After|
+|:--:|:--:|
+|![segm_full_v679 tflite](https://user-images.githubusercontent.com/33194443/105579124-db0efe00-5dc7-11eb-86de-19b7782ffb14.png)|![model_float32 tflite](https://user-images.githubusercontent.com/33194443/105579178-3640f080-5dc8-11eb-9e76-f98dc810022a.png)|
