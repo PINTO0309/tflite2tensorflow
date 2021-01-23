@@ -96,7 +96,8 @@ $ cd flatbuffers && mkdir build && cd build
 $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 $ make -j8
 ```
-
+![vvtvsu0y1791ow2ybdk61s9fv7e4](https://user-images.githubusercontent.com/33194443/105578192-badc4080-5dc1-11eb-8fda-4eaf0d8a63e4.png)
+![saxqukktcjncsk2hp7m8p2cns4q4](https://user-images.githubusercontent.com/33194443/105578219-d6dfe200-5dc1-11eb-9026-42104fdcc727.png)
 ## 4. Usage / Execution sample
 ### 4-1. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
