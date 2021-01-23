@@ -71,10 +71,12 @@ $ sudo pip3 uninstall tensorboard-plugin-wit tb-nightly tensorboard \
                       tf-estimator-nightly tensorflow-gpu \
                       tensorflow tf-nightly tensorflow_estimator tflite_runtime -y
 
+### Customized version of TensorFlow Lite installation
 $ sudo gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
 $ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
 
+### Install the full TensorFlow package
 $ sudo pip3 install tf-nightly
  or
 $ sudo pip3 install tensorflow==2.4.1
