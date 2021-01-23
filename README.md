@@ -70,6 +70,10 @@ Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom 
 $ sudo gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
 $ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
+
+$ sudo pip3 install tf-nightly
+ or
+$ sudo pip3 install tensorflow==2.4.1
 ```
 
 ## 4. Usage / Execution sample
