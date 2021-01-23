@@ -248,6 +248,7 @@ def parse_json(jsonfile_path):
         print('op_new_types:', op_types)
     ops = j['subgraphs'][0]['operators']
     print('num of ops:', len(ops))
+    pprint.pprint(ops)
     return ops, op_types
 
 
@@ -271,6 +272,7 @@ def make_graph(ops,
     
     tensors = {}
     input_details = interpreter.get_input_details()
+    ops_details = interpreter._get_ops_details()
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ op:', f'{Color.GREEN}Placeholder{Color.RESET}')
     for input in input_details:
@@ -842,10 +844,9 @@ def make_graph(ops,
 
         elif op_type == 'SOFTMAX':
             input_tensor = tensors[op['inputs'][0]]
-            options = op['builtin_options']
-            beta = int(options['beta'])
+            # options = op['builtin_options']
+            # beta = int(options['beta'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            # output_tensor = tf.nn.softmax(input_tensor, axis=beta, name=output_detail['name'].replace(';', '_'))
             output_tensor = tf.nn.softmax(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
@@ -918,8 +919,100 @@ def make_graph(ops,
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
-            tensors[output_detail['index']] = output_tensor 
+            tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'CUSTOM':
+            '''
+            Convolution2DTransposeBias
+            +++++++++++++++++++++++++++++++++ op
+            {'builtin_options_type': 'NONE',
+             'custom_options': [1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+             'custom_options_format': 'FLEXBUFFERS',
+             'inputs': [241, 353, 275],
+             'opcode_index': 12,
+             'outputs': [244]}
+            +++++++++++++++++++++++++++++++++ interpreter._get_tensor_details(op['outputs'][0])
+            {'dtype': <class 'numpy.float32'>,
+             'index': 244,
+             'name': 'segment',
+             'quantization': (0.0, 0),
+             'quantization_parameters': {'quantized_dimension': 0,
+                                         'scales': array([], dtype=float32),
+                                         'zero_points': array([], dtype=int32)},
+             'shape': array([  1, 144, 256,   2], dtype=int32),
+             'shape_signature': array([  1, 144, 256,   2], dtype=int32),
+             'sparsity_parameters': {}},
+            +++++++++++++++++++++++++++++++++ ops_detail
+            {'index': 240,
+             'inputs': array([241, 353, 275], dtype=int32),
+             'op_name': 'Convolution2DTransposeBias',
+             'outputs': array([244], dtype=int32)}
+            '''
+            custom_op_implementation_flg = False
+            custom_op_type = None
+            for ops_detail in ops_details:
+                if ops_detail['outputs'][0] == op['outputs'][0]:
+                    pprint.pprint(ops_detail)
+                    custom_op_type = ops_detail['op_name']
+                    print(custom_op_type)
+                    custom_op_implementation_flg = True
+            if custom_op_implementation_flg:
+                if custom_op_type == 'Convolution2DTransposeBias':
+                    # MediaPipe - Convolution2DTransposeBias
+                    input_tensor = None
+                    weights = None
+                    bias = None
+                    if len(op['inputs']) == 1:
+                        input_tensor = tensors[op['inputs'][0]]
+                        weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                        weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,0,3)
+                        bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                        bias = interpreter.get_tensor(bias_detail['index'])
+                    elif len(op['inputs']) == 2:
+                        input_tensor = tensors[op['inputs'][0]]
+                        try:
+                            weights = tensors[op['inputs'][1]].transpose(1,2,0,3)
+                        except:
+                            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                            weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,0,3)
+                        bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                        bias = interpreter.get_tensor(bias_detail['index'])
+                    elif len(op['inputs']) == 3:
+                        input_tensor = tensors[op['inputs'][0]]
+                        try:
+                            weights = tensors[op['inputs'][1]].transpose(1,2,0,3)
+                        except:
+                            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                            weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,0,3)
+                        try:
+                            bias = tensors[op['inputs'][2]]
+                        except:
+                            bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                            bias = interpreter.get_tensor(bias_detail['index'])
+                    options = op['custom_options']
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    n = output_detail['shape'][0]
+                    h = output_detail['shape'][1]
+                    w = output_detail['shape'][2]
+                    c = output_detail['shape'][3]
+                    dilations = options[0]
+                    strides = [options[4], options[8]]
+                    custom_trans = tf.nn.conv2d_transpose(input=input_tensor,
+                                                          filters=weights,
+                                                          output_shape=[n, h, w, c],
+                                                          strides=strides,
+                                                          padding='SAME',
+                                                          dilations=[dilations, dilations])
+                    output_tensor = tf.math.add(custom_trans, bias, name=output_detail['name'].replace(';', '_'))
+                    tensors[output_detail['index']] = output_tensor
+                else:
+                    print(f'There are custom operations that have not yet been implemented in the custom TFLite runtime. op_type: {custom_op_type}')
+                    pprint.pprint(op)
+                    sys.exit(-1)                           
+            else:
+                print(f'There are custom operations that have not yet been implemented in the custom TFLite runtime.')
+                pprint.pprint(op)
+                sys.exit(-1)       
         else:
             print(f'The {op_type} layer is not yet implemented.')
             sys.exit(-1)
@@ -1058,6 +1151,15 @@ def main():
     if tfv1_flg:
         # Tensorflow v1.x
         import tensorflow.compat.v1 as tf
+        try:
+            # Custom TFLite Interpreter that implements MediaPipe's custom operations.
+            # TensorFlow v2.4.1
+            # https://zenn.dev/pinto0309/articles/a0e40c2817f2ee
+            from tflite_runtime.interpreter import Interpreter as tflite_interpreter
+        except:
+            # The official TensorFlow TFLite Interpreter
+            from tensorflow.lite import Interpreter as tflite_interpreter
+
         shutil.rmtree(model_output_path, ignore_errors=True)
         tf.disable_eager_execution()
 
@@ -1065,7 +1167,7 @@ def main():
         gen_model_json(flatc_path, model_output_path, jsonfile_path, schema_path, model_path)
         ops, op_types = parse_json(jsonfile_path)
 
-        interpreter = tf.lite.Interpreter(model_path)
+        interpreter = tflite_interpreter(model_path)
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
@@ -1124,10 +1226,18 @@ def main():
 
 
     elif tfv2_flg:
-        #Tensorflow v2.x
+        # Tensorflow v2.x
         import tensorflow as tf
+        try:
+            # Custom TFLite Interpreter that implements MediaPipe's custom operations.
+            # TensorFlow v2.4.1
+            # https://zenn.dev/pinto0309/articles/a0e40c2817f2ee
+            from tflite_runtime.interpreter import Interpreter as tflite_interpreter
+        except:
+            # The official TensorFlow TFLite Interpreter
+            from tensorflow.lite import Interpreter as tflite_interpreter
 
-        interpreter = tf.lite.Interpreter(model_path)
+        interpreter = tflite_interpreter(model_path)
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()

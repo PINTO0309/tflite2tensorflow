@@ -49,6 +49,7 @@
 |35|SPACE_TO_DEPTH|tf.nn.space_to_depth||
 |36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
 |37|REDUCE_MAX|tf.math.reduce_max||
+|38|Convolution2DTransposeBias|tf.nn.conv2d_transpose, tf.math.add|CUSTOM, MeditPipe|
 
 ## 2. Environment
 - Python3.6+
