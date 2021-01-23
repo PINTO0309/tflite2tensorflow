@@ -65,6 +65,12 @@ To install with the latest source code of the main branch, use the following com
 ```
 $ pip3 install git+https://github.com/PINTO0309/tflite2tensorflow --upgrade
 ```
+Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK.
+```
+$ gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
+$ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
+```
+
 ## 4. Usage / Execution sample
 ### 4-1. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
