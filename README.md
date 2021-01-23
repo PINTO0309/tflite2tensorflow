@@ -81,6 +81,12 @@ $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tf-nightly
  or
 $ sudo pip3 install tensorflow==2.4.1
+
+### Download flatc
+$ flatc/1.12.0/download.sh
+
+### Download schema.fbs
+$ wget https://github.com/PINTO0309/tflite2tensorflow/raw/main/schema/schema.fbs
 ```
 
 ## 4. Usage / Execution sample
