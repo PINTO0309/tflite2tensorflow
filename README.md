@@ -65,7 +65,7 @@ To install with the latest source code of the main branch, use the following com
 ```
 $ pip3 install git+https://github.com/PINTO0309/tflite2tensorflow --upgrade
 ```
-Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK.
+Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK. If tflite_runtime does not install properly, please follow the instructions in the next article to build a custom build in the environment you are using. **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
 ```
 $ gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
