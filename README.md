@@ -63,7 +63,7 @@ To install using the Python Package Index (PyPI), use the following command.
 ```
 $ pip3 install tflite2tensorflow --upgrade
 ```
-To install with the latest source code of the main branch, use the following command.
+Or, To install with the latest source code of the main branch, use the following command.
 ```
 $ pip3 install git+https://github.com/PINTO0309/tflite2tensorflow --upgrade
 ```
