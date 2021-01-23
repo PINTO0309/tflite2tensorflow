@@ -50,6 +50,9 @@
 |36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
 |37|REDUCE_MAX|tf.math.reduce_max||
 |38|Convolution2DTransposeBias|tf.nn.conv2d_transpose, tf.math.add|CUSTOM, MeditPipe|
+|39|LEAKY_RELU|tf.keras.layers.LeakyReLU||
+|40|MAXIMUM|tf.math.maximum||
+|41|MINIMUM|tf.math.minimum||
 
 ## 2. Environment
 - Python3.6+

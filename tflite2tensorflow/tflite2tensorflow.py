@@ -32,6 +32,7 @@ import shutil
 import pprint
 import argparse
 from pathlib import Path
+import re
 
 class Color:
     BLACK          = '\033[30m'
@@ -448,7 +449,6 @@ def make_graph(ops,
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
             alpha_len = len(alpha_array.shape)
 
-            print('+++++++++++++++++++++++++++++++++++++++++++ input_tensor.shape', np.squeeze(np.asarray(input_tensor.shape)))
             if (np.asarray(input_tensor.shape)[0] == alpha_array.shape).all():
                 alpha_arraynp = np.expand_dims(alpha_arraynp, 0)
 
@@ -459,8 +459,6 @@ def make_graph(ops,
                 shared_axes = None
 
             if not replace_prelu_and_minmax:
-                print('+++++++++++++++++++++++++++++++++++++++++++ alpha_array.shape', alpha_array.shape)
-                print('+++++++++++++++++++++++++++++++++++++++++++ shared_axes', shared_axes)
                 output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
                                                     shared_axes=shared_axes,
                                                     name=output_detail['name'].replace(';', '_'))(input_tensor)
@@ -921,6 +919,38 @@ def make_graph(ops,
             output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'LEAKY_RELU':
+            input_tensor1 = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            alpha = options['alpha']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.keras.layers.LeakyReLU(alpha=alpha, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'MAXIMUM':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.maximum(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'MINIMUM':
+            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.minimum(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
@@ -1204,13 +1234,13 @@ def main():
                 graph_def = tf.graph_util.convert_variables_to_constants(
                     sess=sess,
                     input_graph_def=graph.as_graph_def(),
-                    output_node_names=[name.rstrip(':0') for name in output_node_names])
+                    output_node_names=[re.sub(':0*', '', name) for name in output_node_names])
 
                 tf.saved_model.simple_save(
                     sess,
                     model_output_path,
-                    inputs= {t.rstrip(":0"): graph.get_tensor_by_name(t) for t in input_node_names},
-                    outputs={t.rstrip(":0"): graph.get_tensor_by_name(t) for t in output_node_names}
+                    inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
+                    outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in output_node_names}
                 )
 
                 if output_pb:
