@@ -1257,6 +1257,7 @@ def make_graph(ops,
                     tensors[output_detail['index']] = output_tensor
 
                 elif custom_op_type == 'MaxPoolingWithArgmax2D':
+                    # MediaPipe - MaxPoolingWithArgmax2D
                     input_tensor1 = tensors[op['inputs'][0]]
                     options = op['custom_options']
                     kernel = [1, options[4], options[8], 1]
@@ -1271,6 +1272,7 @@ def make_graph(ops,
                     tensors[output_detail2['index']] = indices
 
                 elif custom_op_type == 'MaxUnpooling2D':
+                    # MediaPipe - MaxUnpooling2D
                     input_tensor1 = tensors[op['inputs'][0]]
                     input_tensor2 = None
                     try:
