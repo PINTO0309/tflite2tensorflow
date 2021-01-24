@@ -25,8 +25,6 @@ import numpy as np
 import json
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-# import tensorflow.compat.v1 as tf
-# import tensorflow as tfv2
 import tensorflow_datasets as tfds
 import shutil
 import pprint
@@ -252,6 +250,7 @@ def parse_json(jsonfile_path):
     pprint.pprint(ops)
     return ops, op_types
 
+
 def make_graph(ops,
                op_types,
                interpreter,
@@ -262,6 +261,21 @@ def make_graph(ops,
     import tensorflow.compat.v1 as tf
     import tensorflow as tfv2
     from tensorflow.keras.layers import Layer
+
+    # type conversion table
+    cast_type_tf = {
+        'UINT8'   : tf.uint8,
+        'UINT16'  : tf.uint16,
+        'UINT32'  : tf.uint32,
+        'UINT64'  : tf.uint64,
+        'INT8'    : tf.int8,
+        'INT16'   : tf.int16,
+        'INT32'   : tf.int32,
+        'INT64'   : tf.int64,
+        'FLOAT16' : tf.float16,
+        'FLOAT32' : tf.float32,
+        'BFLOAT16': tf.bfloat16
+    }
 
     class MaxUnpooling2D(Layer):
         def __init__(self):
@@ -519,7 +533,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'ADD':
-            input_tensor_0 = tensors[op['inputs'][0]]
+            input_tensor_0 = None
+            try:
+                input_tensor_0 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor_0 = interpreter.get_tensor(input_detail['index'])
 
             input_tensor_1 = None
             if len(op['inputs']) == 1:
@@ -549,12 +568,17 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SUB':
-            input_tensor_0 = tensors[op['inputs'][0]]
+            input_tensor_0 = None
+            try:
+                input_tensor_0 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor_0 = interpreter.get_tensor(input_detail['index'])
 
             input_tensor_1 = None
             if len(op['inputs']) == 1:
                 param = interpreter._get_tensor_details(op['inputs'][1])
-                input_tensor_1 = interpreter.get_tensor(param['index'])            
+                input_tensor_1 = interpreter.get_tensor(param['index'])
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor_1 = tensors[op['inputs'][1]]
@@ -613,7 +637,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MUL':
-            input_tensor_0 = tensors[op['inputs'][0]]
+            input_tensor_0 = None
+            try:
+                input_tensor_0 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor_0 = interpreter.get_tensor(input_detail['index'])
 
             input_tensor_1 = None
             if len(op['inputs']) == 1:
@@ -680,6 +709,7 @@ def make_graph(ops,
 
             options = op['builtin_options']
             activation = options['fused_activation_function']
+            keep_dims = options['keep_num_dims']
             if activation == 'NONE':
                 activation = None
             elif activation == 'RELU':
@@ -696,6 +726,8 @@ def make_graph(ops,
                                                   kernel_initializer=tf.keras.initializers.Constant(weights),
                                                   bias_initializer=tf.keras.initializers.Constant(bias),
                                                   name=output_detail['name'].replace(';', '_'))(input_tensor)
+            if not keep_dims:
+                input_tensor = tf.squeeze(input_tensor)
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'RESIZE_BILINEAR':
@@ -733,45 +765,60 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MEAN':
-            input_tensor_0 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
 
-            input_tensor_1 = None
+            input_tensor2 = None
             if len(op['inputs']) == 1:
                 param = interpreter._get_tensor_details(op['inputs'][1])
-                input_tensor_1 = interpreter.get_tensor(param['index'])
+                input_tensor2 = interpreter.get_tensor(param['index'])
             elif len(op['inputs']) == 2:
                 try:
-                    input_tensor_1 = tensors[op['inputs'][1]]
+                    input_tensor2 = tensors[op['inputs'][1]]
                 except:
                     param = interpreter._get_tensor_details(op['inputs'][1])
-                    input_tensor_1 = interpreter.get_tensor(param['index'])
+                    input_tensor2 = interpreter.get_tensor(param['index'])
 
             options = op['builtin_options']
             keepdims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.reduce_mean(input_tensor_0, input_tensor_1, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
+            output_tensor = tf.math.reduce_mean(input_tensor1, input_tensor2, keepdims=keepdims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SQUARED_DIFFERENCE':
-            input_tensor_0 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
 
-            input_tensor_1 = None
+            input_tensor2 = None
             if len(op['inputs']) == 1:
                 param = interpreter._get_tensor_details(op['inputs'][1])
-                input_tensor_1 = interpreter.get_tensor(param['index'])
+                input_tensor2 = interpreter.get_tensor(param['index'])
             elif len(op['inputs']) == 2:
                 try:
-                    input_tensor_1 = tensors[op['inputs'][1]]
+                    input_tensor2 = tensors[op['inputs'][1]]
                 except:
                     param = interpreter._get_tensor_details(op['inputs'][1])
-                    input_tensor_1 = interpreter.get_tensor(param['index'])
+                    input_tensor2 = interpreter.get_tensor(param['index'])
             
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.squared_difference(input_tensor_0, input_tensor_1, name=output_detail['name'].replace(';', '_'))
+            output_tensor = tf.math.squared_difference(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'RSQRT':
-            input_tensor = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.rsqrt(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
@@ -784,19 +831,34 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'FLOOR':
-            input_tensor = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.floor(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'TANH':
-            input_tensor = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.tanh(input_tensor, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'DIV':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -808,7 +870,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'FLOOR_DIV':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -820,7 +887,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SUM':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -834,7 +906,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'POW':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -873,7 +950,12 @@ def make_graph(ops,
                 tensors[output_index] = output
 
         elif op_type == 'SOFTMAX':
-            input_tensor = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             # options = op['builtin_options']
             # beta = int(options['beta'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -881,7 +963,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'STRIDED_SLICE':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             begin_detail = interpreter._get_tensor_details(op['inputs'][1])
             input_tensor2 = interpreter.get_tensor(begin_detail['index'])     
             end_detail = interpreter._get_tensor_details(op['inputs'][2])
@@ -910,7 +997,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'TRANSPOSE':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -938,7 +1030,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'REDUCE_MAX':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -960,7 +1057,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MAXIMUM':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -972,7 +1074,12 @@ def make_graph(ops,
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MINIMUM':
-            input_tensor1 = tensors[op['inputs'][0]]
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -982,6 +1089,87 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.minimum(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'GATHER':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            options = op['builtin_options']
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            options = op['builtin_options']
+            axis = options['axis']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.gather(input_tensor1, input_tensor2, axis=axis, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'CAST':
+            input_tensor1 = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            # in_data_type = cast_type_tf[options['in_data_type']]
+            out_data_type = cast_type_tf[options['out_data_type']]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.cast(input_tensor1, dtype=out_data_type, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SLICE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(begin_detail['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                size_detail = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(size_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.slice(input_tensor1, input_tensor2, input_tensor3, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'PACK':
+            values = []
+            for input_key in op['inputs']:
+                try:
+                    values.append(tensors[input_key])
+                except:
+                    value_detail = interpreter._get_tensor_details(input_key)
+                    values.append(interpreter.get_tensor(value_detail['index']))
+            options = op['builtin_options']
+            axis = options['axis']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.stack(values=values, axis=axis, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'UNPACK':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            options = op['builtin_options']
+            axis = options['axis']
+            num = options['num']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.unstack(value=input_tensor1, num=num, axis=axis, name=output_detail['name'].replace(';', '_'))
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
 
         elif op_type == 'CUSTOM':
             '''
@@ -1067,6 +1255,7 @@ def make_graph(ops,
                                                           dilations=[dilations, dilations])
                     output_tensor = tf.math.add(custom_trans, bias, name=output_detail['name'].replace(';', '_'))
                     tensors[output_detail['index']] = output_tensor
+
                 elif custom_op_type == 'MaxPoolingWithArgmax2D':
                     input_tensor1 = tensors[op['inputs'][0]]
                     options = op['custom_options']
@@ -1080,6 +1269,7 @@ def make_graph(ops,
                     output_detail2 = interpreter._get_tensor_details(op['outputs'][1])  
                     tensors[output_detail1['index']] = values
                     tensors[output_detail2['index']] = indices
+
                 elif custom_op_type == 'MaxUnpooling2D':
                     input_tensor1 = tensors[op['inputs'][0]]
                     input_tensor2 = None
@@ -1093,15 +1283,15 @@ def make_graph(ops,
                     output_tensor = MaxUnpooling2D()([input_tensor1, input_tensor2], output_shape=output_detail['shape'])
                     tensors[output_detail['index']] = output_tensor
                 else:
-                    print(f'The {custom_op_type} layer is not yet implemented.')
+                    print(f'{Color.RED}ERROR:{Color.RESET} The {custom_op_type} layer is not yet implemented.')
                     pprint.pprint(op)
-                    sys.exit(-1)                           
+                    sys.exit(-1)
             else:
-                print(f'There are custom operations that have not yet been implemented in the custom TFLite runtime.')
+                print(f'{Color.RED}ERROR:{Color.RESET} There are custom operations that have not yet been implemented in the custom TFLite runtime.')
                 pprint.pprint(op)
-                sys.exit(-1)       
+                sys.exit(-1)
         else:
-            print(f'The {op_type} layer is not yet implemented.')
+            print(f'{Color.RED}ERROR:{Color.RESET} The {op_type} layer is not yet implemented.')
             sys.exit(-1)
 
         # pprint.pprint(tensors[output_detail['index']])

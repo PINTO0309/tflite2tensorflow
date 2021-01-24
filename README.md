@@ -55,6 +55,11 @@
 |41|MINIMUM|tf.math.minimum||
 |42|MaxPoolingWithArgmax2D|tf.raw_ops.MaxPoolWithArgmax|CUSTOM, MediaPipe|
 |43|MaxUnpooling2D|tf.cast, tf.shape, tf.math.floordiv, tf.math.floormod, tf.ones_like, tf.shape, tf.concat, tf.reshape, tf.transpose, tf.scatter_nd|CUSTOM, MediaPipe|
+|44|GATHER|tf.gather||
+|45|CAST|tf.cast||
+|46|SLICE|tf.slice||
+|47|PACK|tf.stack||
+|48|UNPACK|tf.unstack||
 
 ## 2. Environment
 - Python3.6+
