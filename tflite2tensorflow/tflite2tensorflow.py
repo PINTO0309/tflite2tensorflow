@@ -252,7 +252,6 @@ def parse_json(jsonfile_path):
     pprint.pprint(ops)
     return ops, op_types
 
-
 def make_graph(ops,
                op_types,
                interpreter,
@@ -262,6 +261,39 @@ def make_graph(ops,
 
     import tensorflow.compat.v1 as tf
     import tensorflow as tfv2
+    from tensorflow.keras.layers import Layer
+
+    class MaxUnpooling2D(Layer):
+        def __init__(self):
+            super(MaxUnpooling2D,self).__init__()
+        def call(self, inputs, output_shape=None):
+            updates, mask = inputs[0], inputs[1]
+            with tf.variable_scope(self.name):
+                mask = tf.cast(mask, dtype=tf.int32)
+                input_shape = tf.shape(updates, out_type=tf.int32)
+                #  calculation new shape
+                if output_shape is None:
+                    output_shape = (input_shape[0], input_shape[1]*2, input_shape[2]*2, input_shape[3])
+                self.output_shape1 = output_shape
+                # calculation indices for batch, height, width and feature maps
+                one_like_mask = tf.ones_like(mask, dtype=tf.int32)
+                batch_shape = tf.concat([[input_shape[0]], [1], [1], [1]], axis=0)
+                batch_range = tf.reshape(tf.range(output_shape[0], dtype=tf.int32), shape=batch_shape)
+                b = one_like_mask * batch_range
+                y = mask // (output_shape[2] * output_shape[3])
+                x = (mask // output_shape[3]) % output_shape[2]
+                feature_range = tf.range(output_shape[3], dtype=tf.int32)
+                f = one_like_mask * feature_range
+
+                # transpose indices & reshape update values to one dimension
+                updates_size = tf.size(updates)
+                indices = tf.transpose(tf.reshape(tf.stack([b, y, x, f]), [4, updates_size]))
+                values = tf.reshape(updates, [updates_size])
+                ret = tf.scatter_nd(indices, values, output_shape)
+                return ret
+        def compute_output_shape(self, input_shape):
+            shape = input_shape[1]
+            return (shape[0], shape[1]*2, shape[2]*2, shape[3])
 
     def optimize_hardswish_for_edgetpu(input_op, optimizing_for_edgetpu_flg, name=None):
         ret_op = None
@@ -449,12 +481,12 @@ def make_graph(ops,
             alpha_array = interpreter.get_tensor(alpha_detail['index'])
             alpha_len = len(alpha_array.shape)
 
-            if (np.asarray(input_tensor.shape)[0] == alpha_array.shape).all():
-                alpha_arraynp = np.expand_dims(alpha_arraynp, 0)
-
             shared_axes = []
             if alpha_len < 4:
-                shared_axes = [val for val in range(len(input_tensor.shape) - 1)]
+                if input_tensor.shape[-1] == alpha_array.shape[-1]:
+                    shared_axes = [val + 1 for val in range(len(input_tensor.shape) - 2)]
+                else:
+                    shared_axes = [val + 1 for val in range(len(input_tensor.shape) - 1)]
             else:
                 shared_axes = None
 
@@ -1035,8 +1067,33 @@ def make_graph(ops,
                                                           dilations=[dilations, dilations])
                     output_tensor = tf.math.add(custom_trans, bias, name=output_detail['name'].replace(';', '_'))
                     tensors[output_detail['index']] = output_tensor
+                elif custom_op_type == 'MaxPoolingWithArgmax2D':
+                    input_tensor1 = tensors[op['inputs'][0]]
+                    options = op['custom_options']
+                    kernel = [1, options[4], options[8], 1]
+                    strides = [1, options[12], options[16], 1]
+                    values, indices = tf.raw_ops.MaxPoolWithArgmax(input=input_tensor1,
+                                                                   ksize=kernel,
+                                                                   strides=strides,
+                                                                   padding='SAME')
+                    output_detail1 = interpreter._get_tensor_details(op['outputs'][0])
+                    output_detail2 = interpreter._get_tensor_details(op['outputs'][1])  
+                    tensors[output_detail1['index']] = values
+                    tensors[output_detail2['index']] = indices
+                elif custom_op_type == 'MaxUnpooling2D':
+                    input_tensor1 = tensors[op['inputs'][0]]
+                    input_tensor2 = None
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        indices_detail = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(indices_detail['index'])
+                    # options = op['custom_options']
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = MaxUnpooling2D()([input_tensor1, input_tensor2], output_shape=output_detail['shape'])
+                    tensors[output_detail['index']] = output_tensor
                 else:
-                    print(f'There are custom operations that have not yet been implemented in the custom TFLite runtime. op_type: {custom_op_type}')
+                    print(f'The {custom_op_type} layer is not yet implemented.')
                     pprint.pprint(op)
                     sys.exit(-1)                           
             else:
