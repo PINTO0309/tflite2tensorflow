@@ -60,6 +60,16 @@
 |46|SLICE|tf.slice||
 |47|PACK|tf.stack||
 |48|UNPACK|tf.unstack||
+|49|ARG_MAX|tf.math.argmax||
+|50|EXP|tf.exp||
+|51|TOPK_V2|tf.math.top_k||
+|52|LOG_SOFTMAX|tf.nn.log_softmax||
+|53|L2_NORMALIZATION|tf.math.l2_normalize||
+|54|LESS|tf.math.less||
+|55|LESS_EQUAL|tf.math.less_equal||
+|56|GREATER|tf.math.greater||
+|57|GREATER_EQUAL|tf.math.greater_equal||
+|58|NEG|tf.math.negative||
 
 ## 2. Environment
 - Python3.6+
@@ -109,7 +119,93 @@ $ make -j$(nproc)
 ![vvtvsu0y1791ow2ybdk61s9fv7e4](https://user-images.githubusercontent.com/33194443/105578192-badc4080-5dc1-11eb-8fda-4eaf0d8a63e4.png)
 ![saxqukktcjncsk2hp7m8p2cns4q4](https://user-images.githubusercontent.com/33194443/105578219-d6dfe200-5dc1-11eb-9026-42104fdcc727.png)
 ## 4. Usage / Execution sample
-### 4-1. Step 1 : Generating saved_model and FreezeGraph (.pb)
+### 4-1. Command line options
+```
+usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
+                         FLATC_PATH --schema_path SCHEMA_PATH
+                         [--model_output_path MODEL_OUTPUT_PATH]
+                         [--output_pb OUTPUT_PB]
+                         [--output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE]
+                         [--output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE]
+                         [--output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE]
+                         [--output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE]
+                         [--output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE]
+                         [--output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE]
+                         [--string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION]
+                         [--calib_ds_type CALIB_DS_TYPE]
+                         [--ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION]
+                         [--split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION]
+                         [--download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS]
+                         [--tfds_download_flg TFDS_DOWNLOAD_FLG]
+                         [--output_tfjs OUTPUT_TFJS]
+                         [--output_tftrt OUTPUT_TFTRT]
+                         [--output_coreml OUTPUT_COREML]
+                         [--output_edgetpu OUTPUT_EDGETPU]
+                         [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
+                         [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
+                         [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+                        input tflite model path (*.tflite)
+  --flatc_path FLATC_PATH
+                        flatc file path (flatc)
+  --schema_path SCHEMA_PATH
+                        schema.fbs path (schema.fbs)
+  --model_output_path MODEL_OUTPUT_PATH
+                        The output folder path of the converted model file
+  --output_pb OUTPUT_PB
+                        .pb output switch
+  --output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE
+                        float32 tflite output switch
+  --output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE
+                        weight quant tflite output switch
+  --output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE
+                        float16 quant tflite output switch
+  --output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE
+                        integer quant tflite output switch
+  --output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE
+                        full integer quant tflite output switch
+  --output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE
+                        Input and output types when doing Integer Quantization
+                        ('int8 (default)' or 'uint8')
+  --string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION
+                        String formulas for normalization. It is evaluated by
+                        Python's eval() function. Default: '(data -
+                        [127.5,127.5,127.5]) / [127.5,127.5,127.5]'
+  --calib_ds_type CALIB_DS_TYPE
+                        Types of data sets for calibration. tfds or
+                        numpy(Future Implementation)
+  --ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION
+                        Dataset name for TensorFlow Datasets for calibration.
+                        https://www.tensorflow.org/datasets/catalog/overview
+  --split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION
+                        Split name for TensorFlow Datasets for calibration.
+                        https://www.tensorflow.org/datasets/catalog/overview
+  --download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS
+                        Download destination folder path for the calibration
+                        dataset. Default: $HOME/TFDS
+  --tfds_download_flg TFDS_DOWNLOAD_FLG
+                        True to automatically download datasets from
+                        TensorFlow Datasets. True or False
+  --output_tfjs OUTPUT_TFJS
+                        tfjs model output switch
+  --output_tftrt OUTPUT_TFTRT
+                        tftrt model output switch
+  --output_coreml OUTPUT_COREML
+                        coreml model output switch
+  --output_edgetpu OUTPUT_EDGETPU
+                        edgetpu model output switch
+  --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH
+                        [Future support] Replace swish and hard-swish with
+                        each other
+  --optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU
+                        Optimizing hardswish for edgetpu
+  --replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX
+                        Replace prelu and minimum/maximum with each other
+```
+### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
 $ tflite2tensorflow \
   --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
@@ -126,7 +222,7 @@ $ tflite2tensorflow \
   --output_pb True \
   --optimizing_hardswish_for_edgetpu True
 ```
-### 4-2. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, and CoreML
+### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, and CoreML
 ```
 $ tflite2tensorflow \
   --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \

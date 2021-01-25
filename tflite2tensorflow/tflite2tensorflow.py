@@ -1097,7 +1097,6 @@ def make_graph(ops,
             except:
                 input_detail = interpreter._get_tensor_details(op['inputs'][0])
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
-            options = op['builtin_options']
             input_tensor2 = None
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
@@ -1170,6 +1169,166 @@ def make_graph(ops,
             output_tensor = tf.unstack(value=input_tensor1, num=num, axis=axis, name=output_detail['name'].replace(';', '_'))
             for output_index, output in zip(op['outputs'], output_tensor):
                 tensors[output_index] = output
+
+        elif op_type == 'ARG_MAX':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            options = op['builtin_options']
+            output_type = cast_type_tf[options['output_type']]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.argmax(input_tensor1, axis=input_tensor2, output_type=output_type, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'EXP':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.exp(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'TOPK_V2':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.top_k(input_tensor1, k=input_tensor2, name=output_detail['name'].replace(';', '_'))
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'LOG_SOFTMAX':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.log_softmax(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor  
+
+        elif op_type == 'L2_NORMALIZATION':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            options = op['builtin_options']
+            activation = options['fused_activation_function']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            if activation == 'NONE':
+                output_tensor = tf.math.l2_normalize(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            elif activation == 'RELU':
+                output_tensor = tf.nn.relu(tf.math.l2_normalize(input_tensor1, name=output_detail['name'].replace(';', '_')))
+            elif activation == 'RELU6':
+                output_tensor = tf.nn.relu6(tf.math.l2_normalize(input_tensor1, name=output_detail['name'].replace(';', '_')))
+            elif activation == '0':
+                output_tensor = tf.math.l2_normalize(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            else:
+                raise ValueError(activation)
+            tensors[output_detail['index']] = output_tensor  
+
+        elif op_type == 'LESS':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.less(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'LESS_EQUAL':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.less_equal(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'GREATER':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.greater(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'GREATER_EQUAL':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.greater_equal(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'NEG':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.negative(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':
             '''
@@ -1257,7 +1416,6 @@ def make_graph(ops,
                     tensors[output_detail['index']] = output_tensor
 
                 elif custom_op_type == 'MaxPoolingWithArgmax2D':
-                    # MediaPipe - MaxPoolingWithArgmax2D
                     input_tensor1 = tensors[op['inputs'][0]]
                     options = op['custom_options']
                     kernel = [1, options[4], options[8], 1]
@@ -1272,7 +1430,6 @@ def make_graph(ops,
                     tensors[output_detail2['index']] = indices
 
                 elif custom_op_type == 'MaxUnpooling2D':
-                    # MediaPipe - MaxUnpooling2D
                     input_tensor1 = tensors[op['inputs'][0]]
                     input_tensor2 = None
                     try:
@@ -1459,9 +1616,12 @@ def main():
             tf_inputs.append(input['shape'])
         print('outputs:')
         output_node_names = []
+        output_node_names_non_suffix = []
         for output in output_details:
             pprint.pprint(output)
-            output_node_names.append(output['name']+':0')
+            name_count = output_node_names_non_suffix.count(output['name'])
+            output_node_names.append(output['name']+f':{name_count}')
+            output_node_names_non_suffix.append(output['name'])
 
         print(f'{Color.REVERCE}TensorFlow/Keras model building process starts{Color.RESET}', '=' * 38)
         make_graph(ops,
