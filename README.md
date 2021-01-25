@@ -70,6 +70,12 @@
 |56|GREATER|tf.math.greater||
 |57|GREATER_EQUAL|tf.math.greater_equal||
 |58|NEG|tf.math.negative||
+|59|WHERE|tf.where||
+|60|SELECT|tf.where||
+|61|SELECT_V2|tf.where||
+|62|PADV2|tf.compat.v1.raw_ops.PadV2||
+|63|SIN|tf.math.sin||
+|64|TILE|tf.tile||
 
 ## 2. Environment
 - Python3.6+

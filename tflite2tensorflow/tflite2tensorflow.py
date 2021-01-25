@@ -1330,6 +1330,118 @@ def make_graph(ops,
             output_tensor = tf.math.negative(input_tensor1, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'WHERE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.where(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SELECT':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][1]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.where(input_tensor1, x=input_tensor2, y=input_tensor3, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SELECT_V2':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][1]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tfv2.where(input_tensor1, x=input_tensor2, y=input_tensor3, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'PADV2':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][1]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def pad_v2(x, paddings, constant_values):
+                return tf.compat.v1.raw_ops.PadV2(input=x, paddings=paddings, constant_values=constant_values)
+
+            output_tensor = tf.keras.layers.Lambda(pad_v2, arguments={'paddings': input_tensor2, 'constant_values': input_tensor3}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SIN':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.sin(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'TILE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.tile(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
