@@ -82,11 +82,10 @@
 |68|SQRT|tf.math.sqrt||
 |69|ARG_MIN|tf.math.argmin||
 |70|REDUCE_PROD|tf.math.reduce_prod||
-|71|REDUCE_MAX|tf.math.reduce_max||
-|72|LOGICAL_OR|tf.math.logical_or||
-|73|LOGICAL_AND|tf.math.logical_and||
-|74|LOGICAL_NOT|tf.math.logical_not||
-|75|REDUCE_MIN|tf.math.reduce_min||
+|71|LOGICAL_OR|tf.math.logical_or||
+|72|LOGICAL_AND|tf.math.logical_and||
+|73|LOGICAL_NOT|tf.math.logical_not||
+|74|REDUCE_MIN|tf.math.reduce_min||
 
 ## 2. Environment
 - Python3.6+
