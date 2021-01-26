@@ -73,9 +73,20 @@
 |59|WHERE|tf.where||
 |60|SELECT|tf.where||
 |61|SELECT_V2|tf.where||
-|62|PADV2|tf.compat.v1.raw_ops.PadV2||
+|62|PADV2|tf.raw_ops.PadV2||
 |63|SIN|tf.math.sin||
 |64|TILE|tf.tile||
+|65|EQUAL|tf.math.equal||
+|66|NOT_EQUAL|tf.math.not_equal||
+|67|LOG|tf.math.log||
+|68|SQRT|tf.math.sqrt||
+|69|ARG_MIN|tf.math.argmin||
+|70|REDUCE_PROD|tf.math.reduce_prod||
+|71|REDUCE_MAX|tf.math.reduce_max||
+|72|LOGICAL_OR|tf.math.logical_or||
+|73|LOGICAL_AND|tf.math.logical_and||
+|74|LOGICAL_NOT|tf.math.logical_not||
+|75|REDUCE_MIN|tf.math.reduce_min||
 
 ## 2. Environment
 - Python3.6+
