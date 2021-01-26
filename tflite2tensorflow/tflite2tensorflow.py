@@ -1536,25 +1536,6 @@ def make_graph(ops,
             output_tensor = tf.math.reduce_prod(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
-        elif op_type == 'REDUCE_MAX':
-            input_tensor1 = None
-            try:
-                input_tensor1 = tensors[op['inputs'][0]]
-            except:
-                input_detail = interpreter._get_tensor_details(op['inputs'][0])
-                input_tensor1 = interpreter.get_tensor(input_detail['index'])
-            input_tensor2 = None
-            try:
-                input_tensor2 = tensors[op['inputs'][1]]
-            except:
-                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
-                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
-            options = op['builtin_options']
-            keep_dims = cast_type_tf[options['keep_dims']]
-            output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
-            tensors[output_detail['index']] = output_tensor
-
         elif op_type == 'LOGICAL_OR':
             input_tensor1 = None
             try:
