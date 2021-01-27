@@ -86,6 +86,17 @@
 |72|LOGICAL_AND|tf.math.logical_and||
 |73|LOGICAL_NOT|tf.math.logical_not||
 |74|REDUCE_MIN|tf.math.reduce_min||
+|75|REDUCE_ANY|tf.math.reduce_any||
+|76|SQUARE|tf.math.square||
+|77|ZEROS_LIKE|tf.zeros_like||
+|78|FILL|tf.fill||
+|79|FLOOR_MOD|tf.math.floormod||
+|80|RANGE|tf.range||
+|81|ABS|tf.math.abs||
+|82|UNIQUE|tf.unique||
+|83|CEIL|tf.math.ceil||
+|84|REVERSE_V2|tf.reverse||
+|85|ADD_N|tf.math.add_n||
 
 ## 2. Environment
 - Python3.6+
