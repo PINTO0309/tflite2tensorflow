@@ -97,6 +97,21 @@
 |83|CEIL|tf.math.ceil||
 |84|REVERSE_V2|tf.reverse||
 |85|ADD_N|tf.math.add_n||
+|86|GATHER_ND|tf.gather_nd||
+|87|COS|tf.math.cos||
+|88|RANK|tf.math.rank||
+|89|ELU|tf.nn.elu||
+|90|WHILE|tf.while_loop||
+|91|REVERSE_SEQUENCE|tf.reverse_sequence||
+|92|MATRIX_DIAG|tf.linalg.diag||
+|93|ROUND|tf.math.round||
+|94|NON_MAX_SUPPRESSION_V4|tf.raw_ops.NonMaxSuppressionV4||
+|95|NON_MAX_SUPPRESSION_V5|tf.raw_ops.NonMaxSuppressionV5||
+|96|SCATTER_ND|tf.scatter_nd||
+|97|SEGMENT_SUM|tf.math.segment_sum||
+|98|CUMSUM|tf.math.cumsum||
+|99|BROADCAST_TO|tf.broadcast_to||
+|100|RFFT2D|tf.signal.rfft2d||
 
 ## 2. Environment
 - Python3.6+

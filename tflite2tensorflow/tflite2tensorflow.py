@@ -1111,9 +1111,12 @@ def make_graph(ops,
 
         elif op_type == 'CAST':
             input_tensor1 = tensors[op['inputs'][0]]
-            options = op['builtin_options']
-            # in_data_type = cast_type_tf[options['in_data_type']]
-            out_data_type = cast_type_tf[options['out_data_type']]
+            out_data_type = None
+            try:
+                options = op['builtin_options']
+                out_data_type = cast_type_tf[options['out_data_type']]
+            except:
+                out_data_type = cast_type_tf['FLOAT32']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.cast(input_tensor1, dtype=out_data_type, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
@@ -1473,7 +1476,7 @@ def make_graph(ops,
                 positions_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.equal(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            output_tensor = tf.math.not_equal(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'LOG':
@@ -1531,9 +1534,28 @@ def make_graph(ops,
                 positions_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             options = op['builtin_options']
-            keep_dims = cast_type_tf[options['keep_dims']]
+            keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.reduce_prod(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'REDUCE_MAX':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            options = op['builtin_options']
+            keep_dims = options['keep_dims']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'LOGICAL_OR':
@@ -1578,7 +1600,7 @@ def make_graph(ops,
                 input_detail = interpreter._get_tensor_details(op['inputs'][0])
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.logical_and(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            output_tensor = tf.math.logical_not(input_tensor1, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'REDUCE_MIN':
@@ -1595,11 +1617,516 @@ def make_graph(ops,
                 positions_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             options = op['builtin_options']
-            keep_dims = cast_type_tf[options['keep_dims']]
+            keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.reduce_min(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'REDUCE_ANY':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            options = op['builtin_options']
+            keep_dims = options['keep_dims']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.reduce_any(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SQUARE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.square(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'ZEROS_LIKE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.zeros_like(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'FILL':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.fill(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'FLOOR_MOD':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.floormod(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'RANGE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                limit_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(limit_detail['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                delta_detail = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(delta_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.range(input_tensor1, input_tensor2, delta=input_tensor3, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'ABS':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.abs(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'UNIQUE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            options = op['builtin_options']
+            idx_out_type = cast_type_tf[options['idx_out_type']]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.unique(input_tensor1, out_idx=idx_out_type, name=output_detail['name'].replace(';', '_'))
+
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'CEIL':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.ceil(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'REVERSE_V2':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.reverse(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'ADD_N':
+            tensor_list = []
+            for i in op['inputs']:
+                try:
+                    tensor_list.append(tensors[i])
+                except:
+                    input_detail = interpreter._get_tensor_details(i)
+                    tensor_list.append(interpreter.get_tensor(input_detail['index']))
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.add_n(tensor_list, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'GATHER_ND':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.gather_nd(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'COS':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.cos(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'RANK':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.rank(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'ELU':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.elu(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'WHILE':
+            input_list = []
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_list.append(input_tensor1)
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_list.append(input_tensor2)
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            input_list.append(input_tensor3)
+            input_tensor4 = None
+            try:
+                input_tensor4 = tensors[op['inputs'][3]]
+            except:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+                input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+            input_list.append(input_tensor4)
+
+            options = op['builtin_options']
+            cond_subgraph_index = options['cond_subgraph_index'] - 1
+            body_subgraph_index = options['body_subgraph_index'] - 1
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.while_loop(input_list[cond_subgraph_index],
+                                          input_list[body_subgraph_index],
+                                          input_list[2],
+                                          input_list[3],
+                                          name=output_detail['name'].replace(';', '_'))
+
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'REVERSE_SEQUENCE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            options = op['builtin_options']
+            seq_dim = options['seq_dim']
+            batch_dim = options['batch_dim']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def reverse_seq(x, seq_lengths, seq_axis, batch_axis):
+                return tf.reverse_sequence(x, seq_lengths=seq_lengths, seq_axis=seq_axis, batch_axis=batch_axis)
+
+            output_tensor = tf.keras.layers.Lambda(reverse_seq, arguments={'seq_lengths': input_tensor2, 'seq_axis': seq_dim, 'batch_axis': batch_dim}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'MATRIX_DIAG':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.linalg.diag(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'ROUND':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.round(input_tensor1, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'NON_MAX_SUPPRESSION_V4':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            input_tensor4 = None
+            try:
+                input_tensor4 = tensors[op['inputs'][3]]
+            except:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+                input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+            input_tensor5 = None
+            try:
+                input_tensor5 = tensors[op['inputs'][4]]
+            except:
+                input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+                input_tensor5 = interpreter.get_tensor(input_detail5['index'])
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def nmsv4(x, scores, max_output_size, iou_threshold, score_threshold):
+                return tf.raw_ops.NonMaxSuppressionV4(
+                            boxes=x,
+                            scores=scores,
+                            max_output_size=max_output_size,
+                            iou_threshold=iou_threshold,
+                            score_threshold=score_threshold
+                        )
+
+            output_tensor = tf.keras.layers.Lambda(nmsv4, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5})(input_tensor1)
+            
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'NON_MAX_SUPPRESSION_V5':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            input_tensor4 = None
+            try:
+                input_tensor4 = tensors[op['inputs'][3]]
+            except:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+                input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+            input_tensor5 = None
+            try:
+                input_tensor5 = tensors[op['inputs'][4]]
+            except:
+                input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+                input_tensor5 = interpreter.get_tensor(input_detail5['index'])
+            input_tensor6 = None
+            try:
+                input_tensor6 = tensors[op['inputs'][5]]
+            except:
+                input_detail6 = interpreter._get_tensor_details(op['inputs'][5])
+                input_tensor6 = interpreter.get_tensor(input_detail6['index'])
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def nmsv5(x, scores, max_output_size, iou_threshold, score_threshold, soft_nms_sigma):
+                return tf.raw_ops.NonMaxSuppressionV5(
+                            boxes=x,
+                            scores=scores,
+                            max_output_size=max_output_size,
+                            iou_threshold=iou_threshold,
+                            score_threshold=score_threshold,
+                            soft_nms_sigma=soft_nms_sigma
+                        )
+
+            output_tensor = tf.keras.layers.Lambda(nmsv5, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5, 'soft_nms_sigma': input_tensor6})(input_tensor1)
+            
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'SCATTER_ND':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.scatter_nd(input_tensor1, input_tensor2, input_tensor3, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SEGMENT_SUM':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.segment_sum(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'CUMSUM':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            options = op['builtin_options']
+            exclusive = options['exclusive']
+            reverse = options['reverse']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.cumsum(input_tensor1, axis=input_tensor2, exclusive=exclusive, reverse=reverse, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'BROADCAST_TO':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.broadcast_to(input_tensor1, input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'RFFT2D':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def rfft2d_(x, fft_length):
+                return tf.signal.rfft2d(x, fft_length=fft_length)
+
+            output_tensor = tf.keras.layers.Lambda(rfft2d_, arguments={'fft_length': input_tensor2}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':
             '''
@@ -1865,7 +2392,7 @@ def main():
             from tflite_runtime.interpreter import Interpreter as tflite_interpreter
         except:
             # The official TensorFlow TFLite Interpreter
-            from tensorflow.lite import Interpreter as tflite_interpreter
+            from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
 
         shutil.rmtree(model_output_path, ignore_errors=True)
         tf.disable_eager_execution()
@@ -1945,7 +2472,7 @@ def main():
             from tflite_runtime.interpreter import Interpreter as tflite_interpreter
         except:
             # The official TensorFlow TFLite Interpreter
-            from tensorflow.lite import Interpreter as tflite_interpreter
+            from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
 
         interpreter = tflite_interpreter(model_path)
         interpreter.allocate_tensors()
