@@ -235,7 +235,7 @@ optional arguments:
 ### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
 $ tflite2tensorflow \
-  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --model_path segm_full_v679.tflite \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
   --output_pb True
@@ -243,7 +243,7 @@ $ tflite2tensorflow \
 or
 ```
 $ tflite2tensorflow \
-  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --model_path segm_full_v679.tflite \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
   --output_pb True \
@@ -252,7 +252,7 @@ $ tflite2tensorflow \
 ### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, and CoreML
 ```
 $ tflite2tensorflow \
-  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --model_path segm_full_v679.tflite \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
   --output_no_quant_float32_tflite True \
@@ -267,7 +267,7 @@ $ tflite2tensorflow \
 or
 ```
 $ tflite2tensorflow \
-  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_prediction_1.tflite \
+  --model_path segm_full_v679.tflite \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
   --output_no_quant_float32_tflite True \
