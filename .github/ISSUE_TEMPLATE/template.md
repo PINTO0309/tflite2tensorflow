@@ -16,11 +16,10 @@ assignees: ''
 #### 6. Version of TFJS e.g. 1.5.0, etc
 #### 7. Version of coremltools e.g. 4.0, etc
 #### 8. Version of ONNX e.g. v1.8.0, etc
-#### 9. Download URL for ONNX model
-#### 10. Download URL for OpenVINO IR (.bin/.xml) model
-#### 11. URL of the repository from which the transformed model was taken
-#### 12. URL or source code for simple inference testing code
+#### 9. Download URL for .tflite IR  model
+#### 10. URL of the repository from which the transformed model was taken
+#### 11. URL or source code for simple inference testing code
 ```python
 here
 ```
-#### 13. Issue Details
+#### 12. Issue Details
