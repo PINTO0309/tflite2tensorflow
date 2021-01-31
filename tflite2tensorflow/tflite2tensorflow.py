@@ -2143,6 +2143,28 @@ def make_graph(ops,
             output_tensor = tf.sqrt(avg_pool)
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'LOCAL_RESPONSE_NORMALIZATION':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+
+            options = op['builtin_options']
+            alpha = options['alpha']
+            beta = options['beta']
+            bias = options['bias']
+            radius = options['radius']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.nn.local_response_normalization(input_tensor1,
+                                                               depth_radius=radius,
+                                                               bias=bias,
+                                                               alpha=alpha,
+                                                               beta=beta,
+                                                               name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
