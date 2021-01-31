@@ -2128,6 +2128,21 @@ def make_graph(ops,
             output_tensor = tf.keras.layers.Lambda(rfft2d_, arguments={'fft_length': input_tensor2}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'L2_POOL_2D':
+            input_tensor = tensors[op['inputs'][0]]
+            options = op['builtin_options']
+            pool_size = [options['filter_height'], options['filter_width']]
+            strides = [options['stride_h'], options['stride_w']]
+            padding = options['padding']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            sqr = tf.square(input_tensor)
+            avg_pool = tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+                                                        strides=strides,
+                                                        padding=padding,
+                                                        name=output_detail['name'].replace(';', '_'))(sqr)
+            output_tensor = tf.sqrt(avg_pool)
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias

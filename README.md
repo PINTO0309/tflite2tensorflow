@@ -112,6 +112,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite and .pb fr
 |98|CUMSUM|tf.math.cumsum||
 |99|BROADCAST_TO|tf.broadcast_to||
 |100|RFFT2D|tf.signal.rfft2d||
+|101|L2_POOL_2D|tf.square, tf.keras.layers.AveragePooling2D, tf.sqrt||
 
 ## 2. Environment
 - Python3.6+
