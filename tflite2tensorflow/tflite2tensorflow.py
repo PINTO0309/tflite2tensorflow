@@ -2173,7 +2173,54 @@ def make_graph(ops,
                 input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.maximum(-1.0, tf.minimum(input_tensor1, 1.0))
+            output_tensor = tf.maximum(-1.0, tf.minimum(input_tensor1, 1.0), name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SPLIT_V':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            options = op['builtin_options']
+            num_splits = options['num_splits']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def spv(x, size_splits, axis, num_split):
+                return tf.raw_ops.SplitV(value=x, size_splits=size_splits, axis=axis, num_split=num_split)
+            output_tensor = tf.keras.layers.Lambda(spv, arguments={'size_splits': input_tensor2, 'axis': input_tensor3, 'num_split': num_splits})(input_tensor1)
+
+            for output_index, output in zip(op['outputs'], output_tensor):
+                tensors[output_index] = output
+
+        elif op_type == 'MATRIX_SET_DIAG':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.linalg.set_diag(input_tensor1, diagonal=input_tensor2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':

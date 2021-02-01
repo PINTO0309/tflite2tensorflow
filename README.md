@@ -115,6 +115,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite and .pb fr
 |101|L2_POOL_2D|tf.square, tf.keras.layers.AveragePooling2D, tf.sqrt||
 |102|LOCAL_RESPONSE_NORMALIZATION|tf.nn.local_response_normalization||
 |103|RELU_N1_TO_1|tf.minimum, tf.maximum||
+|104|SPLIT_V|tf.raw_ops.SplitV||
+|105|MATRIX_SET_DIAG|tf.linalg.set_diag||
 
 ## 2. Environment
 - Python3.6+
