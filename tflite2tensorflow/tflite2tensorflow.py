@@ -2165,6 +2165,17 @@ def make_graph(ops,
                                                                name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'RELU_N1_TO_1':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.maximum(-1.0, tf.minimum(input_tensor1, 1.0))
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
