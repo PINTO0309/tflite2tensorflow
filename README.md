@@ -146,9 +146,9 @@ $ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
 
 ### Install the full TensorFlow package
-$ sudo pip3 install tf-nightly
- or
 $ sudo pip3 install tensorflow==2.4.1
+ or
+$ sudo pip3 install tf-nightly
 
 ### Download flatc
 $ flatbuffers/1.12.0/download.sh
