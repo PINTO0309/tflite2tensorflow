@@ -927,12 +927,20 @@ def make_graph(ops,
             input_tensor2 = None
 
             if op['inputs'][0] < op['inputs'][1]:
-                input_tensor1 = tensors[op['inputs'][0]]
                 try:
-                    input_tensor2 = tensors[op['inputs'][1]]
+                    input_tensor1 = tensors[op['inputs'][0]]
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
                 except:
-                    axis_detail = interpreter._get_tensor_details(op['inputs'][1])
-                    input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
+                    input_tensor1 = tensors[op['inputs'][1]]
+                    try:
+                        input_tensor2 = tensors[op['inputs'][0]]
+                    except:
+                        axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])    
             else:
                 input_tensor1 = tensors[op['inputs'][1]]
                 try:
@@ -2221,6 +2229,19 @@ def make_graph(ops,
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.linalg.set_diag(input_tensor1, diagonal=input_tensor2, name=output_detail['name'].replace(';', '_'))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SHAPE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            options = op['builtin_options']
+            out_type = cast_type_tf[options['out_type']]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.shape(input_tensor1, out_type=out_type, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':
