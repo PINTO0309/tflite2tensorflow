@@ -289,7 +289,7 @@ $ tflite2tensorflow \
   --output_pb True \
   --optimizing_hardswish_for_edgetpu True
 ```
-### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, and CoreML
+### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, CoreML and ONNX
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
@@ -302,7 +302,9 @@ $ tflite2tensorflow \
   --string_formulas_for_normalization 'data / 255.0' \
   --output_tfjs True \
   --output_coreml True \
-  --output_tftrt True
+  --output_tftrt True \
+  --output_onnx True \
+  --onnx_opset 13
 ```
 or
 ```
@@ -318,7 +320,9 @@ $ tflite2tensorflow \
   --string_formulas_for_normalization 'data / 255.0' \
   --output_tfjs True \
   --output_coreml True \
-  --output_tftrt True
+  --output_tftrt True \
+  --output_onnx True \
+  --onnx_opset 13
 ```
 ## 5. Sample image
 This is the result of converting MediaPipe's Meet Segmentation model (segm_full_v679.tflite / Float16 / Google Meet) to **`saved_model`** and then reconverting it to Float32 tflite. Replace the GPU-optimized **`Convolution2DTransposeBias`** layer with the standard **`TransposeConv`** and **`BiasAdd`** layers in a fully automatic manner. The weights and biases of the Float16 **`Dequantize`** layer are automatically back-quantized to Float32 precision. The generated **`saved_model`** in Float32 precision can be easily converted to **`Float16`**, **`INT8`**, **`EdgeTPU`**, **`TFJS`**, **`TF-TRT`**, **`CoreML`**, **`ONNX`**, and **`OpenVINO`**.
