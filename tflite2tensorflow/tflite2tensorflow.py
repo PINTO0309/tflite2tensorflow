@@ -2394,6 +2394,8 @@ def main():
     parser.add_argument('--output_tftrt', type=bool, default=False, help='tftrt model output switch')
     parser.add_argument('--output_coreml', type=bool, default=False, help='coreml model output switch')
     parser.add_argument('--output_edgetpu', type=bool, default=False, help='edgetpu model output switch')
+    parser.add_argument('--output_onnx', type=bool, default=False, help='onnx model output switch')
+    parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
     parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='[Future support] Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', type=bool, default=False, help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', type=bool, default=False, help='Replace prelu and minimum/maximum with each other')
@@ -2425,6 +2427,8 @@ def main():
     output_tftrt = args.output_tftrt
     output_coreml = args.output_coreml
     output_edgetpu = args.output_edgetpu
+    output_onnx = args.output_onnx
+    onnx_opset = args.onnx_opset
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
@@ -2461,6 +2465,12 @@ def main():
             print('\'coremltoos\' is not installed. Please run the following command to install \'coremltoos\'.')
             print('pip3 install --upgrade coremltools')
             sys.exit(-1)
+    if output_onnx:
+        if not 'tf2onnx' in package_list:
+            print('\'tf2onnx\' is not installed. Please run the following command to install \'tf2onnx\'.')
+            print('pip3 install --upgrade onnx')
+            print('pip3 install --upgrade tf2onnx')
+            sys.exit(-1)
     if output_integer_quant_tflite or output_full_integer_quant_tflite:
         if not 'tensorflow-datasets' in package_list:
             print('\'tensorflow-datasets\' is not installed. Please run the following command to install \'tensorflow-datasets\'.')
@@ -2489,7 +2499,7 @@ def main():
 
     if output_pb:
         tfv1_flg = True
-    if output_no_quant_float32_tflite or output_weight_quant_tflite or output_float16_quant_tflite or output_integer_quant_tflite or output_full_integer_quant_tflite or output_tfjs or output_tftrt or output_coreml or output_edgetpu:
+    if output_no_quant_float32_tflite or output_weight_quant_tflite or output_float16_quant_tflite or output_integer_quant_tflite or output_full_integer_quant_tflite or output_tfjs or output_tftrt or output_coreml or output_edgetpu or output_onnx:
         tfv2_flg = True
 
     if tfv1_flg and tfv2_flg:
@@ -2821,6 +2831,24 @@ def main():
                 print("-" * 80)
                 print('Please install edgetpu_compiler according to the following website.')
                 print('https://coral.ai/docs/edgetpu/compiler/#system-requirements')
+
+        # ONNX convert
+        if output_onnx:
+            import subprocess
+            try:
+                print(f'{Color.REVERCE}ONNX convertion started{Color.RESET}', '=' * 61)
+                result = subprocess.check_output(['python3',
+                                                '-m', 'tf2onnx.convert',
+                                                '--saved-model', model_output_path,
+                                                '--opset', str(onnx_opset),
+                                                '--output', f'{model_output_path}/model_float32.onnx'],
+                                                stderr=subprocess.PIPE).decode('utf-8')
+                print(result)
+                print(f'{Color.GREEN}ONNX convertion complete!{Color.RESET} - {model_output_path}/tfjs_model_float32')
+            except subprocess.CalledProcessError as e:
+                print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
+                import traceback
+                traceback.print_exc()
 
 if __name__ == '__main__':
     main()

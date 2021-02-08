@@ -4,7 +4,7 @@
   <img src="https://user-images.githubusercontent.com/33194443/105187518-38ac0c00-5b76-11eb-869b-b518df146924.png" />
 </p>
 
-Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite and .pb from .tflite.
+Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX and .pb from .tflite.
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/tflite2tensorflow?color=2BAF2B&label=Downloads%EF%BC%8FInstalled)](https://pypistats.org/packages/tflite2tensorflow) ![GitHub](https://img.shields.io/github/license/PINTO0309/tflite2tensorflow?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/tflite2tensorflow?color=2BAF2B)](https://pypi.org/project/tflite2tensorflow/)
 
@@ -121,10 +121,18 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite and .pb fr
 
 ## 2. Environment
 - Python3.6+
-- TensorFlow v2.4.0+ or tf-nightly
+- TensorFlow v2.4.0+ or tf-nightly **`pip3 install --upgrade tensorflow`** or **`pip3 install --upgrade tf-nightly`**
 - TensorFlow Lite v2.4.1 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
+  - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
+- tensorflowjs **`pip3 install --upgrade tensorflowjs`**
+- **[tensorrt](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)**
+- coremltools **`pip3 install --upgrade coremltools`**
+- onnx **`pip3 install --upgrade onnx`**
+- tf2onnx **`pip3 install --upgrade tf2onnx`**
+- tensorflow-datasets **`pip3 install --upgrade tensorflow-datasets`**
+- **[edgetpu_compiler](https://coral.ai/docs/edgetpu/compiler/#system-requirements)**
 
 ## 3. Setup
 To install using the Python Package Index (PyPI), use the following command.
@@ -194,6 +202,8 @@ usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
                          [--output_tftrt OUTPUT_TFTRT]
                          [--output_coreml OUTPUT_COREML]
                          [--output_edgetpu OUTPUT_EDGETPU]
+                         [--output_onnx OUTPUT_ONNX]
+                         [--onnx_opset ONNX_OPSET]
                          [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
                          [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
                          [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
@@ -250,6 +260,10 @@ optional arguments:
                         coreml model output switch
   --output_edgetpu OUTPUT_EDGETPU
                         edgetpu model output switch
+  --output_onnx OUTPUT_ONNX
+                        onnx model output switch
+  --onnx_opset ONNX_OPSET
+                        onnx opset version number
   --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH
                         [Future support] Replace swish and hard-swish with
                         each other
