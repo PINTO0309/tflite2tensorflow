@@ -505,9 +505,11 @@ def make_graph(ops,
                 shared_axes = None
 
             if not replace_prelu_and_minmax:
-                output_tensor = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
-                                                    shared_axes=shared_axes,
-                                                    name=output_detail['name'].replace(';', '_'))(input_tensor)
+                prelu_name = output_detail['name'].replace(';', '_') + '_prelu'
+                output_tensor_prelu = tf.keras.layers.PReLU(alpha_initializer=tf.keras.initializers.Constant(alpha_array),
+                                                            shared_axes=shared_axes,
+                                                            name=prelu_name)(input_tensor)
+                output_tensor = tf.identity(output_tensor_prelu, name=output_detail['name'].replace(';', '_'))
             else:
                 output_tensor = tf.maximum(0.0, input_tensor) + alpha_array * tf.minimum(0.0, input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -684,10 +686,12 @@ def make_graph(ops,
             strides = [options['stride_h'], options['stride_w']]
             padding = options['padding']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.keras.layers.AveragePooling2D(pool_size=pool_size,
-                                                             strides=strides,
-                                                             padding=padding,
-                                                             name=output_detail['name'].replace(';', '_'))(input_tensor)
+            avgpool_name = output_detail['name'].replace(';', '_') + '_avgpool'
+            output_tensor_avgpool = tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+                                                                     strides=strides,
+                                                                     padding=padding,
+                                                                     name=avgpool_name)(input_tensor)
+            output_tensor = tf.identity(output_tensor_avgpool, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'FULLY_CONNECTED':
@@ -720,14 +724,15 @@ def make_graph(ops,
                 raise ValueError(activation)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.keras.layers.Dense(units=output_shape_array.shape[len(output_shape_array.shape)-1],
-                                                  activation=activation,
-                                                  use_bias=True,
-                                                  kernel_initializer=tf.keras.initializers.Constant(weights),
-                                                  bias_initializer=tf.keras.initializers.Constant(bias),
-                                                  name=output_detail['name'].replace(';', '_'))(input_tensor)
-            if not keep_dims:
-                input_tensor = tf.squeeze(input_tensor)
+
+            dense_name = output_detail['name'].replace(';', '_') + '_dense'
+            output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array.shape[len(output_shape_array.shape)-1],
+                                                       activation=activation,
+                                                       use_bias=True,
+                                                       kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                       bias_initializer=tf.keras.initializers.Constant(bias),
+                                                       name=dense_name)(input_tensor)
+            output_tensor = tf.identity(output_tensor_dense, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'RESIZE_BILINEAR':
@@ -743,8 +748,10 @@ def make_graph(ops,
                 else:
                     return tfv2.image.resize(x, [size_height, size_width], method='bilinear')
 
-            output_tensor = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height, 'size_width': size_width}, name=output_detail['name'].replace(';', '_'))(input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            lambda_name = output_detail['name'].replace(';', '_') + '_lambda'
+            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height, 'size_width': size_width}, name=lambda_name)(input_tensor)
+            output_tensor = tf.identity(output_tensor_lambda, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'RESIZE_NEAREST_NEIGHBOR':
@@ -760,8 +767,10 @@ def make_graph(ops,
                 else:
                     return tfv2.image.resize(x, [size_height, size_width], method='nearest')
 
-            output_tensor = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height, 'size_width': size_width}, name=output_detail['name'].replace(';', '_'))(input_tensor)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            lambda_name = output_detail['name'].replace(';', '_') + '_lambda'
+            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height, 'size_width': size_width}, name=lambda_name)(input_tensor)
+            output_tensor = tf.identity(output_tensor_lambda, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MEAN':
@@ -1061,7 +1070,9 @@ def make_graph(ops,
             options = op['builtin_options']
             alpha = options['alpha']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.keras.layers.LeakyReLU(alpha=alpha, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            leakyrelu_name = output_detail['name'].replace(';', '_') + '_leakyrelu'
+            output_tensor_leakyrelu = tf.keras.layers.LeakyReLU(alpha=alpha, name=leakyrelu_name)(input_tensor1)
+            output_tensor = tf.identity(output_tensor_leakyrelu, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MAXIMUM':
@@ -1422,7 +1433,9 @@ def make_graph(ops,
             def pad_v2(x, paddings, constant_values):
                 return tf.raw_ops.PadV2(input=x, paddings=paddings, constant_values=constant_values)
 
-            output_tensor = tf.keras.layers.Lambda(pad_v2, arguments={'paddings': input_tensor2, 'constant_values': input_tensor3}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            padv2_name = output_detail['name'].replace(';', '_') + '_padv2'
+            output_tensor_padv2 = tf.keras.layers.Lambda(pad_v2, arguments={'paddings': input_tensor2, 'constant_values': input_tensor3}, name=padv2_name)(input_tensor1)
+            output_tensor = tf.identity(output_tensor_padv2, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SIN':
@@ -1910,7 +1923,9 @@ def make_graph(ops,
             def reverse_seq(x, seq_lengths, seq_axis, batch_axis):
                 return tf.reverse_sequence(x, seq_lengths=seq_lengths, seq_axis=seq_axis, batch_axis=batch_axis)
 
-            output_tensor = tf.keras.layers.Lambda(reverse_seq, arguments={'seq_lengths': input_tensor2, 'seq_axis': seq_dim, 'batch_axis': batch_dim}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            revseq_name = output_detail['name'].replace(';', '_') + '_revseq'
+            output_tensor_revseq = tf.keras.layers.Lambda(reverse_seq, arguments={'seq_lengths': input_tensor2, 'seq_axis': seq_dim, 'batch_axis': batch_dim}, name=revseq_name)(input_tensor1)
+            output_tensor = tf.identity(output_tensor_revseq, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MATRIX_DIAG':
@@ -2133,7 +2148,9 @@ def make_graph(ops,
             def rfft2d_(x, fft_length):
                 return tf.signal.rfft2d(x, fft_length=fft_length)
 
-            output_tensor = tf.keras.layers.Lambda(rfft2d_, arguments={'fft_length': input_tensor2}, name=output_detail['name'].replace(';', '_'))(input_tensor1)
+            rfft2d_name = output_detail['name'].replace(';', '_') + '_rfft2d'
+            output_tensor_rfft2d = tf.keras.layers.Lambda(rfft2d_, arguments={'fft_length': input_tensor2}, name=rfft2d_name)(input_tensor1)
+            output_tensor = tf.identity(output_tensor_rfft2d, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'L2_POOL_2D':
@@ -2143,12 +2160,14 @@ def make_graph(ops,
             strides = [options['stride_h'], options['stride_w']]
             padding = options['padding']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            sqr = tf.square(input_tensor)
+            sqr_name = output_detail['name'].replace(';', '_') + '_sqr'
+            sqr = tf.square(input_tensor, name=sqr_name)
+            avgpool_name = output_detail['name'].replace(';', '_') + '_avgpool'
             avg_pool = tf.keras.layers.AveragePooling2D(pool_size=pool_size,
                                                         strides=strides,
                                                         padding=padding,
-                                                        name=output_detail['name'].replace(';', '_'))(sqr)
-            output_tensor = tf.sqrt(avg_pool)
+                                                        name=avgpool_name)(sqr)
+            output_tensor = tf.sqrt(avg_pool, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'LOCAL_RESPONSE_NORMALIZATION':
