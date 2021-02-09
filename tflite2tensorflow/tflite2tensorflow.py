@@ -1,18 +1,20 @@
 #! /usr/bin/env python
 
-### tf-nightly==2.5.0-dev20210104
 ### https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html
 
 """
 Command Sample:
 
 $ python3 tflite2tensorflow.py \
-  --model_path magenta_arbitrary-image-stylization-v1-256_fp16_transfer_1.tflite \
+  --model_path hand_landmark.tflite \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
-  --input_node_names content_image:0,mobilenet_conv/Conv/BiasAdd:0 \
-  --output_node_names transformer/expand/conv3/conv/Sigmoid:0 \
-  --output_pb True \
+  --output_pb True
+
+$ python3 tflite2tensorflow.py \
+  --model_path hand_landmark.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
   --output_no_quant_float32_tflite True \
   --output_weight_quant_tflite True \
   --output_float16_quant_tflite True
@@ -23,8 +25,12 @@ import os
 import sys
 import numpy as np
 import json
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+import warnings
+import logging
+os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=Warning)
 import tensorflow_datasets as tfds
 import shutil
 import pprint
@@ -2530,6 +2536,9 @@ def main():
     if tfv1_flg:
         # Tensorflow v1.x
         import tensorflow.compat.v1 as tf
+        tf.get_logger().setLevel('INFO')
+        tf.autograph.set_verbosity(0)
+        tf.get_logger().setLevel(logging.ERROR)
         try:
             # Custom TFLite Interpreter that implements MediaPipe's custom operations.
             # TensorFlow v2.4.1
