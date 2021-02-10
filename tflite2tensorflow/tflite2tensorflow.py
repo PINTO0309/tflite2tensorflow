@@ -969,8 +969,9 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.split(input_tensor1, num_or_size_splits=num_splits, axis=input_tensor2, name=output_detail['name'].replace(';', '_'))
 
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'SOFTMAX':
             input_tensor1 = None
@@ -1195,8 +1196,9 @@ def make_graph(ops,
             num = options['num']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.unstack(value=input_tensor1, num=num, axis=axis, name=output_detail['name'].replace(';', '_'))
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'ARG_MAX':
             input_tensor1 = None
@@ -1243,8 +1245,9 @@ def make_graph(ops,
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.top_k(input_tensor1, k=input_tensor2, name=output_detail['name'].replace(';', '_'))
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'LOG_SOFTMAX':
             input_tensor1 = None
@@ -1770,8 +1773,9 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.unique(input_tensor1, out_idx=idx_out_type, name=output_detail['name'].replace(';', '_'))
 
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'CEIL':
             input_tensor1 = None
@@ -1905,8 +1909,9 @@ def make_graph(ops,
                                           input_list[3],
                                           name=output_detail['name'].replace(';', '_'))
 
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'REVERSE_SEQUENCE':
             input_tensor1 = None
@@ -2001,8 +2006,8 @@ def make_graph(ops,
 
             output_tensor = tf.keras.layers.Lambda(nmsv4, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5})(input_tensor1)
             
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            for output_index, output, name in zip(op['outputs'], output_tensor, [output_detail['name'].replace(';', '_')+'_selected_indices', output_detail['name'].replace(';', '_')+'_valid_outputs']):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'NON_MAX_SUPPRESSION_V5':
             input_tensor1 = None
@@ -2056,8 +2061,8 @@ def make_graph(ops,
 
             output_tensor = tf.keras.layers.Lambda(nmsv5, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5, 'soft_nms_sigma': input_tensor6})(input_tensor1)
             
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            for output_index, output, name in zip(op['outputs'], output_tensor, [output_detail['name'].replace(';', '_')+'_selected_indices', output_detail['name'].replace(';', '_')+'_selected_scores', output_detail['name'].replace(';', '_')+'_valid_outputs']):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'SCATTER_ND':
             input_tensor1 = None
@@ -2236,8 +2241,9 @@ def make_graph(ops,
                 return tf.raw_ops.SplitV(value=x, size_splits=size_splits, axis=axis, num_split=num_split)
             output_tensor = tf.keras.layers.Lambda(spv, arguments={'size_splits': input_tensor2, 'axis': input_tensor3, 'num_split': num_splits})(input_tensor1)
 
-            for output_index, output in zip(op['outputs'], output_tensor):
-                tensors[output_index] = output
+            names = [output_detail['name'].replace(';', '_') + '_' + str(num) for num in range(len(output_tensor))]
+            for output_index, output, name in zip(op['outputs'], output_tensor, names):
+                tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'MATRIX_SET_DIAG':
             input_tensor1 = None
