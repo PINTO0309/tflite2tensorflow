@@ -2421,6 +2421,7 @@ def main():
     parser.add_argument('--output_edgetpu', type=bool, default=False, help='edgetpu model output switch')
     parser.add_argument('--output_onnx', type=bool, default=False, help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
+    parser.add_argument('--output_openvino_and_myriad', type=bool, default=False, help='openvino model and myriad inference engine blob output switch')
     parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='[Future support] Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', type=bool, default=False, help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', type=bool, default=False, help='Replace prelu and minimum/maximum with each other')
@@ -2454,6 +2455,7 @@ def main():
     output_edgetpu = args.output_edgetpu
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
+    output_openvino_and_myriad = args.output_openvino_and_myriad
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
@@ -2496,6 +2498,14 @@ def main():
             print('pip3 install --upgrade onnx')
             print('pip3 install --upgrade tf2onnx')
             sys.exit(-1)
+    if output_openvino_and_myriad:
+        try:
+            from openvino.inference_engine import IECore
+        except:
+            print('\'OpenVINO\' is not installed. Please check the following website and install \'OpenVINO\'.')
+            print('Linux: https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_linux.html')
+            print('Windows: https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_windows.html')
+            sys.exit(-1)
     if output_integer_quant_tflite or output_full_integer_quant_tflite:
         if not 'tensorflow-datasets' in package_list:
             print('\'tensorflow-datasets\' is not installed. Please run the following command to install \'tensorflow-datasets\'.')
@@ -2524,13 +2534,13 @@ def main():
 
     if output_pb:
         tfv1_flg = True
-    if output_no_quant_float32_tflite or output_weight_quant_tflite or output_float16_quant_tflite or output_integer_quant_tflite or output_full_integer_quant_tflite or output_tfjs or output_tftrt or output_coreml or output_edgetpu or output_onnx:
+    if output_no_quant_float32_tflite or output_weight_quant_tflite or output_float16_quant_tflite or output_integer_quant_tflite or output_full_integer_quant_tflite or output_tfjs or output_tftrt or output_coreml or output_edgetpu or output_onnx or output_openvino_and_myriad:
         tfv2_flg = True
 
     if tfv1_flg and tfv2_flg:
         print(f'{Color.RED}ERROR:{Color.RESET} Group.1 and Group.2 cannot be set to True at the same time. Please specify either Group.1 or Group.2.')
         print('[Group.1] output_pb')
-        print('[Group.2] output_no_quant_float32_tflite, output_weight_quant_tflite, output_float16_quant_tflite, output_integer_quant_tflite, output_full_integer_quant_tflite, output_tfjs, output_tftrt, output_coreml, output_edgetpu')
+        print('[Group.2] output_no_quant_float32_tflite, output_weight_quant_tflite, output_float16_quant_tflite, output_integer_quant_tflite, output_full_integer_quant_tflite, output_tfjs, output_tftrt, output_coreml, output_edgetpu, output_onnx, output_openvino_and_myriad')
         sys.exit(-1)
 
     if tfv1_flg:
@@ -2700,10 +2710,10 @@ def main():
             if calib_ds_type == 'tfds':
                 print(f'{Color.REVERCE}TFDS download started{Color.RESET}', '=' * 63)
                 raw_test_data = tfds.load(name=ds_name_for_tfds_for_calibration,
-                                        with_info=False,
-                                        split=split_name_for_tfds_for_calibration,
-                                        data_dir=download_dest_folder_path_for_the_calib_tfds,
-                                        download=tfds_download_flg)
+                                          with_info=False,
+                                          split=split_name_for_tfds_for_calibration,
+                                          data_dir=download_dest_folder_path_for_the_calib_tfds,
+                                          download=tfds_download_flg)
                 print(f'{Color.GREEN}TFDS download complete!{Color.RESET}')
             elif calib_ds_type == 'numpy':
                 pass
@@ -2771,12 +2781,12 @@ def main():
             try:
                 print(f'{Color.REVERCE}TensorFlow.js Float32 convertion started{Color.RESET}', '=' * 44)
                 result = subprocess.check_output(['tensorflowjs_converter',
-                                                '--input_format', 'tf_saved_model',
-                                                '--output_format', 'tfjs_graph_model',
-                                                '--signature_name', 'serving_default',
-                                                '--saved_model_tags', 'serve',
-                                                model_output_path, f'{model_output_path}/tfjs_model_float32'],
-                                                stderr=subprocess.PIPE).decode('utf-8')
+                                                  '--input_format', 'tf_saved_model',
+                                                  '--output_format', 'tfjs_graph_model',
+                                                  '--signature_name', 'serving_default',
+                                                  '--saved_model_tags', 'serve',
+                                                  model_output_path, f'{model_output_path}/tfjs_model_float32'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
                 print(f'{Color.GREEN}TensorFlow.js convertion complete!{Color.RESET} - {model_output_path}/tfjs_model_float32')
             except subprocess.CalledProcessError as e:
@@ -2786,13 +2796,13 @@ def main():
             try:
                 print(f'{Color.REVERCE}TensorFlow.js Float16 convertion started{Color.RESET}', '=' * 44)
                 result = subprocess.check_output(['tensorflowjs_converter',
-                                                '--quantize_float16',
-                                                '--input_format', 'tf_saved_model',
-                                                '--output_format', 'tfjs_graph_model',
-                                                '--signature_name', 'serving_default',
-                                                '--saved_model_tags', 'serve',
-                                                model_output_path, f'{model_output_path}/tfjs_model_float16'],
-                                                stderr=subprocess.PIPE).decode('utf-8')
+                                                  '--quantize_float16',
+                                                  '--input_format', 'tf_saved_model',
+                                                  '--output_format', 'tfjs_graph_model',
+                                                  '--signature_name', 'serving_default',
+                                                  '--saved_model_tags', 'serve',
+                                                  model_output_path, f'{model_output_path}/tfjs_model_float16'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
                 print(f'{Color.GREEN}TensorFlow.js convertion complete!{Color.RESET} - {model_output_path}/tfjs_model_float16')
             except subprocess.CalledProcessError as e:
@@ -2846,10 +2856,10 @@ def main():
             try:
                 print(f'{Color.REVERCE}EdgeTPU convertion started{Color.RESET}', '=' * 58)
                 result = subprocess.check_output(['edgetpu_compiler',
-                                                '-o', model_output_path,
-                                                '-s',
-                                                f'{model_output_path}/model_full_integer_quant.tflite'],
-                                                stderr=subprocess.PIPE).decode('utf-8')
+                                                  '-o', model_output_path,
+                                                  '-s',
+                                                  f'{model_output_path}/model_full_integer_quant.tflite'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
                 print(f'{Color.GREEN}EdgeTPU convert complete!{Color.RESET} - {model_output_path}/model_full_integer_quant_edgetpu.tflite')
             except subprocess.CalledProcessError as e:
@@ -2866,13 +2876,68 @@ def main():
             try:
                 print(f'{Color.REVERCE}ONNX convertion started{Color.RESET}', '=' * 61)
                 result = subprocess.check_output(['python3',
-                                                '-m', 'tf2onnx.convert',
-                                                '--saved-model', model_output_path,
-                                                '--opset', str(onnx_opset),
-                                                '--output', f'{model_output_path}/model_float32.onnx'],
-                                                stderr=subprocess.PIPE).decode('utf-8')
+                                                  '-m', 'tf2onnx.convert',
+                                                  '--saved-model', model_output_path,
+                                                  '--opset', str(onnx_opset),
+                                                  '--output', f'{model_output_path}/model_float32.onnx'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
                 print(f'{Color.GREEN}ONNX convertion complete!{Color.RESET} - {model_output_path}/tfjs_model_float32')
+            except subprocess.CalledProcessError as e:
+                print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
+                import traceback
+                traceback.print_exc()
+
+        # OpenVINO IR and DepthAI blob convert
+        if output_openvino_and_myriad:
+            import subprocess
+            # OpenVINO IR - FP32
+            try:
+                print(f'{Color.REVERCE}OpenVINO IR FP32 convertion started{Color.RESET}', '=' * 54)
+                os.makedirs(f'{model_output_path}/openvino/FP32', exist_ok=True)
+                INTEL_OPENVINO_DIR = os.environ['INTEL_OPENVINO_DIR']
+                result = subprocess.check_output(['python3',
+                                                  f'{INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer/mo_tf.py',
+                                                  '--saved_model_dir', model_output_path,
+                                                  '--data_type', 'FP32',
+                                                  '--output_dir', f'{model_output_path}/openvino/FP32'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
+                print(result)
+                print(f'{Color.GREEN}OpenVINO IR FP32 convertion complete!{Color.RESET} - {model_output_path}/openvino/FP32')
+            except subprocess.CalledProcessError as e:
+                print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
+                import traceback
+                traceback.print_exc()
+            # OpenVINO IR - FP16
+            try:
+                print(f'{Color.REVERCE}OpenVINO IR FP16 convertion started{Color.RESET}', '=' * 54)
+                os.makedirs(f'{model_output_path}/openvino/FP16', exist_ok=True)
+                INTEL_OPENVINO_DIR = os.environ['INTEL_OPENVINO_DIR']
+                result = subprocess.check_output(['python3',
+                                                  f'{INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer/mo_tf.py',
+                                                  '--saved_model_dir', model_output_path,
+                                                  '--data_type', 'FP16',
+                                                  '--output_dir', f'{model_output_path}/openvino/FP16'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
+                print(result)
+                print(f'{Color.GREEN}OpenVINO IR FP16 convertion complete!{Color.RESET} - {model_output_path}/openvino/FP16')
+            except subprocess.CalledProcessError as e:
+                print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
+                import traceback
+                traceback.print_exc()
+            # Myriad Inference Engine blob
+            try:
+                print(f'{Color.REVERCE}Myriad Inference Engine blob convertion started{Color.RESET}', '=' * 44)
+                os.makedirs(f'{model_output_path}/openvino/myriad', exist_ok=True)
+                INTEL_OPENVINO_DIR = os.environ['INTEL_OPENVINO_DIR']
+                result = subprocess.check_output([f'{INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/myriad_compile',
+                                                  '-m', f'{model_output_path}/openvino/FP16/saved_model.xml',
+                                                  '-VPU_NUMBER_OF_SHAVES', '4',
+                                                  '-VPU_NUMBER_OF_CMX_SLICES', '4',
+                                                  '-o', f'{model_output_path}/openvino/myriad/saved_model.blob'],
+                                                  stderr=subprocess.PIPE).decode('utf-8')
+                print(result)
+                print(f'{Color.GREEN}Myriad Inference Engine blob convertion complete!{Color.RESET} - {model_output_path}/openvino/myriad')
             except subprocess.CalledProcessError as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
                 import traceback

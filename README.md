@@ -4,7 +4,7 @@
   <img src="https://user-images.githubusercontent.com/33194443/105187518-38ac0c00-5b76-11eb-869b-b518df146924.png" />
 </p>
 
-Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX and .pb from .tflite.
+Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, OpenVINO, Myriad Inference Engine blob and .pb from .tflite.
 
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/tflite2tensorflow?color=2BAF2B&label=Downloads%EF%BC%8FInstalled)](https://pypistats.org/packages/tflite2tensorflow) ![GitHub](https://img.shields.io/github/license/PINTO0309/tflite2tensorflow?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/tflite2tensorflow?color=2BAF2B)](https://pypi.org/project/tflite2tensorflow/)
 
@@ -133,6 +133,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX and 
 - tf2onnx **`pip3 install --upgrade tf2onnx`**
 - tensorflow-datasets **`pip3 install --upgrade tensorflow-datasets`**
 - **[edgetpu_compiler](https://coral.ai/docs/edgetpu/compiler/#system-requirements)**
+- **[OpenVINO - Linux](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_linux.html)**
+- **[OpenVINO - Windows](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_windows.html)**
 
 ## 3. Setup
 To install using the Python Package Index (PyPI), use the following command.
@@ -205,6 +207,7 @@ usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
                          [--output_edgetpu OUTPUT_EDGETPU]
                          [--output_onnx OUTPUT_ONNX]
                          [--onnx_opset ONNX_OPSET]
+                         [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
                          [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
                          [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
                          [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
@@ -265,6 +268,8 @@ optional arguments:
                         onnx model output switch
   --onnx_opset ONNX_OPSET
                         onnx opset version number
+  --output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD
+                        openvino model and myriad inference engine blob output switch
   --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH
                         [Future support] Replace swish and hard-swish with
                         each other
@@ -305,7 +310,8 @@ $ tflite2tensorflow \
   --output_coreml True \
   --output_tftrt True \
   --output_onnx True \
-  --onnx_opset 13
+  --onnx_opset 13 \
+  --output_openvino_and_myriad True
 ```
 or
 ```
@@ -323,10 +329,11 @@ $ tflite2tensorflow \
   --output_coreml True \
   --output_tftrt True \
   --output_onnx True \
-  --onnx_opset 13
+  --onnx_opset 13 \
+  --output_openvino_and_myriad True
 ```
 ## 5. Sample image
-This is the result of converting MediaPipe's Meet Segmentation model (segm_full_v679.tflite / Float16 / Google Meet) to **`saved_model`** and then reconverting it to Float32 tflite. Replace the GPU-optimized **`Convolution2DTransposeBias`** layer with the standard **`TransposeConv`** and **`BiasAdd`** layers in a fully automatic manner. The weights and biases of the Float16 **`Dequantize`** layer are automatically back-quantized to Float32 precision. The generated **`saved_model`** in Float32 precision can be easily converted to **`Float16`**, **`INT8`**, **`EdgeTPU`**, **`TFJS`**, **`TF-TRT`**, **`CoreML`**, **`ONNX`**, and **`OpenVINO`**.
+This is the result of converting MediaPipe's Meet Segmentation model (segm_full_v679.tflite / Float16 / Google Meet) to **`saved_model`** and then reconverting it to Float32 tflite. Replace the GPU-optimized **`Convolution2DTransposeBias`** layer with the standard **`TransposeConv`** and **`BiasAdd`** layers in a fully automatic manner. The weights and biases of the Float16 **`Dequantize`** layer are automatically back-quantized to Float32 precision. The generated **`saved_model`** in Float32 precision can be easily converted to **`Float16`**, **`INT8`**, **`EdgeTPU`**, **`TFJS`**, **`TF-TRT`**, **`CoreML`**, **`ONNX`**, **`OpenVINO`**, **`Myriad Inference Engine blob`**.
 
 |Before|After|
 |:--:|:--:|
