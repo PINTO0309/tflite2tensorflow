@@ -161,6 +161,7 @@ $ sudo pip3 install tf-nightly
 
 ### Download flatc
 $ flatbuffers/1.12.0/download.sh
+$ sudo chmod +x flatc
 
 ### Download schema.fbs
 $ wget https://github.com/PINTO0309/tflite2tensorflow/raw/main/schema/schema.fbs
