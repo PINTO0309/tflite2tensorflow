@@ -135,8 +135,20 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - **[edgetpu_compiler](https://coral.ai/docs/edgetpu/compiler/#system-requirements)**
 - **[OpenVINO - Linux](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_linux.html)**
 - **[OpenVINO - Windows](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_windows.html)**
+- Docker
 
 ## 3. Setup
+### 3-1. **[Environment construction pattern 1]** Execution by Docker (strongly recommended)
+You do not need to install any packages other than Docker.
+```bash
+$ docker build -t pinto0309/tflite2tensorflow:latest .
+
+# If no INT8 quantization or conversion to EdgeTPU model is performed
+$ docker run --gpus all -it --rm -v `pwd`:/workspace/resources pinto0309/tflite2tensorflow:latest
+# For INT8 quantization and conversion to EdgeTPU model ("TFDS" is the folder where TensorFlow Datasets are downloaded.)
+$ docker run --gpus all -it --rm -v `pwd`:/workspace/resources -v ${HOME}/TFDS:/workspace/resources/TFDS pinto0309/tflite2tensorflow:latest
+```
+### 3-2. **[Environment construction pattern 2]** Execution by Host machine
 To install using the Python Package Index (PyPI), use the following command.
 ```
 $ pip3 install tflite2tensorflow --upgrade
@@ -156,9 +168,14 @@ $ sudo gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
 $ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
 
-### Install the full TensorFlow package
-$ sudo pip3 install tensorflow==2.4.1
+### Install the Customized Full TensorFlow package (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
+$ gdown --id 1nTSYsPXbZTIO2B7nIMtSpn5bBMlCr46N \
+  && pip3 install --force-reinstall tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl \
+  && rm tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl
+
  or
+
+### Install the Non-customized TensorFlow package
 $ sudo pip3 install tf-nightly
 
 ### Download flatc

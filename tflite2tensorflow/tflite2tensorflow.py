@@ -31,7 +31,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=Warning)
-import tensorflow_datasets as tfds
 import shutil
 import pprint
 import argparse
@@ -265,6 +264,10 @@ def make_graph(ops,
                optimizing_for_edgetpu_flg):
 
     import tensorflow.compat.v1 as tf
+    tf.get_logger().setLevel('INFO')
+    tf.autograph.set_verbosity(0)
+    tf.get_logger().setLevel(logging.ERROR)
+    tf.disable_eager_execution()
     import tensorflow as tfv2
     from tensorflow.keras.layers import Layer
 
@@ -715,7 +718,7 @@ def make_graph(ops,
                 bias_detail = interpreter._get_tensor_details(op['inputs'][2])
                 bias = interpreter.get_tensor(bias_detail['index'])
             output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
+            output_shape_array = np.asarray(output_shape_detail['shape'])
 
             options = op['builtin_options']
             activation = options['fused_activation_function']
@@ -730,9 +733,8 @@ def make_graph(ops,
                 raise ValueError(activation)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-
             dense_name = output_detail['name'].replace(';', '_') + '_dense'
-            output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array.shape[len(output_shape_array.shape)-1],
+            output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
                                                        activation=activation,
                                                        use_bias=True,
                                                        kernel_initializer=tf.keras.initializers.Constant(weights),
@@ -2308,8 +2310,8 @@ def make_graph(ops,
                 if ops_detail['outputs'][0] == op['outputs'][0]:
                     pprint.pprint(ops_detail)
                     custom_op_type = ops_detail['op_name']
-                    print(custom_op_type)
                     custom_op_implementation_flg = True
+                    break
             if custom_op_implementation_flg:
                 if custom_op_type == 'Convolution2DTransposeBias':
                     # MediaPipe - Convolution2DTransposeBias
@@ -2550,22 +2552,9 @@ def main():
         sys.exit(-1)
 
     if tfv1_flg:
-        # Tensorflow v1.x
-        import tensorflow.compat.v1 as tf
-        tf.get_logger().setLevel('INFO')
-        tf.autograph.set_verbosity(0)
-        tf.get_logger().setLevel(logging.ERROR)
-        try:
-            # Custom TFLite Interpreter that implements MediaPipe's custom operations.
-            # TensorFlow v2.4.1
-            # https://zenn.dev/pinto0309/articles/a0e40c2817f2ee
-            from tflite_runtime.interpreter import Interpreter as tflite_interpreter
-        except:
-            # The official TensorFlow TFLite Interpreter
-            from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
+        from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
 
         shutil.rmtree(model_output_path, ignore_errors=True)
-        tf.disable_eager_execution()
 
         jsonfile_path = f'./{model}.json'
         gen_model_json(flatc_path, model_output_path, jsonfile_path, schema_path, model_path)
@@ -2601,6 +2590,7 @@ def main():
         print(f'{Color.GREEN}TensorFlow/Keras model building process complete!{Color.RESET}')
 
         # saved_model / .pb output
+        import tensorflow.compat.v1 as tf
         try:
             print(f'{Color.REVERCE}saved_model / .pb output started{Color.RESET}', '=' * 52)
             config = tf.ConfigProto()
@@ -2635,6 +2625,7 @@ def main():
     elif tfv2_flg:
         # Tensorflow v2.x
         import tensorflow as tf
+        import tensorflow_datasets as tfds
         try:
             # Custom TFLite Interpreter that implements MediaPipe's custom operations.
             # TensorFlow v2.4.1
