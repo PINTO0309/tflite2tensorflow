@@ -149,7 +149,7 @@ $ docker run --gpus all -it --rm \
     pinto0309/tflite2tensorflow:latest
 
 # For INT8 quantization and conversion to EdgeTPU model
-# ("TFDS" is the folder where TensorFlow Datasets are downloaded.)
+# "TFDS" is the folder where TensorFlow Datasets are downloaded.
 $ docker run --gpus all -it --rm \
     -v `pwd`:/workspace/resources \
     -v ${HOME}/TFDS:/workspace/resources/TFDS \
