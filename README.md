@@ -138,7 +138,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - Docker
 
 ## 3. Setup
-### 3-1. **[Environment construction pattern 1]** Execution by Docker (strongly recommended)
+### 3-1. **[Environment construction pattern 1]** Execution by Docker (`strongly recommended`)
 You do not need to install any packages other than Docker.
 ```bash
 $ docker build -t pinto0309/tflite2tensorflow:latest .
@@ -175,7 +175,8 @@ $ sudo gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
 $ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
 $ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
 
-### Install the Customized Full TensorFlow package (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
+### Install the Customized Full TensorFlow package
+### (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
 $ gdown --id 1nTSYsPXbZTIO2B7nIMtSpn5bBMlCr46N \
   && pip3 install --force-reinstall tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl \
   && rm tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl
