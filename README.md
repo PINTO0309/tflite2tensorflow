@@ -146,14 +146,22 @@ $ docker build -t pinto0309/tflite2tensorflow:latest .
 # If no INT8 quantization or conversion to EdgeTPU model is performed
 $ docker run --gpus all -it --rm \
     -v `pwd`:/workspace/resources \
-    pinto0309/tflite2tensorflow:latest
+    -e LOCAL_UID=$(id -u $USER) \
+    -e LOCAL_GID=$(id -g $USER) \
+    pinto0309/tflite2tensorflow:latest bash
+
+$ source /opt/intel/openvino_2021/bin/setupvars.sh
 
 # For INT8 quantization and conversion to EdgeTPU model
 # "TFDS" is the folder where TensorFlow Datasets are downloaded.
 $ docker run --gpus all -it --rm \
     -v `pwd`:/workspace/resources \
     -v ${HOME}/TFDS:/workspace/resources/TFDS \
-    pinto0309/tflite2tensorflow:latest
+    -e LOCAL_UID=$(id -u $USER) \
+    -e LOCAL_GID=$(id -g $USER) \
+    pinto0309/tflite2tensorflow:latest bash
+
+$ source /opt/intel/openvino_2021/bin/setupvars.sh
 ```
 ### 3-2. **[Environment construction pattern 2]** Execution by Host machine
 To install using the Python Package Index (PyPI), use the following command.

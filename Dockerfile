@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
         automake autoconf libpng-dev nano \
         curl zip unzip libtool swig zlib1g-dev pkg-config git wget xz-utils \
         python3-mock libpython3-dev libpython3-all-dev \
-        g++ gcc cmake make pciutils cpio
+        g++ gcc cmake make pciutils cpio gosu
 
 # Install dependencies (2)
 RUN pip3 install --upgrade pip \
@@ -68,3 +68,7 @@ RUN gdown --id 1nTSYsPXbZTIO2B7nIMtSpn5bBMlCr46N \
     && rm tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl
 
 WORKDIR /workspace
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
