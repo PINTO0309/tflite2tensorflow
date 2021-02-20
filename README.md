@@ -31,8 +31,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |16|HARD_SWISH|x\*tf.nn.relu6(x+3)\*0.16666667 Or x\*tf.nn.relu6(x+3)\*0.16666666||
 |17|AVERAGE_POOL_2D|tf.keras.layers.AveragePooling2D||
 |18|FULLY_CONNECTED|tf.keras.layers.Dense||
-|19|RESIZE_BILINEAR|tf.image.resize Or tf.image.resize_bilinear||
-|20|RESIZE_NEAREST_NEIGHBOR|tf.image.resize Or tf.image.resize_nearest_neighbor||
+|19|RESIZE_BILINEAR|tf.image.resize Or tf.image.resize_bilinear|The behavior differs depending on the optimization options of openvino and edgetpu.|
+|20|RESIZE_NEAREST_NEIGHBOR|tf.image.resize Or tf.image.resize_nearest_neighbor|The behavior differs depending on the optimization options of openvino and edgetpu.|
 |21|MEAN|tf.math.reduce_mean||
 |22|SQUARED_DIFFERENCE|tf.math.squared_difference||
 |23|RSQRT|tf.math.rsqrt||
@@ -244,6 +244,7 @@ usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
                          [--output_onnx OUTPUT_ONNX]
                          [--onnx_opset ONNX_OPSET]
                          [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
+                         [--optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD]
                          [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
                          [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
                          [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
@@ -306,6 +307,8 @@ optional arguments:
                         onnx opset version number
   --output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD
                         openvino model and myriad inference engine blob output switch
+  --optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD
+                        Optimizing graph for openvino/myriad
   --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH
                         [Future support] Replace swish and hard-swish with
                         each other
@@ -321,6 +324,15 @@ $ tflite2tensorflow \
   --flatc_path ./flatc \
   --schema_path schema.fbs \
   --output_pb True
+```
+or
+```
+$ tflite2tensorflow \
+  --model_path segm_full_v679.tflite \
+  --flatc_path ./flatc \
+  --schema_path schema.fbs \
+  --output_pb True \
+  --optimizing_for_openvino_and_myriad True
 ```
 or
 ```

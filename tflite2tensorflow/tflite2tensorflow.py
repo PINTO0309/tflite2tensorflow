@@ -261,7 +261,8 @@ def make_graph(ops,
                interpreter,
                replace_swish_and_hardswish,
                replace_prelu_and_minmax,
-               optimizing_for_edgetpu_flg):
+               optimizing_for_edgetpu_flg,
+               optimizing_for_openvino_and_myriad):
 
     import tensorflow.compat.v1 as tf
     tf.get_logger().setLevel('INFO')
@@ -750,15 +751,26 @@ def make_graph(ops,
             size_height = size[0]
             size_width  = size[1]
 
-            def upsampling2d_bilinear(x, size_height, size_width):
+            options = op['builtin_options']
+            align_corners = options['align_corners']
+            half_pixel_centers = options['half_pixel_centers']
+
+            def upsampling2d_bilinear(x, size_height, size_width, align_corners, half_pixel_centers):
                 if optimizing_for_edgetpu_flg:
-                    return tf.image.resize_bilinear(x, (size_height, size_width))
+                    return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=align_corners, half_pixel_centers=half_pixel_centers)
                 else:
-                    return tfv2.image.resize(x, [size_height, size_width], method='bilinear')
+                    if optimizing_for_openvino_and_myriad:
+                        return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
+                    else:
+                        return tfv2.image.resize(x, [size_height, size_width], method='bilinear')
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             lambda_name = output_detail['name'].replace(';', '_') + '_lambda'
-            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height, 'size_width': size_width}, name=lambda_name)(input_tensor)
+            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_bilinear, arguments={'size_height': size_height,
+                                                                                            'size_width': size_width,
+                                                                                            'align_corners': align_corners,
+                                                                                            'half_pixel_centers': half_pixel_centers},
+                                                                                 name=lambda_name)(input_tensor)
             output_tensor = tf.identity(output_tensor_lambda, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
@@ -769,15 +781,26 @@ def make_graph(ops,
             size_height = size[0]
             size_width  = size[1]
 
-            def upsampling2d_nearrest(x, size_height, size_width):
+            options = op['builtin_options']
+            align_corners = options['align_corners']
+            half_pixel_centers = options['half_pixel_centers']
+
+            def upsampling2d_nearrest(x, size_height, size_width, align_corners, half_pixel_centers):
                 if optimizing_for_edgetpu_flg:
                     return tf.image.resize_nearest_neighbor(x, (size_height, size_width))
                 else:
-                    return tfv2.image.resize(x, [size_height, size_width], method='nearest')
+                    if optimizing_for_openvino_and_myriad:
+                        return tf.image.resize_nearest_neighbor(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
+                    else:
+                        return tfv2.image.resize(x, [size_height, size_width], method='nearest')
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             lambda_name = output_detail['name'].replace(';', '_') + '_lambda'
-            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height, 'size_width': size_width}, name=lambda_name)(input_tensor)
+            output_tensor_lambda = tf.keras.layers.Lambda(upsampling2d_nearrest, arguments={'size_height': size_height,
+                                                                                            'size_width': size_width,
+                                                                                            'align_corners': align_corners,
+                                                                                            'half_pixel_centers': half_pixel_centers},
+                                                                                 name=lambda_name)(input_tensor)
             output_tensor = tf.identity(output_tensor_lambda, name=output_detail['name'].replace(';', '_'))
             tensors[output_detail['index']] = output_tensor
 
@@ -2430,6 +2453,7 @@ def main():
     parser.add_argument('--output_onnx', type=bool, default=False, help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
     parser.add_argument('--output_openvino_and_myriad', type=bool, default=False, help='openvino model and myriad inference engine blob output switch')
+    parser.add_argument('--optimizing_for_openvino_and_myriad', type=bool, default=False, help='Optimizing graph for openvino/myriad')
     parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='[Future support] Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', type=bool, default=False, help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', type=bool, default=False, help='Replace prelu and minimum/maximum with each other')
@@ -2464,6 +2488,7 @@ def main():
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
     output_openvino_and_myriad = args.output_openvino_and_myriad
+    optimizing_for_openvino_and_myriad = args.optimizing_for_openvino_and_myriad
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
@@ -2550,6 +2575,10 @@ def main():
         print('[Group.1] output_pb')
         print('[Group.2] output_no_quant_float32_tflite, output_weight_quant_tflite, output_float16_quant_tflite, output_integer_quant_tflite, output_full_integer_quant_tflite, output_tfjs, output_tftrt, output_coreml, output_edgetpu, output_onnx, output_openvino_and_myriad')
         sys.exit(-1)
+    
+    if optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu:
+        print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu cannot be True at the same time.')
+        sys.exit(-1)  
 
     if tfv1_flg:
         from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
@@ -2586,7 +2615,8 @@ def main():
                 interpreter,
                 replace_swish_and_hardswish,
                 replace_prelu_and_minmax,
-                optimizing_for_edgetpu_flg)
+                optimizing_for_edgetpu_flg,
+                optimizing_for_openvino_and_myriad)
         print(f'{Color.GREEN}TensorFlow/Keras model building process complete!{Color.RESET}')
 
         # saved_model / .pb output
