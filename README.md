@@ -146,7 +146,7 @@ $ docker pull pinto0309/tflite2tensorflow
 or
 $ docker build -t pinto0309/tflite2tensorflow:latest .
 
-# If no INT8 quantization or conversion to EdgeTPU model is performed
+# When TensorFlow Datasets are not used
 $ docker run --gpus all -it --rm \
     -v `pwd`:/workspace/resources \
     -e LOCAL_UID=$(id -u $USER) \
