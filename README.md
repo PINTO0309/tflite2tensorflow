@@ -237,6 +237,7 @@ usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
                          [--split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION]
                          [--download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS]
                          [--tfds_download_flg TFDS_DOWNLOAD_FLG]
+                         [--load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY]
                          [--output_tfjs OUTPUT_TFJS]
                          [--output_tftrt OUTPUT_TFTRT]
                          [--output_coreml OUTPUT_COREML]
@@ -279,8 +280,8 @@ optional arguments:
                         Python's eval() function. Default: '(data -
                         [127.5,127.5,127.5]) / [127.5,127.5,127.5]'
   --calib_ds_type CALIB_DS_TYPE
-                        Types of data sets for calibration. tfds or
-                        numpy(Future Implementation)
+                        Types of data sets for calibration. tfds or numpy
+                        Default: numpy
   --ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION
                         Dataset name for TensorFlow Datasets for calibration.
                         https://www.tensorflow.org/datasets/catalog/overview
@@ -293,6 +294,11 @@ optional arguments:
   --tfds_download_flg TFDS_DOWNLOAD_FLG
                         True to automatically download datasets from
                         TensorFlow Datasets. True or False
+  --load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY
+                        The path from which to load the .npy file containing
+                        the numpy binary version of the calibration data.
+                        Default: sample_npy/calibration_data_img_sample.npy
+                        [20, 513, 513, 3] -> [Number of images, h, w, c]
   --output_tfjs OUTPUT_TFJS
                         tfjs model output switch
   --output_tftrt OUTPUT_TFTRT
