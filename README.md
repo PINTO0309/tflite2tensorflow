@@ -245,6 +245,8 @@ usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
                          [--output_onnx OUTPUT_ONNX]
                          [--onnx_opset ONNX_OPSET]
                          [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
+                         [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
+                         [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
                          [--optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD]
                          [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
                          [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
@@ -313,6 +315,10 @@ optional arguments:
                         onnx opset version number
   --output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD
                         openvino model and myriad inference engine blob output switch
+  --vpu_number_of_shaves VPU_NUMBER_OF_SHAVES
+                        vpu number of shaves. Default: 4
+  --vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES
+                        vpu number of cmx slices. Default: 4
   --optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD
                         Optimizing graph for openvino/myriad
   --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH

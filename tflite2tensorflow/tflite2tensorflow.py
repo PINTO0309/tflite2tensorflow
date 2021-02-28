@@ -2469,6 +2469,8 @@ def main():
     parser.add_argument('--output_onnx', type=bool, default=False, help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
     parser.add_argument('--output_openvino_and_myriad', type=bool, default=False, help='openvino model and myriad inference engine blob output switch')
+    parser.add_argument('--vpu_number_of_shaves', type=int, default=4, help='vpu number of shaves. Default: 4')
+    parser.add_argument('--vpu_number_of_cmx_slices', type=int, default=4, help='vpu number of cmx slices. Default: 4')
     parser.add_argument('--optimizing_for_openvino_and_myriad', type=bool, default=False, help='Optimizing graph for openvino/myriad')
     parser.add_argument('--replace_swish_and_hardswish', type=bool, default=False, help='[Future support] Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', type=bool, default=False, help='Optimizing hardswish for edgetpu')
@@ -2505,6 +2507,8 @@ def main():
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
     output_openvino_and_myriad = args.output_openvino_and_myriad
+    vpu_number_of_shaves = args.vpu_number_of_shaves
+    vpu_number_of_cmx_slices = args.vpu_number_of_cmx_slices
     optimizing_for_openvino_and_myriad = args.optimizing_for_openvino_and_myriad
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
@@ -3007,8 +3011,8 @@ def main():
                 INTEL_OPENVINO_DIR = os.environ['INTEL_OPENVINO_DIR']
                 result = subprocess.check_output([f'{INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/myriad_compile',
                                                   '-m', f'{model_output_path}/openvino/FP16/saved_model.xml',
-                                                  '-VPU_NUMBER_OF_SHAVES', '4',
-                                                  '-VPU_NUMBER_OF_CMX_SLICES', '4',
+                                                  '-VPU_NUMBER_OF_SHAVES', f'{vpu_number_of_shaves}',
+                                                  '-VPU_NUMBER_OF_CMX_SLICES', f'{vpu_number_of_cmx_slices}',
                                                   '-o', f'{model_output_path}/openvino/myriad/saved_model.blob'],
                                                   stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
