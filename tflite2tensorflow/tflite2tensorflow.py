@@ -1969,7 +1969,11 @@ def make_graph(ops,
                 return tf.reverse_sequence(x, seq_lengths=seq_lengths, seq_axis=seq_axis, batch_axis=batch_axis)
 
             revseq_name = get_op_name(output_detail['name']) + '_revseq'
-            output_tensor_revseq = tf.keras.layers.Lambda(reverse_seq, arguments={'seq_lengths': input_tensor2, 'seq_axis': seq_dim, 'batch_axis': batch_dim}, name=revseq_name)(input_tensor1)
+            output_tensor_revseq = tf.keras.layers.Lambda(reverse_seq,
+                                                          arguments={'seq_lengths': input_tensor2,
+                                                                     'seq_axis': seq_dim,
+                                                                     'batch_axis': batch_dim},
+                                                          name=revseq_name)(input_tensor1)
             output_tensor = tf.identity(output_tensor_revseq, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
@@ -2038,7 +2042,11 @@ def make_graph(ops,
                             score_threshold=score_threshold
                         )
 
-            output_tensor = tf.keras.layers.Lambda(nmsv4, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5})(input_tensor1)
+            output_tensor = tf.keras.layers.Lambda(nmsv4,
+                                                   arguments={'scores': input_tensor2,
+                                                              'max_output_size': input_tensor3,
+                                                              'iou_threshold': input_tensor4,
+                                                              'score_threshold': input_tensor5})(input_tensor1)
             
             for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name()+'_selected_indices', get_op_name(output_detail['name'])+'_valid_outputs']):
                 tensors[output_index] = tf.identity(output, name=name)
@@ -2093,7 +2101,12 @@ def make_graph(ops,
                             soft_nms_sigma=soft_nms_sigma
                         )
 
-            output_tensor = tf.keras.layers.Lambda(nmsv5, arguments={'scores': input_tensor2, 'max_output_size': input_tensor3, 'iou_threshold': input_tensor4, 'score_threshold': input_tensor5, 'soft_nms_sigma': input_tensor6})(input_tensor1)
+            output_tensor = tf.keras.layers.Lambda(nmsv5,
+                                                   arguments={'scores': input_tensor2,
+                                                              'max_output_size': input_tensor3,
+                                                              'iou_threshold': input_tensor4,
+                                                              'score_threshold': input_tensor5,
+                                                              'soft_nms_sigma': input_tensor6})(input_tensor1)
             
             for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name(output_detail['name'])+'_selected_indices', get_op_name(output_detail['name'])+'_selected_scores', get_op_name(output_detail['name'])+'_valid_outputs']):
                 tensors[output_index] = tf.identity(output, name=name)
