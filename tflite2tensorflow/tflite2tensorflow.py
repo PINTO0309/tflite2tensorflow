@@ -2958,11 +2958,12 @@ def main():
 
         # EdgeTPU convert
         if output_edgetpu:
+            import subprocess
             try:
                 print(f'{Color.REVERCE}EdgeTPU convertion started{Color.RESET}', '=' * 58)
                 result = subprocess.check_output(['edgetpu_compiler',
                                                   '-o', model_output_path,
-                                                  '-s',
+                                                  '-sa',
                                                   f'{model_output_path}/model_full_integer_quant.tflite'],
                                                   stderr=subprocess.PIPE).decode('utf-8')
                 print(result)
