@@ -640,14 +640,27 @@ def make_graph(ops,
 
         elif op_type == 'TRANSPOSE_CONV':
             input_tensor = tensors[op['inputs'][2]]
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
-            output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
-            output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            weights_array = interpreter.get_tensor(weights_detail['index'])
+
+            weights_detail = None
+            weights_array = None
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                weights_array = tensors[op['inputs'][1]]
+            except:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                weights_array = interpreter.get_tensor(weights_detail['index'])
             weights_array = np.transpose(weights_array, (1, 2, 0, 3))
-            output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
             weights = tf.Variable(weights_array, name=get_op_name(weights_detail['name']))
+
+            try:
+                output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
+                output_shape_array = tensors[op['inputs'][0]]
+            except:
+                output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
+                output_shape_array = interpreter.get_tensor(output_shape_detail['index'])
             shape = tf.Variable(output_shape_array, name=get_op_name(output_shape_detail['name']))
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
             output_tensor = tf.nn.conv2d_transpose(input_tensor,
                                                    weights,
