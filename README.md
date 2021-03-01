@@ -389,8 +389,7 @@ $ tflite2tensorflow \
   --output_coreml True \
   --output_tftrt True \
   --output_onnx True \
-  --onnx_opset 13 \
-  --output_openvino_and_myriad True
+  --onnx_opset 13
 ```
 ### 4-4. Check the contents of the .npy file, which is a binary version of the image file
 ```
