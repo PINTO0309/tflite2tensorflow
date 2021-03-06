@@ -486,17 +486,25 @@ def make_graph(ops,
 
         elif op_type == 'PAD':
             input_tensor = tensors[op['inputs'][0]]
+            paddings_array = None
+            try:
+                paddings_array = tensors[op['inputs'][1]]
+            except:
+                paddings_detail = interpreter._get_tensor_details(op['inputs'][1])
+                paddings_array = interpreter.get_tensor(paddings_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            paddings_detail = interpreter._get_tensor_details(op['inputs'][1])
-            paddings_array = interpreter.get_tensor(paddings_detail['index'])
             output_tensor = tf.pad(input_tensor, paddings_array, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'MIRROR_PAD':
             input_tensor = tensors[op['inputs'][0]]
+            paddings_array = None
+            try:
+                paddings_array = tensors[op['inputs'][1]]
+            except:
+                paddings_detail = interpreter._get_tensor_details(op['inputs'][1])
+                paddings_array = interpreter.get_tensor(paddings_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            paddings_detail = interpreter._get_tensor_details(op['inputs'][1])
-            paddings_array = interpreter.get_tensor(paddings_detail['index'])
             options = op['builtin_options']
             mode = options['mode']
             output_tensor = tf.raw_ops.MirrorPad(input=input_tensor, paddings=paddings_array, mode=mode, name=get_op_name(output_detail['name']))
@@ -548,8 +556,14 @@ def make_graph(ops,
                 options = op['builtin_options']
                 new_shape = options['new_shape']
             except:
-                shape_detail = interpreter._get_tensor_details(op['inputs'][1])
-                new_shape = interpreter.get_tensor(shape_detail['index'])
+                try:
+                    new_shape = tensors[op['inputs'][1]]
+                except:
+                    shape_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    if shape_detail['shape'] != [0]:
+                        new_shape = interpreter.get_tensor(shape_detail['index'])
+                    else:
+                        new_shape = []
             output_tensor = tf.reshape(input_tensor, new_shape, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
@@ -610,6 +624,7 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
             activation = options['fused_activation_function']
+
             if activation == 'NONE':
                 output_tensor = tf.math.subtract(input_tensor_0, input_tensor_1, name=get_op_name(output_detail['name']))
             elif activation == 'RELU':
@@ -692,6 +707,7 @@ def make_graph(ops,
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
             activation = options['fused_activation_function']
+
             if activation == 'NONE':
                 output_tensor = tf.multiply(input_tensor_0, input_tensor_1, name=get_op_name(output_detail['name']))
             elif activation == 'RELU':
@@ -738,8 +754,11 @@ def make_graph(ops,
             try:
                 bias = tensors[op['inputs'][2]]
             except:
-                bias_detail = interpreter._get_tensor_details(op['inputs'][2])
-                bias = interpreter.get_tensor(bias_detail['index'])
+                try:
+                    bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    bias = interpreter.get_tensor(bias_detail['index'])
+                except:
+                    bias = None
             output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_shape_array = np.asarray(output_shape_detail['shape'])
 
@@ -757,12 +776,20 @@ def make_graph(ops,
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             dense_name = get_op_name(output_detail['name']) + '_dense'
-            output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
-                                                       activation=activation,
-                                                       use_bias=True,
-                                                       kernel_initializer=tf.keras.initializers.Constant(weights),
-                                                       bias_initializer=tf.keras.initializers.Constant(bias),
-                                                       name=dense_name)(input_tensor)
+            if bias is not None:
+                output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                            activation=activation,
+                                                            use_bias=True,
+                                                            kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                            bias_initializer=tf.keras.initializers.Constant(bias),
+                                                            name=dense_name)(input_tensor)
+            else:
+                output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                            activation=activation,
+                                                            use_bias=True,
+                                                            kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                            name=dense_name)(input_tensor)
+
             output_tensor = tf.identity(output_tensor_dense, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
@@ -1040,12 +1067,24 @@ def make_graph(ops,
             except:
                 input_detail = interpreter._get_tensor_details(op['inputs'][0])
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
-            begin_detail = interpreter._get_tensor_details(op['inputs'][1])
-            input_tensor2 = interpreter.get_tensor(begin_detail['index'])     
-            end_detail = interpreter._get_tensor_details(op['inputs'][2])
-            input_tensor3 = interpreter.get_tensor(end_detail['index'])
-            strides_detail = interpreter._get_tensor_details(op['inputs'][3])
-            input_tensor4 = interpreter.get_tensor(strides_detail['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(begin_detail['index'])     
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                end_detail = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(end_detail['index'])
+            input_tensor4 = None
+            try:
+                input_tensor4 = tensors[op['inputs'][3]]
+            except:
+                strides_detail = interpreter._get_tensor_details(op['inputs'][3])
+                input_tensor4 = interpreter.get_tensor(strides_detail['index'])
 
             options = op['builtin_options']
             begin_mask = options['begin_mask']
@@ -1184,13 +1223,16 @@ def make_graph(ops,
 
         elif op_type == 'CAST':
             input_tensor1 = tensors[op['inputs'][0]]
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
             out_data_type = None
             try:
                 options = op['builtin_options']
                 out_data_type = cast_type_tf[options['out_data_type']]
             except:
-                out_data_type = cast_type_tf['FLOAT32']
-            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                try:
+                    out_data_type = output_detail['dtype']
+                except:
+                    out_data_type = cast_type_tf['FLOAT32']
             output_tensor = tf.cast(input_tensor1, dtype=out_data_type, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
