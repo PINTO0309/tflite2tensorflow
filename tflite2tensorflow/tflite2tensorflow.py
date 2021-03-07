@@ -336,6 +336,7 @@ def make_graph(ops,
         return ret_op
     
     def get_op_name(name):
+        name = re.sub('^;*', '', name)
         name = name.replace(';', '_')
         rep = re.search(':.*', name)
         if rep:
