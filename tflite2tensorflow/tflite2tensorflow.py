@@ -486,6 +486,8 @@ def make_graph(ops,
 
         elif op_type == 'PAD':
             input_tensor = tensors[op['inputs'][0]]
+            if input_tensor.shape == ():
+                input_tensor = tf.reshape(input_tensor, shape=[1])
             paddings_array = None
             try:
                 paddings_array = tensors[op['inputs'][1]]
@@ -2375,6 +2377,36 @@ def make_graph(ops,
             out_type = cast_type_tf[options['out_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.shape(input_tensor1, out_type=out_type, name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'EXPAND_DIMS':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.expand_dims(input_tensor1, input_tensor2, name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SQUEEZE':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            options = op['builtin_options']
+            squeeze_dims = options['squeeze_dims'] if options['squeeze_dims'] != [] else None
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.squeeze(input_tensor1, axis=squeeze_dims, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':

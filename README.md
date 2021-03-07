@@ -119,6 +119,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |104|SPLIT_V|tf.raw_ops.SplitV||
 |105|MATRIX_SET_DIAG|tf.linalg.set_diag||
 |106|SHAPE|tf.shape||
+|107|EXPAND_DIMS|tf.expand_dims||
+|108|SQUEEZE|tf.squeeze||
 
 ## 2. Environment
 - Python3.6+
