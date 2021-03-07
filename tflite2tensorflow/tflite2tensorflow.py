@@ -2525,6 +2525,52 @@ def make_graph(ops,
 
                     output_tensor = tf.identity(output_tensor_MaxUnpooling2D, name=get_op_name(output_detail['name']))
                     tensors[output_detail['index']] = output_tensor
+
+                elif custom_op_type == 'FlexRFFT':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    input_tensor2 = None
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+                    def rfft_(x, fft_length):
+                        return tf.signal.rfft(x, fft_length=fft_length)
+
+                    rfft_name = get_op_name(output_detail['name']) + '_rfft'
+                    output_tensor_rfft = tf.keras.layers.Lambda(rfft_, arguments={'fft_length': input_tensor2}, name=rfft_name)(input_tensor1)
+                    output_tensor = tf.identity(output_tensor_rfft, name=get_op_name(output_detail['name']))
+                    tensors[output_detail['index']] = output_tensor
+
+                elif custom_op_type == 'FlexImag':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = tf.math.imag(input_tensor1, name=get_op_name(output_detail['name']))
+                    tensors[output_detail['index']] = output_tensor
+
+                elif custom_op_type == 'FlexReal':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = tf.math.real(input_tensor1, name=get_op_name(output_detail['name']))
+                    tensors[output_detail['index']] = output_tensor
+
                 else:
                     print(f'{Color.RED}ERROR:{Color.RESET} The {custom_op_type} layer is not yet implemented.')
                     pprint.pprint(op)

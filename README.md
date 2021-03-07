@@ -121,6 +121,9 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |106|SHAPE|tf.shape||
 |107|EXPAND_DIMS|tf.expand_dims||
 |108|SQUEEZE|tf.squeeze||
+|109|FlexRFFT|tf.signal.rfft|Flex OP|
+|110|FlexImag|tf.math.imag|Flex OP|
+|111|FlexReal|tf.math.real|Flex OP|
 
 ## 2. Environment
 - Python3.6+
