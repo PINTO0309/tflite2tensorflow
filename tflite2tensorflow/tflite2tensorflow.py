@@ -231,7 +231,15 @@ op_new_types = {
     128: 'CUMSUM',
     129: 'CALL_ONCE',
     130: 'BROADCAST_TO',
-    131: 'RFFT2D'
+    131: 'RFFT2D',
+    132: 'CONV_3D',
+    133: 'IMAG',
+    134: 'REAL',
+    135: 'COMPLEX_ABS',
+    136: 'HASHTABLE',
+    137: 'HASHTABLE_FIND',
+    138: 'HASHTABLE_IMPORT',
+    139: 'HASHTABLE_SIZE'
 }
 
 
