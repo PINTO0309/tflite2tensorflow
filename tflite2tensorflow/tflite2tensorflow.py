@@ -817,7 +817,7 @@ def make_graph(ops,
 
             def upsampling2d_bilinear(x, size_height, size_width, align_corners, half_pixel_centers):
                 if optimizing_for_edgetpu_flg:
-                    return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=align_corners, half_pixel_centers=half_pixel_centers)
+                    return tf.image.resize_bilinear(x, (size_height, size_width))
                 else:
                     if optimizing_for_openvino_and_myriad:
                         return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
