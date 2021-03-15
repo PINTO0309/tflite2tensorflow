@@ -920,7 +920,7 @@ def make_graph(ops,
                 input_detail = interpreter._get_tensor_details(op['inputs'][0])
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.rsqrt(input_tensor, name=get_op_name(output_detail['name']))
+            output_tensor = tf.math.rsqrt(input_tensor1, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'DEQUANTIZE':
