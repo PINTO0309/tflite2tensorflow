@@ -124,6 +124,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |109|FlexRFFT|tf.signal.rfft|Flex OP|
 |110|FlexImag|tf.math.imag|Flex OP|
 |111|FlexReal|tf.math.real|Flex OP|
+|112|FlexRFFT2D|ttf.signal.rfft2d|Flex OP|
+|113|FlexComplexAbs|tf.raw_ops.ComplexAbs|Flex OP|
 
 ## 2. Environment
 - Python3.6+
