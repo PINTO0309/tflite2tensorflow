@@ -2418,6 +2418,45 @@ def make_graph(ops,
             output_tensor = tf.squeeze(input_tensor1, axis=squeeze_dims, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'IMAG':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.imag(input_tensor1, name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'REAL':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.math.real(input_tensor1, name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'COMPLEX_ABS':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            def complexabs_(x, tout):
+                return tf.raw_ops.ComplexAbs(x=x, Tout=tout)
+
+            complexabs_name = get_op_name(output_detail['name']) + '_complexabs'
+            output_tensor_complexabs = tf.keras.layers.Lambda(complexabs_, arguments={'tout': tf.float32}, name=complexabs_name)(input_tensor1)
+            output_tensor = tf.identity(output_tensor_complexabs, name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
