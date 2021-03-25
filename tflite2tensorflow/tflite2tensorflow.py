@@ -2785,7 +2785,6 @@ def make_graph(ops,
 
                     ################################################################### Calculation of scores
                     scores_slice = scores[:,:,1:num_classes+1][0]
-                    # scores_slice = tf.squeeze(tf.strided_slice(scores_sigm, begin=[0,0,0], end=[1,spatial_dimension,num_classes]), axis=0)
                     scores_argmax = tf.math.argmax(scores_slice, axis=-1, output_type=tf.int32)
                     scores_reduce_max = tf.math.reduce_max(scores_slice, axis=-1)
 
