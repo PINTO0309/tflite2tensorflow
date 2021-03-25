@@ -129,6 +129,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |114|IMAG|tf.math.imag||
 |115|REAL|tf.math.real||
 |116|COMPLEX_ABS|tf.raw_ops.ComplexAbs||
+|117|TFLite_Detection_PostProcess|tf.divide, tf.strided_slice, tf.math.argmax, tf.math.reduce_max, tf.math.multiply, tf.math.add, tf.math.exp, tf.math.subtract, tf.expand_dims, tf.gather, tf.reshape, tf.identity, tf.raw_ops.NonMaxSuppressionV5|CUSTOM|
 
 ## 2. Environment
 - Python3.6+
