@@ -279,6 +279,7 @@ def make_graph(ops,
     tf.disable_eager_execution()
     import tensorflow as tfv2
     from tensorflow.keras.layers import Layer
+    import struct
 
     # type conversion table
     cast_type_tf = {
@@ -2659,6 +2660,166 @@ def make_graph(ops,
                     output_tensor = tf.identity(output_tensor_complexabs, name=get_op_name(output_detail['name']))
                     tensors[output_detail['index']] = output_tensor
 
+                elif custom_op_type == 'TFLite_Detection_PostProcess':
+                    ################################################################### Extraction of boxes, scores, anchors, options
+                    boxes = None
+                    try:
+                        boxes = tensors[op['inputs'][0]]
+                    except:
+                        boxes_detail = interpreter._get_tensor_details(op['inputs'][0])
+                        boxes = interpreter.get_tensor(boxes_detail['index'])
+                    scores = None
+                    try:
+                        scores = tensors[op['inputs'][1]]
+                    except:
+                        scores_detail = interpreter._get_tensor_details(op['inputs'][1])
+                        scores = interpreter.get_tensor(scores_detail['index'])
+                    anchors = None
+                    try:
+                        anchors = tensors[op['inputs'][2]]
+                    except:
+                        anchors_detail = interpreter._get_tensor_details(op['inputs'][2])
+                        anchors = interpreter.get_tensor(anchors_detail['index'])
+                    """
+                    custom_options = [
+                        120,95,115,99,97,108,101,0, #x_scale
+                        100,101,116,101,99,116,105,111,110,115, 95,112,101,114,95,99,108,97,115,115,0, #detections_per_class
+                        110,117,109,95,99,108,97,115,115,101,115,0, #num_classes
+                        121,95,115,99,97,108,101,0, #y_scale
+                        110,109,115,95,115,99,111,114,101,95,116,104,114,101,115,104,111,108,100,0, #nms_score_threshold
+                        119,95,115,99,97,108,101,0, #w_scale
+                        109,97,120,95,100,101,116,101,99,116,105,111,110,115,0, #max_detections
+                        104,95,115,99,97,108,101,0, #h_scale
+                        117,115,101,95,114,101,103,117,108,97,114,95,110,109,115,0, #use_regular_nms
+                        109,97,120,95,99,108,97,115,115,101,115,95,112,101,114,95,100,101,116,101,99,116,105,111,110,0, #max_classes_per_detection
+                        110,109,115,95,105,111,117,95,116,104,114,101,115,104,111,108,100,0, #nms_iou_threshold
+                        11,153,70,47,87,23,117,138,68,100,170,130,11,0,0,0,1,0,0,0,11,0,0,0, #24
+                        0,0,0,0, #detections_per_class 0
+                        0,0,160,64, #h_scale 5.0
+                        1,0,0,0, #max_classes_per_detection 1
+                        100,0,0,0, #max_detections 100
+                        154,153,25,63, #nms_iou_threshold 0.6000000238418579
+                        119,204,43,50, #nms_score_threshold 0.00000000999999993922529
+                        90,0,0,0, #num_classes 90
+                        0,0,0,0, #use_regular_nms false 0:false 1:true
+                        0,0,160,64, #w_scale 5.0
+                        0,0,32,65, #x_scale 10.0
+                        0,0,32,65, #y_scale 10.0
+                        6,14,6,6,14,14,6,106,14,14,14,55,38,1]
+
+                        parse_str = ''
+                        for val in custom_options:
+                            s = ''
+                            if val == 0:
+                                s = ' '
+                            else:
+                                s = chr(val)
+                            parse_str += s
+
+                        print(parse_str)
+
+                        print(struct.pack('<i', 0), '@', 0) #detections_per_class b'\x00\x00\x00\x00' @ 0,0,0,0
+                        print(struct.pack('<f', 5.0), '@', 5.0) #h_scale b'\x00\x00\xa0\x40' @ 5 -> 0,0,160,64
+                        print(struct.pack('<i', 1), '@', 1) #max_classes_per_detection b'\x01\x00\x00\x00' @ 1,0,0,0
+                        print(struct.pack('<i', 100), '@', 100) #max_detections b'\x64\x00\x00\x00' @ 100,0,0,0
+                        print(struct.pack('<f', 0.6000000238418579), '@', 0.6000000238418579) #nms_iou_threshold -> b'\x9a\x99\x19\x3F' @ 0.6000000238418579 -> 154,153,25,63
+                        print(struct.pack('<f', 0.00000000999999993922529), '@', 0.00000000999999993922529) #nms_score_threshold -> b'\x77\xcc\x2b\x32' @  -> 119,204,43,50
+                        print(struct.pack('<i', 90), '@', 90) #num_classes b'\x5a\x00\x00\x00' @ 90,0,0,0
+                        print(struct.pack('<?', False), '@', False) #use_regular_nms b'\x00\x00\x00\x00' @ 0,0,0,0
+                        print(struct.pack('<f', 5.0), '@', 5.0) #w_scale b'\x00\x00\xa0\x40' @ 5 -> 0,0,160,64
+                        print(struct.pack('<f', 10.0), '@', 10.0) #x_scale b'\x00\x00\x20\x41' @ 10.0 -> 0,0,32,65
+                        print(struct.pack('<f', 10.0), '@', 10.0) #y_scale b'\x00\x00\x20\x41' @ 10.0 -> 0,0,32,65
+
+                        print(struct.unpack_from('<i', bytes([0,0,0,0]))[0]) #detections_per_class
+                        print(struct.unpack_from('<f', bytes([0,0,160,64]))[0]) #h_scale
+                        print(struct.unpack_from('<i', bytes([1,0,0,0]))[0]) #max_classes_per_detection
+                        print(struct.unpack_from('<i', bytes([100,0,0,0]))[0]) #max_detections
+                        print(struct.unpack_from('<f', bytes([154,153,25,63]))[0]) #nms_iou_threshold
+                        print(struct.unpack_from('<f', bytes([119,204,43,50]))[0]) #nms_score_threshold
+                        print(struct.unpack_from('<i', bytes([90,0,0,0]))[0]) #num_classes
+                        print(struct.unpack_from('<?', bytes([1,0,0,0]))[0]) #use_regular_nms
+                        print(struct.unpack_from('<f', bytes([0,0,160,64]))[0]) #w_scale
+                        print(struct.unpack_from('<f', bytes([0,0,32,65]))[0]) #x_scale
+                        print(struct.unpack_from('<f', bytes([0,0,32,65]))[0]) #y_scale
+                    """
+                    options = op['custom_options']
+                    detections_per_class = struct.unpack_from('<i', bytes(options[184:188]))[0] #detections_per_class
+                    h_scale = struct.unpack_from('<f', bytes(options[188:192]))[0] #h_scale
+                    max_classes_per_detection = struct.unpack_from('<i', bytes(options[192:196]))[0] #max_classes_per_detection
+                    max_detections = struct.unpack_from('<i', bytes(options[196:200]))[0] #max_detections
+                    nms_iou_threshold = struct.unpack_from('<f', bytes(options[200:204]))[0] #nms_iou_threshold
+                    nms_score_threshold = struct.unpack_from('<f', bytes(options[204:208]))[0] #nms_score_threshold
+                    num_classes = struct.unpack_from('<i', bytes(options[208:212]))[0] #num_classes
+                    use_regular_nms = struct.unpack_from('<?', bytes(options[212:216]))[0] #use_regular_nms
+                    w_scale = struct.unpack_from('<f', bytes(options[216:220]))[0] #w_scale
+                    x_scale = struct.unpack_from('<f', bytes(options[220:224]))[0] #x_scale
+                    y_scale = struct.unpack_from('<f', bytes(options[224:228]))[0] #y_scale
+
+                    output_detail1 = interpreter._get_tensor_details(op['outputs'][0])
+                    output_detail2 = interpreter._get_tensor_details(op['outputs'][1])
+                    output_detail3 = interpreter._get_tensor_details(op['outputs'][2])
+                    output_detail4 = interpreter._get_tensor_details(op['outputs'][3])
+
+                    ################################################################### Calculation of anchors
+                    anchors_yx = anchors[:, 0:2]
+                    anchors_hw = anchors[:, 2:4]
+
+                    ################################################################### Calculation of boxes
+                    boxes_div = tf.divide(boxes, [y_scale, x_scale, h_scale, w_scale])
+                    # ycenter, xcenter
+                    ycenter_xcenter = boxes_div[:, :, 0:2]
+                    ycenter_xcenter_calc = ycenter_xcenter * anchors_hw + anchors_yx
+                    # half_h, half_w
+                    half_h_half_w = boxes_div[:, :, 2:4]
+                    half_h_half_w_calc = tf.math.exp(half_h_half_w) * anchors_hw * 0.5
+                    # scale conversion
+                    """
+                    box.ymin = ycenter - half_h;
+                    box.xmin = xcenter - half_w;
+                    box.ymax = ycenter + half_h;
+                    box.xmax = xcenter + half_w;
+                    """
+                    box_ymin_box_xmin = ycenter_xcenter_calc - half_h_half_w_calc
+                    box_ymax_box_xmax = ycenter_xcenter_calc + half_h_half_w_calc
+                    boxes_concat = tf.concat([box_ymin_box_xmin, box_ymax_box_xmax], axis=-1)[0]
+
+                    ################################################################### Calculation of scores
+                    scores_slice = scores[:,:,1:num_classes+1][0]
+                    # scores_slice = tf.squeeze(tf.strided_slice(scores_sigm, begin=[0,0,0], end=[1,spatial_dimension,num_classes]), axis=0)
+                    scores_argmax = tf.math.argmax(scores_slice, axis=-1, output_type=tf.int32)
+                    scores_reduce_max = tf.math.reduce_max(scores_slice, axis=-1)
+
+                    ################################################################### Calculation of NMS
+                    def NonMaxSuppressionV5_(boxes, scores, max_output_size: int, iou_threshold, score_threshold, soft_nms_sigma, pad_to_max_output_size):
+                        selected_indices, selected_scores, valid_outputs = \
+                            tf.raw_ops.NonMaxSuppressionV5(boxes=boxes,
+                                                           scores=scores,
+                                                           max_output_size=max_output_size,
+                                                           iou_threshold=iou_threshold,
+                                                           score_threshold=score_threshold,
+                                                           soft_nms_sigma=soft_nms_sigma,
+                                                           pad_to_max_output_size=pad_to_max_output_size)
+                        return selected_indices, selected_scores, valid_outputs
+
+                    selected_indices, selected_scores, valid_outputs = \
+                        tf.keras.layers.Lambda(NonMaxSuppressionV5_, arguments={'scores': scores_reduce_max,
+                                                                                'max_output_size': max_detections,
+                                                                                'iou_threshold': nms_iou_threshold,
+                                                                                'score_threshold': nms_score_threshold,
+                                                                                'soft_nms_sigma': 0.0,
+                                                                                'pad_to_max_output_size': True})(boxes_concat)
+
+                    ################################################################### Calculation of outputs
+                    bounding_boxes = tf.identity(tf.expand_dims(tf.gather(boxes_concat, selected_indices), axis=0), name='TFLite_Detection_PostProcess0')
+                    class_labels = tf.identity(tf.expand_dims(tf.gather(scores_argmax, selected_indices), axis=0), name='TFLite_Detection_PostProcess1')
+                    class_confidences = tf.identity(tf.expand_dims(selected_scores, axis=0), name='TFLite_Detection_PostProcess2')
+                    num_of_boxes = tf.identity(tf.expand_dims(valid_outputs, axis=0), name='TFLite_Detection_PostProcess3')
+
+                    tensors[output_detail1['index']] = bounding_boxes
+                    tensors[output_detail2['index']] = class_labels
+                    tensors[output_detail3['index']] = class_confidences
+                    tensors[output_detail4['index']] = num_of_boxes
+
                 else:
                     print(f'{Color.RED}ERROR:{Color.RESET} The {custom_op_type} layer is not yet implemented.')
                     pprint.pprint(op)
@@ -2857,11 +3018,22 @@ def main():
         print('outputs:')
         output_node_names = []
         output_node_names_non_suffix = []
-        for output in output_details:
-            pprint.pprint(output)
-            name_count = output_node_names_non_suffix.count(output['name'])
-            output_node_names.append(output['name']+f':{name_count}')
-            output_node_names_non_suffix.append(output['name'])
+        TFLite_Detection_PostProcess_flg = False
+
+        if 'TFLite_Detection_PostProcess' in output_details[0]['name']:
+            TFLite_Detection_PostProcess_flg = True
+
+        if not TFLite_Detection_PostProcess_flg:
+            for output in output_details:
+                pprint.pprint(output)
+                name_count = output_node_names_non_suffix.count(output['name'])
+                output_node_names.append(output['name']+f':{name_count}')
+                output_node_names_non_suffix.append(output['name'])
+        else:
+            output_node_names = ['TFLite_Detection_PostProcess0',
+                                 'TFLite_Detection_PostProcess1',
+                                 'TFLite_Detection_PostProcess2',
+                                 'TFLite_Detection_PostProcess3']
 
         print(f'{Color.REVERCE}TensorFlow/Keras model building process starts{Color.RESET}', '=' * 38)
         make_graph(ops,
@@ -2882,17 +3054,30 @@ def main():
             graph = tf.get_default_graph()
             with tf.Session(config=config, graph=graph) as sess:
                 sess.run(tf.global_variables_initializer())
-                graph_def = tf.graph_util.convert_variables_to_constants(
-                    sess=sess,
-                    input_graph_def=graph.as_graph_def(),
-                    output_node_names=[re.sub(':0*', '', name) for name in output_node_names])
+                if not TFLite_Detection_PostProcess_flg:
+                    graph_def = tf.graph_util.convert_variables_to_constants(
+                        sess=sess,
+                        input_graph_def=graph.as_graph_def(),
+                        output_node_names=[re.sub(':0*', '', name) for name in output_node_names])
 
-                tf.saved_model.simple_save(
-                    sess,
-                    model_output_path,
-                    inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
-                    outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in output_node_names}
-                )
+                    tf.saved_model.simple_save(
+                        sess,
+                        model_output_path,
+                        inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
+                        outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in output_node_names}
+                    )
+                else:
+                    graph_def = tf.graph_util.convert_variables_to_constants(
+                        sess=sess,
+                        input_graph_def=graph.as_graph_def(),
+                        output_node_names=output_node_names)
+
+                    tf.saved_model.simple_save(
+                        sess,
+                        model_output_path,
+                        inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
+                        outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(f'{t}:0') for t in output_node_names}
+                    )         
 
                 if output_pb:
                     with tf.io.gfile.GFile(f'{model_output_path}/model_float32.pb', 'wb') as f:
