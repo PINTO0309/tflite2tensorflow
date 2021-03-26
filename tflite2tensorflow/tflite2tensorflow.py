@@ -1993,22 +1993,38 @@ def make_graph(ops,
             input_list.append(input_tensor3)
             input_tensor4 = None
             try:
-                input_tensor4 = tensors[op['inputs'][3]]
+                try:
+                    input_tensor4 = tensors[op['inputs'][3]]
+                except:
+                    input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+                    input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+                input_list.append(input_tensor4)
             except:
-                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
-                input_tensor4 = interpreter.get_tensor(input_detail4['index'])
-            input_list.append(input_tensor4)
+                pass
 
             options = op['builtin_options']
             cond_subgraph_index = options['cond_subgraph_index'] - 1
             body_subgraph_index = options['body_subgraph_index'] - 1
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.while_loop(input_list[cond_subgraph_index],
-                                          input_list[body_subgraph_index],
-                                          input_list[2],
-                                          input_list[3],
-                                          name=get_op_name(output_detail['name']))
+            if input_tensor4:
+                output_tensor = tf.while_loop(input_list[cond_subgraph_index],
+                                              input_list[body_subgraph_index],
+                                              input_list[2],
+                                              input_list[3],
+                                              name=get_op_name(output_detail['name']))
+            else:
+                try:
+                    output_tensor = tf.while_loop(input_list[cond_subgraph_index],
+                                                  input_list[body_subgraph_index],
+                                                  input_list[2],
+                                                  name=get_op_name(output_detail['name']))
+                except:
+                    output_tensor = tf.while_loop(input_list[0],
+                                                  input_list[1],
+                                                  input_list[2],
+                                                  name=get_op_name(output_detail['name']))
+
 
             names = [get_op_name(output_detail['name']) + '_' + str(num) for num in range(len(output_tensor))]
             for output_index, output, name in zip(op['outputs'], output_tensor, names):
@@ -2458,6 +2474,111 @@ def make_graph(ops,
             output_tensor = tf.identity(output_tensor_complexabs, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'ONE_HOT':
+            input_tensor1 = None
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+            input_tensor4 = None
+            try:
+                input_tensor4 = tensors[op['inputs'][3]]
+            except:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+                input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+            options = op['builtin_options']
+            axis = options['axis']
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.one_hot(indices=input_tensor1,
+                                       depth=input_tensor2,
+                                       on_value=input_tensor3,
+                                       off_value=input_tensor4,
+                                       axis=axis,
+                                       name=get_op_name(output_detail['name']))
+            tensors[output_detail['index']] = output_tensor
+
+
+
+
+        # elif op_type == 'CONV_3D':
+        #     input_tensor1 = None
+        #     try:
+        #         input_tensor1 = tensors[op['inputs'][0]]
+        #     except:
+        #         input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+        #         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+        #     input_tensor2 = None
+        #     try:
+        #         input_tensor2 = tensors[op['inputs'][1]].transpose(1,2,3,4,0)
+        #     except:
+        #         input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+        #         input_tensor2 = interpreter.get_tensor(input_detail2['index']).transpose(1,2,3,4,0)
+        #     output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+        #     kernel_size = [output_detail['shape'][0], output_detail['shape'][1], output_detail['shape'][2]]
+
+        #     options = op['builtin_options']
+        #     dilation_rate = [options['dilation_d_factor'], options['dilation_h_factor'], options['dilation_w_factor']]
+        #     strides = [options['stride_d'], options['stride_h'], options['stride_w']]
+        #     padding = options['padding']
+        #     if padding == 0 or padding == 'VALID':
+        #         padding =='valid'
+        #     elif padding == 1 or padding == 'SAME':
+        #         padding =='same'
+        #     else:
+        #         raise ValueError(padding)
+             
+        #     print('@@@@@@@@@@@@@@@@@@ output_detail[\'shape\']', output_detail['shape'])
+
+        #     activation = options['fused_activation_function']
+        #     if activation == 'NONE' or activation == 0:
+        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
+        #                                                kernel_size=kernel_size,
+        #                                                strides=strides,
+        #                                                padding=padding,
+        #                                                dilation_rate=dilation_rate,
+        #                                             #    groups=1,
+        #                                                use_bias=False,
+        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
+        #         output_tensor = tf.identity(output_tensor, name=get_op_name(output_detail['name']))
+        #     elif activation == 'RELU':
+        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
+        #                                                kernel_size=kernel_size,
+        #                                                strides=strides,
+        #                                                padding=padding,
+        #                                                dilation_rate=dilation_rate,
+        #                                             #    groups=1,
+        #                                                use_bias=False,
+        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
+        #         output_tensor = tf.nn.relu(output_tensor, name=get_op_name(output_detail['name']))
+        #     elif activation == 'RELU6':
+        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
+        #                                                kernel_size=kernel_size,
+        #                                                strides=strides,
+        #                                                padding=padding,
+        #                                                dilation_rate=dilation_rate,
+        #                                             #    groups=1,
+        #                                                use_bias=False,
+        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
+        #         output_tensor = tf.nn.relu6(output_tensor, name=get_op_name(output_detail['name']))
+        #     else:
+        #         raise ValueError(activation)
+
+        #     tensors[output_detail['index']] = output_tensor
+
         elif op_type == 'CUSTOM':
             '''
             Convolution2DTransposeBias
@@ -2818,6 +2939,50 @@ def make_graph(ops,
                     tensors[output_detail2['index']] = class_labels
                     tensors[output_detail3['index']] = class_confidences
                     tensors[output_detail4['index']] = num_of_boxes
+
+                elif custom_op_type == 'FlexMultinomial':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    input_tensor2 = None
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = tf.random.categorical(logits=input_tensor1,
+                                                          num_samples=input_tensor2,
+                                                          name=get_op_name(output_detail['name']))
+                    tensors[output_detail['index']] = output_tensor
+
+                elif custom_op_type == 'FlexAll':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    input_tensor2 = None
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    keepdims = False
+                    if len(input_tensor1.shape) == len(output_detail['shape']):
+                        keepdims = True
+                    else:
+                        keepdims = False
+                    output_tensor = tf.math.reduce_all(input_tensor1,
+                                                       axis=input_tensor2,
+                                                       keepdims=keepdims,
+                                                       name=get_op_name(output_detail['name']))
+                    tensors[output_detail['index']] = output_tensor
 
                 else:
                     print(f'{Color.RED}ERROR:{Color.RESET} The {custom_op_type} layer is not yet implemented.')
