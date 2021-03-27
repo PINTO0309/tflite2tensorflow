@@ -788,19 +788,61 @@ def make_graph(ops,
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             dense_name = get_op_name(output_detail['name']) + '_dense'
+
             if bias is not None:
-                output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
-                                                            activation=activation,
-                                                            use_bias=True,
-                                                            kernel_initializer=tf.keras.initializers.Constant(weights),
-                                                            bias_initializer=tf.keras.initializers.Constant(bias),
-                                                            name=dense_name)(input_tensor)
+                try:
+                    output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                activation=activation,
+                                                                use_bias=True,
+                                                                kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                bias_initializer=tf.keras.initializers.Constant(bias),
+                                                                name=dense_name)(input_tensor)
+                except:
+                    if len(input_tensor.shape) == 4:
+                        output_tensor_reshape = tf.reshape(input_tensor, [input_tensor.shape[0], input_tensor.shape[1], -1])
+                        output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                    activation=activation,
+                                                                    use_bias=True,
+                                                                    kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                    bias_initializer=tf.keras.initializers.Constant(bias),
+                                                                    name=dense_name)(output_tensor_reshape)
+                    elif len(input_tensor.shape) == 3:
+                        output_tensor_reshape = tf.reshape(input_tensor, [input_tensor.shape[0], -1])
+                        output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                    activation=activation,
+                                                                    use_bias=True,
+                                                                    kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                    bias_initializer=tf.keras.initializers.Constant(bias),
+                                                                    name=dense_name)(output_tensor_reshape)
+                    else:
+                        raise ValueError(input_tensor)                     
             else:
-                output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
-                                                            activation=activation,
-                                                            use_bias=True,
-                                                            kernel_initializer=tf.keras.initializers.Constant(weights),
-                                                            name=dense_name)(input_tensor)
+                try:
+                    output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                activation=activation,
+                                                                use_bias=True,
+                                                                kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                name=dense_name)(input_tensor)
+                except:
+                    if len(input_tensor.shape) == 4:
+                        output_tensor_reshape = tf.reshape(input_tensor, [input_tensor.shape[0], input_tensor.shape[1], -1])
+                        output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                    activation=activation,
+                                                                    use_bias=True,
+                                                                    kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                    name=dense_name)(input_tensor)
+                    elif len(input_tensor.shape) == 3:
+                        output_tensor_reshape = tf.reshape(input_tensor, [input_tensor.shape[0], -1])
+                        output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
+                                                                    activation=activation,
+                                                                    use_bias=True,
+                                                                    kernel_initializer=tf.keras.initializers.Constant(weights),
+                                                                    name=dense_name)(input_tensor)
+                    else:
+                        raise ValueError(input_tensor)                     
+
+            if not keep_dims:
+                output_tensor_dense = tf.squeeze(output_tensor_dense)
 
             output_tensor = tf.identity(output_tensor_dense, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
@@ -1295,9 +1337,13 @@ def make_graph(ops,
             options = op['builtin_options']
             axis = options['axis']
             num = options['num']
+
+            names = []
+            for output in op['outputs']:
+                output_detail = interpreter._get_tensor_details(output)
+                names.append(get_op_name(output_detail['name']))
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.unstack(value=input_tensor1, num=num, axis=axis, name=get_op_name(output_detail['name']))
-            names = [get_op_name(output_detail['name']) + '_' + str(num) for num in range(len(output_tensor))]
             for output_index, output, name in zip(op['outputs'], output_tensor, names):
                 tensors[output_index] = tf.identity(output, name=name)
 
@@ -2510,8 +2556,159 @@ def make_graph(ops,
                                        name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
 
+        # elif op_type == 'UNIDIRECTIONAL_SEQUENCE_LSTM':
+        #     print('before:', op['inputs'])
+        #     input_tmp = np.asarray(op['inputs'])
+        #     op['inputs'] = input_tmp[~(input_tmp == -1)].tolist()
+        #     print('after:', op['inputs'])
+        #     input_tensor1 = None
+        #     try:
+        #         input_tensor1 = tensors[op['inputs'][0]]
+        #     except:
+        #         input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+        #         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+        #     input_tensor2 = None
+        #     try:
+        #         input_tensor2 = tensors[op['inputs'][1]]
+        #     except:
+        #         input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+        #         input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+        #     input_tensor3 = None
+        #     try:
+        #         input_tensor3 = tensors[op['inputs'][2]]
+        #     except:
+        #         input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+        #         input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+        #     input_tensor4 = None
+        #     try:
+        #         input_tensor4 = tensors[op['inputs'][3]]
+        #     except:
+        #         input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+        #         input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+        #     input_tensor5 = None
+        #     try:
+        #         input_tensor5 = tensors[op['inputs'][4]]
+        #     except:
+        #         input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+        #         input_tensor5 = interpreter.get_tensor(input_detail5['index'])
+        #     input_tensor6 = None
+        #     try:
+        #         input_tensor6 = tensors[op['inputs'][5]]
+        #     except:
+        #         input_detail6 = interpreter._get_tensor_details(op['inputs'][5])
+        #         input_tensor6 = interpreter.get_tensor(input_detail6['index'])
+        #     input_tensor7 = None
+        #     try:
+        #         input_tensor7 = tensors[op['inputs'][6]]
+        #     except:
+        #         input_detail7 = interpreter._get_tensor_details(op['inputs'][6])
+        #         input_tensor7 = interpreter.get_tensor(input_detail7['index'])
+        #     input_tensor8 = None
+        #     try:
+        #         input_tensor8 = tensors[op['inputs'][7]]
+        #     except:
+        #         input_detail8 = interpreter._get_tensor_details(op['inputs'][7])
+        #         input_tensor8 = interpreter.get_tensor(input_detail8['index'])
+        #     input_tensor9 = None
+        #     try:
+        #         input_tensor9 = tensors[op['inputs'][8]]
+        #     except:
+        #         input_detail9 = interpreter._get_tensor_details(op['inputs'][8])
+        #         input_tensor9 = interpreter.get_tensor(input_detail9['index'])
+        #     input_tensor10 = None
+        #     try:
+        #         input_tensor10 = tensors[op['inputs'][9]]
+        #     except:
+        #         input_detail10 = interpreter._get_tensor_details(op['inputs'][9])
+        #         input_tensor10 = interpreter.get_tensor(input_detail10['index'])
+        #     input_tensor11 = None
+        #     try:
+        #         input_tensor11 = tensors[op['inputs'][10]]
+        #     except:
+        #         input_detail11 = interpreter._get_tensor_details(op['inputs'][10])
+        #         input_tensor11 = interpreter.get_tensor(input_detail11['index'])
+        #     input_tensor12 = None
+        #     try:
+        #         input_tensor12 = tensors[op['inputs'][11]]
+        #     except:
+        #         input_detail12 = interpreter._get_tensor_details(op['inputs'][11])
+        #         input_tensor12 = interpreter.get_tensor(input_detail12['index'])
+        #     input_tensor13 = None
+        #     try:
+        #         input_tensor13 = tensors[op['inputs'][12]]
+        #     except:
+        #         input_detail13 = interpreter._get_tensor_details(op['inputs'][12])
+        #         input_tensor13 = interpreter.get_tensor(input_detail13['index'])
+        #     input_tensor14 = None
+        #     try:
+        #         input_tensor14 = tensors[op['inputs'][13]]
+        #     except:
+        #         input_detail14 = interpreter._get_tensor_details(op['inputs'][13])
+        #         input_tensor14 = interpreter.get_tensor(input_detail14['index'])
+        #     input_tensor15 = None
+        #     try:
+        #         input_tensor15 = tensors[op['inputs'][14]]
+        #     except:
+        #         input_detail15 = interpreter._get_tensor_details(op['inputs'][14])
+        #         input_tensor15 = interpreter.get_tensor(input_detail15['index'])
+
+        #     options = op['builtin_options']
+        #     asymmetric_quantize_inputs = False if options['asymmetric_quantize_inputs'] == 'false' else True
+        #     cell_clip = options['cell_clip']
+        #     fused_activation_function = options['fused_activation_function']
+        #     proj_clip = options['proj_clip']
+        #     time_major = False if options['time_major'] == 'false' else True
+
+        #     output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+        #     units = output_detail['shape'][-1]
+        #     use_bias = True
+        #     kernel = np.concatenate([input_tensor2, input_tensor3, input_tensor4, input_tensor5]).transpose(1, 0)
+        #     recurrent_kernel = np.concatenate([input_tensor6, input_tensor7, input_tensor8, input_tensor9]).transpose(1, 0)
+        #     bias = np.concatenate([input_tensor10, input_tensor11, input_tensor12, input_tensor13])
+        #     # kernel = np.concatenate([input_tensor2, input_tensor3, input_tensor4, input_tensor5]).transpose(1, 0)
+        #     # recurrent_kernel = np.concatenate([input_tensor6, input_tensor7, input_tensor8, input_tensor9]).transpose(1, 0)
+        #     # bias = np.concatenate([input_tensor10])
 
 
+        #     print('input_tensor2.shape', input_tensor2.shape)
+        #     print('input_tensor3.shape', input_tensor3.shape)
+        #     print('input_tensor4.shape', input_tensor4.shape)
+        #     print('input_tensor5.shape', input_tensor5.shape)
+        #     print('units:', units)
+        #     print('kernel:', kernel.shape)
+        #     print('recurrent_kernel:', recurrent_kernel.shape)
+        #     print('bias:', bias.shape)
+
+        #     lstm_tensor = tf.keras.layers.LSTM(units=units,
+        #                                        use_bias=True,
+        #                                        kernel_initializer=tf.keras.initializers.Constant(kernel),
+        #                                        recurrent_initializer=tf.keras.initializers.Constant(recurrent_kernel),
+        #                                        bias_initializer=tf.keras.initializers.Constant(bias),
+        #                                        unit_forget_bias=True,
+        #                                        dropout=0.0,
+        #                                        recurrent_dropout=0.0,
+        #                                        return_sequences=True,
+        #                                        return_state=False,
+        #                                        go_backwards=False,
+        #                                        stateful=False,
+        #                                        time_major=time_major,
+        #                                        unroll=False,
+        #                                        trainable=False)(input_tensor1)
+
+        #     output_tensor = None
+        #     if fused_activation_function == 'NONE':
+        #         output_tensor = tf.identity(lstm_tensor, name=get_op_name(output_detail['name']))
+        #     elif fused_activation_function == 'RELU':
+        #         output_tensor = tf.nn.relu(lstm_tensor, name=get_op_name(output_detail['name']))
+        #     elif fused_activation_function == 'RELU6':
+        #         output_tensor = tf.nn.relu6(lstm_tensor, name=get_op_name(output_detail['name']))
+        #     elif fused_activation_function == 'TANH':
+        #         output_tensor = tf.nn.tanh(lstm_tensor, name=get_op_name(output_detail['name']))
+        #     else:
+        #         raise ValueError(activation)
+            
+        #     tensors[output_detail['index']] = output_tensor
 
         # elif op_type == 'CONV_3D':
         #     input_tensor1 = None
