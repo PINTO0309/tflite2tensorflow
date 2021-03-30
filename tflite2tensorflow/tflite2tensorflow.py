@@ -36,6 +36,7 @@ import pprint
 import argparse
 from pathlib import Path
 import re
+import struct
 
 class Color:
     BLACK          = '\033[30m'
@@ -264,6 +265,139 @@ def parse_json(jsonfile_path):
     return ops, op_types
 
 
+def read_int(buffer, offset, bit_size):
+    size = 1 << bit_size
+    format_char = 'bhiq'[bit_size]
+    return struct.unpack('<' + format_char, buffer[offset:offset+size])[0]
+
+
+def read_uint(buffer, offset, bit_size):
+    size = 1 << bit_size
+    format_char = 'BHIQ'[bit_size]
+    return struct.unpack('<' + format_char, buffer[offset:offset+size])[0]
+
+
+def read_float(buffer, offset, bit_size):
+    if bit_size == 2:
+        return struct.unpack('<f', buffer[offset:offset+4])[0]
+    if bit_size == 3:
+        return struct.unpack('<d', buffer[offset:offset+8])[0]
+    raise FlexbufferParseException("Invalid bit size for flexbuffer float: %d" % bit_size)
+
+
+def read_string(buffer, offset, size, decode_strings):
+    data = buffer[offset:offset+size]
+    if decode_strings:
+        data = data.decode('utf-8')
+    return data
+
+
+def read_indirect(buffer, offset, bit_size):
+    return offset - read_uint(buffer, offset, bit_size)
+
+
+def read_bytes(buffer, offset, size):
+    return buffer[offset:offset+size]
+
+
+def read_array(buffer, offset, length, bit_size, packed_type, decode_strings):
+    byte_size = 1 << bit_size
+    arr = []
+    for i in range(length):
+        item_offset = offset + (i * byte_size)
+        arr.append(read_buffer(buffer, item_offset, bit_size, packed_type, decode_strings))
+    return arr
+
+
+def read_buffer(buffer, offset, parent_bit_size, packed_type, decode_strings):
+    """Recursively decode flatbuffer object into python representation"""
+    bit_size = packed_type & 3
+    value_type = packed_type >> 2
+    byte_size = 1 << bit_size
+
+    if value_type == 0x0:
+        return None
+    if value_type in [0x1, 0x2, 0x3]:
+        read_fn = {0x1: read_int, 0x2: read_uint, 0x3: read_float}[value_type]
+        return read_fn(buffer, offset, parent_bit_size)
+    if value_type == 0x4:
+        str_offset = read_indirect(buffer, offset, parent_bit_size)
+        size = 0
+        while read_int(buffer, str_offset + size, 0) != 0:
+            size += 1
+        return read_string(buffer, str_offset, size, decode_strings)
+    if value_type == 0x5:
+        str_offset = read_indirect(buffer, offset, parent_bit_size)
+        size_bit_size = bit_size
+        size_byte_size = 1 << size_bit_size
+        size = read_uint(buffer, str_offset - size_byte_size, bit_size)
+        while read_int(buffer, str_offset + size, 0) != 0:
+            size_byte_size <<= 1
+            size_bit_size += 1
+            size = read_uint(buffer, str_offset - size_byte_size, size_bit_size)
+        return read_string(buffer, str_offset, size, decode_strings)
+    if value_type in [0x6, 0x7, 0x8]:
+        read_fn = {0x6: read_int, 0x7: read_uint, 0x8: read_float}[value_type]
+        data_offset = read_indirect(buffer, offset, parent_bit_size)
+        return read_fn(buffer, data_offset, bit_size)
+    if value_type == 0x9:
+        length = read_uint(buffer, read_indirect(buffer, offset, parent_bit_size) - byte_size, bit_size)
+        keys_offset = read_indirect(buffer, offset, parent_bit_size) - (byte_size * 3)
+        keys_vector_offset = read_indirect(buffer, keys_offset, bit_size)
+        key_byte_size = read_uint(buffer, keys_offset + byte_size, bit_size)
+        key_bit_size = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4}[key_byte_size]
+        values_offset = read_indirect(buffer, offset, parent_bit_size)
+        packed_types_offset = values_offset + length * byte_size
+        obj = {}
+        for i in range(length):
+            key_offset = keys_vector_offset + i * key_byte_size
+            key = read_buffer(buffer, key_offset, key_bit_size, (0x4 << 2) | key_bit_size, decode_strings)
+            value_offset = values_offset + i * byte_size
+            value_packed_type = read_uint(buffer, packed_types_offset + i, 0)
+            value = read_buffer(buffer, value_offset, bit_size, value_packed_type, decode_strings)
+            obj[key] = value
+        return obj
+    if value_type == 0xa:
+        length = read_uint(buffer, read_indirect(buffer, offset, parent_bit_size) - byte_size, bit_size)
+        arr = []
+        items_offset = read_indirect(buffer, offset, parent_bit_size)
+        packed_types_offset = items_offset + (length * byte_size)
+        for i in range(length):
+            item_offset = items_offset + (i * byte_size)
+            packed_type = read_uint(buffer, packed_types_offset + i, 0)
+            arr.append(read_buffer(buffer, item_offset, bit_size, packed_type, decode_strings))
+        return arr
+    if value_type in [0xb, 0xc, 0xd, 0xe, 0xf, 0x24]:
+        length_offset = read_indirect(buffer, offset, parent_bit_size) - byte_size
+        length = read_uint(buffer, length_offset, bit_size)
+        item_value_type = value_type - 0xb + 0x1
+        packed_type = item_value_type << 2
+        items_offset = read_indirect(buffer, offset, parent_bit_size)
+        return read_array(buffer, items_offset, length, bit_size, packed_type, decode_strings)
+    if 0x10 <= value_type <= 0x18:
+        length = (value_type - 0x10) // 3 + 2
+        value_type = ((value_type - 0x10) % 3) + 1
+        packed_type = value_type << 2
+        items_offset = read_indirect(buffer, offset, parent_bit_size)
+        return read_array(buffer, items_offset, length, bit_size, packed_type, decode_strings)
+    if value_type == 0x19:
+        data_offset = read_indirect(buffer, offset, parent_bit_size)
+        size_offset = data_offset - byte_size
+        size = read_uint(buffer, size_offset, bit_size)
+        return read_bytes(buffer, data_offset, size)
+    if value_type == 0x1a:
+        return read_uint(buffer, offset, parent_bit_size) > 0
+    raise FlexbufferParseException("Invalid flexbuffer value type %r" % value_type)
+
+
+def read_flexbuffer(buffer, decode_strings=True):
+    byte_size = read_uint(buffer, len(buffer) - 1, 0)
+    bit_size = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4}[byte_size]
+    packed_type = read_uint(buffer, len(buffer) - 2, 0)
+    offset = len(buffer) - 2 - byte_size
+    return read_buffer(buffer, offset, bit_size, packed_type, decode_strings)
+
+
 def make_graph(ops,
                op_types,
                interpreter,
@@ -279,7 +413,6 @@ def make_graph(ops,
     tf.disable_eager_execution()
     import tensorflow as tfv2
     from tensorflow.keras.layers import Layer
-    import struct
 
     # type conversion table
     cast_type_tf = {
@@ -349,6 +482,7 @@ def make_graph(ops,
     tensors = {}
     input_details = interpreter.get_input_details()
     ops_details = interpreter._get_ops_details()
+    TFLite_Detection_PostProcess_flg = False
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ op:', f'{Color.GREEN}Placeholder{Color.RESET}')
     for input in input_details:
@@ -2680,7 +2814,7 @@ def make_graph(ops,
         #     print('recurrent_kernel:', recurrent_kernel.shape)
         #     print('bias:', bias.shape)
 
-        #     lstm_tensor = tf.keras.layers.LSTM(units=units,
+        #     lstm_tensor = tf.keras.layers.LSTM(units=80,#units=units,
         #                                        use_bias=True,
         #                                        kernel_initializer=tf.keras.initializers.Constant(kernel),
         #                                        recurrent_initializer=tf.keras.initializers.Constant(recurrent_kernel),
@@ -2979,6 +3113,7 @@ def make_graph(ops,
                     tensors[output_detail['index']] = output_tensor
 
                 elif custom_op_type == 'TFLite_Detection_PostProcess':
+                    TFLite_Detection_PostProcess_flg = True
                     ################################################################### Extraction of boxes, scores, anchors, options
                     boxes = None
                     try:
@@ -3025,17 +3160,6 @@ def make_graph(ops,
                         0,0,32,65, #y_scale 10.0
                         6,14,6,6,14,14,6,106,14,14,14,55,38,1]
 
-                        parse_str = ''
-                        for val in custom_options:
-                            s = ''
-                            if val == 0:
-                                s = ' '
-                            else:
-                                s = chr(val)
-                            parse_str += s
-
-                        print(parse_str)
-
                         print(struct.pack('<i', 0), '@', 0) #detections_per_class b'\x00\x00\x00\x00' @ 0,0,0,0
                         print(struct.pack('<f', 5.0), '@', 5.0) #h_scale b'\x00\x00\xa0\x40' @ 5 -> 0,0,160,64
                         print(struct.pack('<i', 1), '@', 1) #max_classes_per_detection b'\x01\x00\x00\x00' @ 1,0,0,0
@@ -3061,17 +3185,26 @@ def make_graph(ops,
                         print(struct.unpack_from('<f', bytes([0,0,32,65]))[0]) #y_scale
                     """
                     options = op['custom_options']
-                    detections_per_class = struct.unpack_from('<i', bytes(options[184:188]))[0] #detections_per_class
-                    h_scale = struct.unpack_from('<f', bytes(options[188:192]))[0] #h_scale
-                    max_classes_per_detection = struct.unpack_from('<i', bytes(options[192:196]))[0] #max_classes_per_detection
-                    max_detections = struct.unpack_from('<i', bytes(options[196:200]))[0] #max_detections
-                    nms_iou_threshold = struct.unpack_from('<f', bytes(options[200:204]))[0] #nms_iou_threshold
-                    nms_score_threshold = struct.unpack_from('<f', bytes(options[204:208]))[0] #nms_score_threshold
-                    num_classes = struct.unpack_from('<i', bytes(options[208:212]))[0] #num_classes
-                    use_regular_nms = struct.unpack_from('<?', bytes(options[212:216]))[0] #use_regular_nms
-                    w_scale = struct.unpack_from('<f', bytes(options[216:220]))[0] #w_scale
-                    x_scale = struct.unpack_from('<f', bytes(options[220:224]))[0] #x_scale
-                    y_scale = struct.unpack_from('<f', bytes(options[224:228]))[0] #y_scale
+
+                    custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())
+                    print('custom_options:')
+                    pprint.pprint(custom_options)
+
+                    h_scale = custom_options['h_scale']
+                    w_scale = custom_options['w_scale']
+                    y_scale = custom_options['y_scale']
+                    x_scale = custom_options['x_scale']
+                    nms_score_threshold = 0.0 if (custom_options['nms_score_threshold'] == -float('inf') or custom_options['nms_score_threshold'] == float('inf')) else custom_options['nms_score_threshold']
+                    nms_iou_threshold = 0.0 if (custom_options['nms_iou_threshold'] == -float('inf') or custom_options['nms_iou_threshold'] == float('inf')) else custom_options['nms_iou_threshold']
+                    num_classes = custom_options['num_classes']
+                    max_classes_per_detection = custom_options['max_classes_per_detection']
+                    max_detections = custom_options['max_detections']
+                    use_regular_nms = custom_options['use_regular_nms']
+                    detections_per_class = 0
+                    try:
+                        detections_per_class = custom_options['detections_per_class']
+                    except:
+                        pass
 
                     output_detail1 = interpreter._get_tensor_details(op['outputs'][0])
                     output_detail2 = interpreter._get_tensor_details(op['outputs'][1])
@@ -3193,7 +3326,8 @@ def make_graph(ops,
             print(f'{Color.RED}ERROR:{Color.RESET} The {op_type} layer is not yet implemented.')
             sys.exit(-1)
 
-        # pprint.pprint(tensors[output_detail['index']])
+    return TFLite_Detection_PostProcess_flg
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -3376,14 +3510,18 @@ def main():
             pprint.pprint(input)
             input_node_names.append(input['name']+':0')
             tf_inputs.append(input['shape'])
-        print('outputs:')
         output_node_names = []
         output_node_names_non_suffix = []
+        print(f'{Color.REVERCE}TensorFlow/Keras model building process starts{Color.RESET}', '=' * 38)
         TFLite_Detection_PostProcess_flg = False
-
-        if 'TFLite_Detection_PostProcess' in output_details[0]['name']:
-            TFLite_Detection_PostProcess_flg = True
-
+        TFLite_Detection_PostProcess_flg = make_graph(ops,
+                                                      op_types,
+                                                      interpreter,
+                                                      replace_swish_and_hardswish,
+                                                      replace_prelu_and_minmax,
+                                                      optimizing_for_edgetpu_flg,
+                                                      optimizing_for_openvino_and_myriad)
+        print('outputs:')
         if not TFLite_Detection_PostProcess_flg:
             for output in output_details:
                 pprint.pprint(output)
@@ -3391,19 +3529,12 @@ def main():
                 output_node_names.append(output['name']+f':{name_count}')
                 output_node_names_non_suffix.append(output['name'])
         else:
+            for output in output_details:
+                pprint.pprint(output)
             output_node_names = ['TFLite_Detection_PostProcess0',
                                  'TFLite_Detection_PostProcess1',
                                  'TFLite_Detection_PostProcess2',
                                  'TFLite_Detection_PostProcess3']
-
-        print(f'{Color.REVERCE}TensorFlow/Keras model building process starts{Color.RESET}', '=' * 38)
-        make_graph(ops,
-                op_types,
-                interpreter,
-                replace_swish_and_hardswish,
-                replace_prelu_and_minmax,
-                optimizing_for_edgetpu_flg,
-                optimizing_for_openvino_and_myriad)
         print(f'{Color.GREEN}TensorFlow/Keras model building process complete!{Color.RESET}')
 
         # saved_model / .pb output
@@ -3433,12 +3564,20 @@ def main():
                         input_graph_def=graph.as_graph_def(),
                         output_node_names=output_node_names)
 
-                    tf.saved_model.simple_save(
-                        sess,
-                        model_output_path,
-                        inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
-                        outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(f'{t}:0') for t in output_node_names}
-                    )         
+                    try:
+                        tf.saved_model.simple_save(
+                            sess,
+                            model_output_path,
+                            inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(t) for t in input_node_names},
+                            outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(f'{t}:0') for t in output_node_names}
+                        )
+                    except:
+                        tf.saved_model.simple_save(
+                            sess,
+                            model_output_path,
+                            inputs= {re.sub(':0*', '', t): graph.get_tensor_by_name(re.sub(':0$', '', t)) for t in input_node_names},
+                            outputs={re.sub(':0*', '', t): graph.get_tensor_by_name(f'{t}:0') for t in output_node_names}
+                        )
 
                 if output_pb:
                     with tf.io.gfile.GFile(f'{model_output_path}/model_float32.pb', 'wb') as f:
