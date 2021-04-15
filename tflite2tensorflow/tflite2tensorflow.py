@@ -468,7 +468,7 @@ def make_graph(ops,
         else:
             ret_op = input_op * tf.nn.relu6(input_op + 3) * 0.16666666
         return ret_op
-    
+
     def get_op_name(name):
         name = re.sub('^;*', '', name)
         name = name.replace(';', '_')
@@ -487,7 +487,7 @@ def make_graph(ops,
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ op:', f'{Color.GREEN}Placeholder{Color.RESET}')
     for input in input_details:
         pprint.pprint(input)
-    
+
     for input_detail in input_details:
         tensors[input_detail['index']] = tf.placeholder(
             dtype=input_detail['dtype'],
@@ -692,7 +692,7 @@ def make_graph(ops,
             input_tensor = tensors[op['inputs'][0]]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.nn.relu6(input_tensor, name=get_op_name(output_detail['name']))
-            tensors[output_detail['index']] = output_tensor 
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'RESHAPE':
             input_tensor = tensors[op['inputs'][0]]
@@ -766,7 +766,7 @@ def make_graph(ops,
                 except:
                     param = interpreter._get_tensor_details(op['inputs'][1])
                     input_tensor_1 = interpreter.get_tensor(param['index'])
-            
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
             activation = options['fused_activation_function']
@@ -949,7 +949,7 @@ def make_graph(ops,
                                                                     bias_initializer=tf.keras.initializers.Constant(bias),
                                                                     name=dense_name)(output_tensor_reshape)
                     else:
-                        raise ValueError(input_tensor)                     
+                        raise ValueError(input_tensor)
             else:
                 try:
                     output_tensor_dense = tf.keras.layers.Dense(units=output_shape_array[-1],
@@ -973,7 +973,7 @@ def make_graph(ops,
                                                                     kernel_initializer=tf.keras.initializers.Constant(weights),
                                                                     name=dense_name)(input_tensor)
                     else:
-                        raise ValueError(input_tensor)                     
+                        raise ValueError(input_tensor)
 
             if not keep_dims:
                 output_tensor_dense = tf.squeeze(output_tensor_dense)
@@ -1084,7 +1084,7 @@ def make_graph(ops,
                 except:
                     param = interpreter._get_tensor_details(op['inputs'][1])
                     input_tensor2 = interpreter.get_tensor(param['index'])
-            
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.squared_difference(input_tensor1, input_tensor2, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
@@ -1210,21 +1210,21 @@ def make_graph(ops,
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
                         axis_detail = interpreter._get_tensor_details(op['inputs'][1])
-                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
+                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])
                 except:
                     input_tensor1 = tensors[op['inputs'][1]]
                     try:
                         input_tensor2 = tensors[op['inputs'][0]]
                     except:
                         axis_detail = interpreter._get_tensor_details(op['inputs'][0])
-                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])    
+                        input_tensor2 = interpreter.get_tensor(axis_detail['index'])
             else:
                 input_tensor1 = tensors[op['inputs'][1]]
                 try:
                     input_tensor2 = tensors[op['inputs'][0]]
                 except:
                     axis_detail = interpreter._get_tensor_details(op['inputs'][0])
-                    input_tensor2 = interpreter.get_tensor(axis_detail['index'])     
+                    input_tensor2 = interpreter.get_tensor(axis_detail['index'])
 
             options = op['builtin_options']
             num_splits = options['num_splits']
@@ -1260,7 +1260,7 @@ def make_graph(ops,
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 begin_detail = interpreter._get_tensor_details(op['inputs'][1])
-                input_tensor2 = interpreter.get_tensor(begin_detail['index'])     
+                input_tensor2 = interpreter.get_tensor(begin_detail['index'])
             input_tensor3 = None
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
@@ -1309,7 +1309,7 @@ def make_graph(ops,
                 input_tensor2 = interpreter.get_tensor(perm_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.transpose(input_tensor1, perm=input_tensor2, name=get_op_name(output_detail['name']))
-            tensors[output_detail['index']] = output_tensor            
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SPACE_TO_DEPTH':
             input_tensor1 = tensors[op['inputs'][0]]
@@ -1341,7 +1341,7 @@ def make_graph(ops,
                 perm_detail = interpreter._get_tensor_details(op['inputs'][1])
                 input_tensor2 = interpreter.get_tensor(perm_detail['index'])
             options = op['builtin_options']
-            keep_dims = options['keep_dims']
+            keepdims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.reduce_max(input_tensor1, axis=input_tensor2, keepdims=keepdims, name=get_op_name(output_detail['name']))
             tensors[output_detail['index']] = output_tensor
@@ -1539,7 +1539,7 @@ def make_graph(ops,
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.nn.log_softmax(input_tensor1, name=get_op_name(output_detail['name']))
-            tensors[output_detail['index']] = output_tensor  
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'L2_NORMALIZATION':
             input_tensor1 = None
@@ -1561,7 +1561,7 @@ def make_graph(ops,
                 output_tensor = tf.math.l2_normalize(input_tensor1, name=get_op_name(output_detail['name']))
             else:
                 raise ValueError(activation)
-            tensors[output_detail['index']] = output_tensor  
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'LESS':
             input_tensor1 = None
@@ -2310,7 +2310,7 @@ def make_graph(ops,
                                                               'max_output_size': input_tensor3,
                                                               'iou_threshold': input_tensor4,
                                                               'score_threshold': input_tensor5})(input_tensor1)
-            
+
             for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name()+'_selected_indices', get_op_name(output_detail['name'])+'_valid_outputs']):
                 tensors[output_index] = tf.identity(output, name=name)
 
@@ -2370,7 +2370,7 @@ def make_graph(ops,
                                                               'iou_threshold': input_tensor4,
                                                               'score_threshold': input_tensor5,
                                                               'soft_nms_sigma': input_tensor6})(input_tensor1)
-            
+
             for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name(output_detail['name'])+'_selected_indices', get_op_name(output_detail['name'])+'_selected_scores', get_op_name(output_detail['name'])+'_valid_outputs']):
                 tensors[output_index] = tf.identity(output, name=name)
 
@@ -2841,7 +2841,7 @@ def make_graph(ops,
         #         output_tensor = tf.nn.tanh(lstm_tensor, name=get_op_name(output_detail['name']))
         #     else:
         #         raise ValueError(activation)
-            
+
         #     tensors[output_detail['index']] = output_tensor
 
         # elif op_type == 'CONV_3D':
@@ -2871,7 +2871,7 @@ def make_graph(ops,
         #         padding =='same'
         #     else:
         #         raise ValueError(padding)
-             
+
         #     print('@@@@@@@@@@@@@@@@@@ output_detail[\'shape\']', output_detail['shape'])
 
         #     activation = options['fused_activation_function']
@@ -3485,10 +3485,10 @@ def main():
         print('[Group.1] output_pb')
         print('[Group.2] output_no_quant_float32_tflite, output_weight_quant_tflite, output_float16_quant_tflite, output_integer_quant_tflite, output_full_integer_quant_tflite, output_tfjs, output_tftrt, output_coreml, output_edgetpu, output_onnx, output_openvino_and_myriad')
         sys.exit(-1)
-    
+
     if optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu:
         print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu cannot be True at the same time.')
-        sys.exit(-1)  
+        sys.exit(-1)
 
     if tfv1_flg:
         from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
@@ -3709,7 +3709,7 @@ def main():
             input_shapes = tf_inputs
 
         def representative_dataset_gen():
-            if calib_ds_type == 'tfds': 
+            if calib_ds_type == 'tfds':
                 for data in raw_test_data.take(10):
                     image = data['image'].numpy()
                     images = []
