@@ -81,12 +81,12 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |66|NOT_EQUAL|tf.math.not_equal||
 |67|LOG|tf.math.log||
 |68|SQRT|tf.math.sqrt||
-|69|ARG_MIN|tf.math.argmin||
+|69|ARG_MIN|tf.math.argmin or tf.math.negative,tf.math.argmax||
 |70|REDUCE_PROD|tf.math.reduce_prod||
 |71|LOGICAL_OR|tf.math.logical_or||
 |72|LOGICAL_AND|tf.math.logical_and||
 |73|LOGICAL_NOT|tf.math.logical_not||
-|74|REDUCE_MIN|tf.math.reduce_min||
+|74|REDUCE_MIN|tf.math.reduce_min or tf.math.negative,tf.math.reduce_max||
 |75|REDUCE_ANY|tf.math.reduce_any||
 |76|SQUARE|tf.math.square||
 |77|ZEROS_LIKE|tf.zeros_like||
