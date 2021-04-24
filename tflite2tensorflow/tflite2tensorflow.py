@@ -997,7 +997,10 @@ def make_graph(ops,
                     return tf.image.resize_bilinear(x, (size_height, size_width))
                 else:
                     if optimizing_for_openvino_and_myriad:
-                        return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
+                        if half_pixel_centers:
+                            return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=False, half_pixel_centers=half_pixel_centers)
+                        else:
+                            return tf.image.resize_bilinear(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
                     else:
                         return tfv2.image.resize(x, [size_height, size_width], method='bilinear')
 
@@ -1027,7 +1030,10 @@ def make_graph(ops,
                     return tf.image.resize_nearest_neighbor(x, (size_height, size_width))
                 else:
                     if optimizing_for_openvino_and_myriad:
-                        return tf.image.resize_nearest_neighbor(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
+                        if half_pixel_centers:
+                            return tf.image.resize_nearest_neighbor(x, (size_height, size_width), align_corners=False, half_pixel_centers=half_pixel_centers)
+                        else:
+                            return tf.image.resize_nearest_neighbor(x, (size_height, size_width), align_corners=True, half_pixel_centers=half_pixel_centers)
                     else:
                         return tfv2.image.resize(x, [size_height, size_width], method='nearest')
 
@@ -1828,7 +1834,10 @@ def make_graph(ops,
             options = op['builtin_options']
             output_type = cast_type_tf[options['output_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.argmin(input_tensor1, axis=input_tensor2, output_type=output_type, name=get_op_name(output_detail['name']))
+            if not optimizing_for_openvino_and_myriad:
+                output_tensor = tf.math.argmin(input_tensor1, axis=input_tensor2, output_type=output_type, name=get_op_name(output_detail['name']))
+            else:
+                output_tensor = tf.math.argmax(-input_tensor1, axis=input_tensor2, output_type=output_type, name=get_op_name(output_detail['name']).replace('ArgMin', 'ArgMax'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'REDUCE_PROD':
@@ -1930,7 +1939,10 @@ def make_graph(ops,
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.reduce_min(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=get_op_name(output_detail['name']))
+            if not optimizing_for_openvino_and_myriad:
+                output_tensor = tf.math.reduce_min(input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=get_op_name(output_detail['name']))
+            else:
+                output_tensor = tf.math.reduce_max(-input_tensor1, axis=input_tensor2, keep_dims=keep_dims, name=get_op_name(output_detail['name']).replace('Min', 'Max'))
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'REDUCE_ANY':
