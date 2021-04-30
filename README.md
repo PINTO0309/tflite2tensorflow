@@ -241,8 +241,10 @@ The Windows version of flatc v1.12.0 can be downloaded from here.
 ## 4. Usage / Execution sample
 ### 4-1. Command line options
 ```
-usage: tflite2tensorflow [-h] --model_path MODEL_PATH --flatc_path
-                         FLATC_PATH --schema_path SCHEMA_PATH
+usage: tflite2tensorflow [-h]
+                         --model_path MODEL_PATH
+                         --flatc_path FLATC_PATH
+                         --schema_path SCHEMA_PATH
                          [--model_output_path MODEL_OUTPUT_PATH]
                          [--output_pb OUTPUT_PB]
                          [--output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE]
