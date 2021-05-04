@@ -171,6 +171,7 @@ $ xhost +local: && \
     -e DISPLAY=$DISPLAY \
     --privileged \
     pinto0309/tflite2tensorflow:latest
+$ cd workdir
 
 # For INT8 quantization and conversion to EdgeTPU model
 # "TFDS" is the folder where TensorFlow Datasets are downloaded.
@@ -185,6 +186,7 @@ $ xhost +local: && \
     -e DISPLAY=$DISPLAY \
     --privileged \
     pinto0309/tflite2tensorflow:latest
+$ cd workdir
 ```
 ### 3-2. **[Environment construction pattern 2]** Execution by Host machine
 To install using the Python Package Index (PyPI), use the following command.
@@ -247,33 +249,33 @@ usage: tflite2tensorflow
   --flatc_path FLATC_PATH
   --schema_path SCHEMA_PATH
   [--model_output_path MODEL_OUTPUT_PATH]
-  [--output_pb OUTPUT_PB]
-  [--output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE]
-  [--output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE]
-  [--output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE]
-  [--output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE]
-  [--output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE]
-  [--output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE]
+  [--output_pb]
+  [--output_no_quant_float32_tflite]
+  [--output_weight_quant_tflite]
+  [--output_float16_quant_tflite]
+  [--output_integer_quant_tflite]
+  [--output_full_integer_quant_tflite]
+  [--output_integer_quant_type]
   [--string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION]
   [--calib_ds_type CALIB_DS_TYPE]
   [--ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION]
   [--split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION]
   [--download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS]
-  [--tfds_download_flg TFDS_DOWNLOAD_FLG]
+  [--tfds_download_flg]
   [--load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY]
-  [--output_tfjs OUTPUT_TFJS]
-  [--output_tftrt OUTPUT_TFTRT]
-  [--output_coreml OUTPUT_COREML]
-  [--output_edgetpu OUTPUT_EDGETPU]
-  [--output_onnx OUTPUT_ONNX]
+  [--output_tfjs]
+  [--output_tftrt]
+  [--output_coreml]
+  [--output_edgetpu]
+  [--output_onnx]
   [--onnx_opset ONNX_OPSET]
-  [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
+  [--output_openvino_and_myriad]
   [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
   [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
-  [--optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD]
-  [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
-  [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
-  [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
+  [--optimizing_for_openvino_and_myriad]
+  [--replace_swish_and_hardswish]
+  [--optimizing_hardswish_for_edgetpu]
+  [--replace_prelu_and_minmax]
 
 optional arguments:
   -h, --help
@@ -286,17 +288,17 @@ optional arguments:
                         schema.fbs path (schema.fbs)
   --model_output_path MODEL_OUTPUT_PATH
                         The output folder path of the converted model file
-  --output_pb OUTPUT_PB
+  --output_pb
                         .pb output switch
-  --output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE
+  --output_no_quant_float32_tflite
                         float32 tflite output switch
-  --output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE
+  --output_weight_quant_tflite
                         weight quant tflite output switch
-  --output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE
+  --output_float16_quant_tflite
                         float16 quant tflite output switch
-  --output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE
+  --output_integer_quant_tflite
                         integer quant tflite output switch
-  --output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE
+  --output_full_integer_quant_tflite
                         full integer quant tflite output switch
   --output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE
                         Input and output types when doing Integer Quantization
@@ -317,7 +319,7 @@ optional arguments:
   --download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS
                         Download destination folder path for the calibration
                         dataset. Default: $HOME/TFDS
-  --tfds_download_flg TFDS_DOWNLOAD_FLG
+  --tfds_download_flg
                         True to automatically download datasets from
                         TensorFlow Datasets. True or False
   --load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY
@@ -325,94 +327,94 @@ optional arguments:
                         the numpy binary version of the calibration data.
                         Default: sample_npy/calibration_data_img_sample.npy
                         [20, 513, 513, 3] -> [Number of images, h, w, c]
-  --output_tfjs OUTPUT_TFJS
+  --output_tfjs
                         tfjs model output switch
-  --output_tftrt OUTPUT_TFTRT
+  --output_tftrt
                         tftrt model output switch
-  --output_coreml OUTPUT_COREML
+  --output_coreml
                         coreml model output switch
-  --output_edgetpu OUTPUT_EDGETPU
+  --output_edgetpu
                         edgetpu model output switch
-  --output_onnx OUTPUT_ONNX
+  --output_onnx
                         onnx model output switch
   --onnx_opset ONNX_OPSET
                         onnx opset version number
-  --output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD
+  --output_openvino_and_myriad
                         openvino model and myriad inference engine blob output switch
   --vpu_number_of_shaves VPU_NUMBER_OF_SHAVES
                         vpu number of shaves. Default: 4
   --vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES
                         vpu number of cmx slices. Default: 4
-  --optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD
+  --optimizing_for_openvino_and_myriad
                         Optimizing graph for openvino/myriad
-  --replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH
+  --replace_swish_and_hardswish
                         [Future support] Replace swish and hard-swish with
                         each other
-  --optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU
+  --optimizing_hardswish_for_edgetpu
                         Optimizing hardswish for edgetpu
-  --replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX
+  --replace_prelu_and_minmax
                         Replace prelu and minimum/maximum with each other
 ```
 ### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_pb True
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb
 ```
 or
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_pb True \
-  --optimizing_for_openvino_and_myriad True
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb \
+  --optimizing_for_openvino_and_myriad
 ```
 or
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_pb True \
-  --optimizing_hardswish_for_edgetpu True
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb \
+  --optimizing_hardswish_for_edgetpu
 ```
 ### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, CoreML and ONNX
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_no_quant_float32_tflite True \
-  --output_weight_quant_tflite True \
-  --output_float16_quant_tflite True \
-  --output_integer_quant_tflite True \
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_no_quant_float32_tflite \
+  --output_weight_quant_tflite \
+  --output_float16_quant_tflite \
+  --output_integer_quant_tflite \
   --string_formulas_for_normalization 'data / 255.0' \
-  --output_tfjs True \
-  --output_coreml True \
-  --output_tftrt True \
-  --output_onnx True \
+  --output_tfjs \
+  --output_coreml \
+  --output_tftrt \
+  --output_onnx \
   --onnx_opset 13 \
-  --output_openvino_and_myriad True
+  --output_openvino_and_myriad
 ```
 or
 ```
 $ tflite2tensorflow \
   --model_path segm_full_v679.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_no_quant_float32_tflite True \
-  --output_weight_quant_tflite True \
-  --output_float16_quant_tflite True \
-  --output_integer_quant_tflite True \
-  --output_edgetpu True \
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_no_quant_float32_tflite \
+  --output_weight_quant_tflite \
+  --output_float16_quant_tflite \
+  --output_integer_quant_tflite \
+  --output_edgetpu \
   --string_formulas_for_normalization 'data / 255.0' \
-  --output_tfjs True \
-  --output_coreml True \
-  --output_tftrt True \
-  --output_onnx True \
+  --output_tfjs \
+  --output_coreml \
+  --output_tftrt \
+  --output_onnx \
   --onnx_opset 13
 ```
 ### 4-4. Check the contents of the .npy file, which is a binary version of the image file
