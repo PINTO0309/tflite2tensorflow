@@ -348,8 +348,7 @@ optional arguments:
   --optimizing_for_openvino_and_myriad
                         Optimizing graph for openvino/myriad
   --replace_swish_and_hardswish
-                        [Future support] Replace swish and hard-swish with
-                        each other
+                        Replace swish and hard-swish with each other
   --optimizing_hardswish_for_edgetpu
                         Optimizing hardswish for edgetpu
   --replace_prelu_and_minmax
