@@ -241,41 +241,43 @@ The Windows version of flatc v1.12.0 can be downloaded from here.
 ## 4. Usage / Execution sample
 ### 4-1. Command line options
 ```
-usage: tflite2tensorflow [-h]
-                         --model_path MODEL_PATH
-                         --flatc_path FLATC_PATH
-                         --schema_path SCHEMA_PATH
-                         [--model_output_path MODEL_OUTPUT_PATH]
-                         [--output_pb OUTPUT_PB]
-                         [--output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE]
-                         [--output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE]
-                         [--output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE]
-                         [--output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE]
-                         [--output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE]
-                         [--output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE]
-                         [--string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION]
-                         [--calib_ds_type CALIB_DS_TYPE]
-                         [--ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION]
-                         [--split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION]
-                         [--download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS]
-                         [--tfds_download_flg TFDS_DOWNLOAD_FLG]
-                         [--load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY]
-                         [--output_tfjs OUTPUT_TFJS]
-                         [--output_tftrt OUTPUT_TFTRT]
-                         [--output_coreml OUTPUT_COREML]
-                         [--output_edgetpu OUTPUT_EDGETPU]
-                         [--output_onnx OUTPUT_ONNX]
-                         [--onnx_opset ONNX_OPSET]
-                         [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
-                         [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
-                         [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
-                         [--optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD]
-                         [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
-                         [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
-                         [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
+usage: tflite2tensorflow
+  [-h]
+  --model_path MODEL_PATH
+  --flatc_path FLATC_PATH
+  --schema_path SCHEMA_PATH
+  [--model_output_path MODEL_OUTPUT_PATH]
+  [--output_pb OUTPUT_PB]
+  [--output_no_quant_float32_tflite OUTPUT_NO_QUANT_FLOAT32_TFLITE]
+  [--output_weight_quant_tflite OUTPUT_WEIGHT_QUANT_TFLITE]
+  [--output_float16_quant_tflite OUTPUT_FLOAT16_QUANT_TFLITE]
+  [--output_integer_quant_tflite OUTPUT_INTEGER_QUANT_TFLITE]
+  [--output_full_integer_quant_tflite OUTPUT_FULL_INTEGER_QUANT_TFLITE]
+  [--output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE]
+  [--string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION]
+  [--calib_ds_type CALIB_DS_TYPE]
+  [--ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION]
+  [--split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION]
+  [--download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS]
+  [--tfds_download_flg TFDS_DOWNLOAD_FLG]
+  [--load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY]
+  [--output_tfjs OUTPUT_TFJS]
+  [--output_tftrt OUTPUT_TFTRT]
+  [--output_coreml OUTPUT_COREML]
+  [--output_edgetpu OUTPUT_EDGETPU]
+  [--output_onnx OUTPUT_ONNX]
+  [--onnx_opset ONNX_OPSET]
+  [--output_openvino_and_myriad OUTPUT_OPENVINO_AND_MYRIAD]
+  [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
+  [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
+  [--optimizing_for_openvino_and_myriad OPTIMIZING_FOR_OPENVINO_AND_MYRIAD]
+  [--replace_swish_and_hardswish REPLACE_SWISH_AND_HARDSWISH]
+  [--optimizing_hardswish_for_edgetpu OPTIMIZING_HARDSWISH_FOR_EDGETPU]
+  [--replace_prelu_and_minmax REPLACE_PRELU_AND_MINMAX]
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help
+                        show this help message and exit
   --model_path MODEL_PATH
                         input tflite model path (*.tflite)
   --flatc_path FLATC_PATH
