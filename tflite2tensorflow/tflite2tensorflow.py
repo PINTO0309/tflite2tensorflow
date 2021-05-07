@@ -4061,7 +4061,7 @@ def main():
     parser.add_argument('--vpu_number_of_shaves', type=int, default=4, help='vpu number of shaves. Default: 4')
     parser.add_argument('--vpu_number_of_cmx_slices', type=int, default=4, help='vpu number of cmx slices. Default: 4')
     parser.add_argument('--optimizing_for_openvino_and_myriad', action='store_true', help='Optimizing graph for openvino/myriad')
-    parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='[Future support] Replace swish and hard-swish with each other')
+    parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
     args = parser.parse_args()
