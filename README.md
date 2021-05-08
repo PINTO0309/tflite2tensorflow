@@ -107,7 +107,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |92|MATRIX_DIAG|tf.linalg.diag||
 |93|ROUND|tf.math.round||
 |94|NON_MAX_SUPPRESSION_V4|tf.raw_ops.NonMaxSuppressionV4||
-|95|NON_MAX_SUPPRESSION_V5|tf.raw_ops.NonMaxSuppressionV5||
+|95|NON_MAX_SUPPRESSION_V5|tf.raw_ops.NonMaxSuppressionV5, tf.raw_ops.NonMaxSuppressionV4||
 |96|SCATTER_ND|tf.scatter_nd||
 |97|SEGMENT_SUM|tf.math.segment_sum||
 |98|CUMSUM|tf.math.cumsum||
