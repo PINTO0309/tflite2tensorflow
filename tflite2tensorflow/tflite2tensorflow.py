@@ -240,7 +240,8 @@ op_new_types = {
     136: 'HASHTABLE',
     137: 'HASHTABLE_FIND',
     138: 'HASHTABLE_IMPORT',
-    139: 'HASHTABLE_SIZE'
+    139: 'HASHTABLE_SIZE',
+    140: 'REDUCE_ALL'
 }
 
 
