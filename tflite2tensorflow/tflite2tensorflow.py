@@ -2844,10 +2844,12 @@ def make_graph(
 
             output_tensor = tf.keras.layers.Lambda(
                 nmsv4,
-                arguments={'scores': input_tensor2,
-                            'max_output_size': input_tensor3,
-                            'iou_threshold': input_tensor4,
-                            'score_threshold': input_tensor5}
+                arguments={
+                    'scores': input_tensor2,
+                    'max_output_size': input_tensor3,
+                    'iou_threshold': input_tensor4,
+                    'score_threshold': input_tensor5
+                }
             )(input_tensor1)
 
             for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name()+'_selected_indices', get_op_name(output_detail['name'])+'_valid_outputs']):
@@ -2903,16 +2905,53 @@ def make_graph(
                     soft_nms_sigma=soft_nms_sigma
                 )
 
-            output_tensor = tf.keras.layers.Lambda(
-                nmsv5,
-                arguments={'scores': input_tensor2,
-                            'max_output_size': input_tensor3,
-                            'iou_threshold': input_tensor4,
-                            'score_threshold': input_tensor5,
-                            'soft_nms_sigma': input_tensor6})(input_tensor1)
+            def nmsv4(x, scores, max_output_size, iou_threshold, score_threshold):
+                return tf.raw_ops.NonMaxSuppressionV4(
+                    boxes=x,
+                    scores=scores,
+                    max_output_size=max_output_size,
+                    iou_threshold=iou_threshold,
+                    score_threshold=score_threshold
+                )
 
-            for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name(output_detail['name'])+'_selected_indices', get_op_name(output_detail['name'])+'_selected_scores', get_op_name(output_detail['name'])+'_valid_outputs']):
-                tensors[output_index] = tf.identity(output, name=name)
+            selected_indices = None
+            selected_scores = None
+            valid_outputs = None
+
+            if not optimizing_for_openvino_and_myriad:
+                # NonMaxSuppressionV5
+                output_tensor = tf.keras.layers.Lambda(
+                    nmsv5,
+                    arguments={
+                        'scores': input_tensor2,
+                        'max_output_size': input_tensor3,
+                        'iou_threshold': input_tensor4,
+                        'score_threshold': input_tensor5,
+                        'soft_nms_sigma': input_tensor6
+                    }
+                )(input_tensor1)
+                selected_indices = output_tensor[0]
+                selected_scores = output_tensor[1]
+                valid_outputs = output_tensor[2]
+
+            else:
+                # NonMaxSuppressionV4 - For Myriad Inference Engine Blob
+                output_tensor = tf.keras.layers.Lambda(
+                    nmsv4,
+                    arguments={
+                        'scores': input_tensor2,
+                        'max_output_size': input_tensor3,
+                        'iou_threshold': input_tensor4,
+                        'score_threshold': input_tensor5
+                    }
+                )(input_tensor1)
+                selected_indices = output_tensor[0]
+                selected_scores = tf.gather(input_tensor2, selected_indices)
+                valid_outputs = output_tensor[1]
+
+            tensors[op['outputs'][0]] = tf.identity(selected_indices, name=get_op_name(output_detail['name'])+'_selected_indices')
+            tensors[op['outputs'][1]] = tf.identity(selected_scores, name=get_op_name(output_detail['name'])+'_selected_scores')
+            tensors[op['outputs'][2]] = tf.identity(valid_outputs, name=get_op_name(output_detail['name'])+'_valid_outputs')
 
         elif op_type == 'SCATTER_ND':
             input_tensor1 = None
