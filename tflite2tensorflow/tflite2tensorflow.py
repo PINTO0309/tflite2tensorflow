@@ -1152,7 +1152,12 @@ def make_graph(
                         raise ValueError(input_tensor)
 
             if not keep_dims:
-                output_tensor_dense = tf.squeeze(output_tensor_dense)
+                try:
+                    output_tensor_dense = tf.squeeze(output_tensor_dense, axis=-1)
+                except:
+                    pass
+            else:
+                pass
 
             output_tensor = tf.identity(
                 output_tensor_dense,
