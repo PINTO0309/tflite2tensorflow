@@ -136,8 +136,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 
 ## 2. Environment
 - Python3.6+
-- TensorFlow v2.4.0+ or tf-nightly **`pip3 install --upgrade tensorflow`** or **`pip3 install --upgrade tf-nightly`**
-- TensorFlow Lite v2.4.1 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
+- TensorFlow v2.5.0+ or tf-nightly **`pip3 install --upgrade tensorflow`** or **`pip3 install --upgrade tf-nightly`**
+- TensorFlow Lite v2.5.0 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
