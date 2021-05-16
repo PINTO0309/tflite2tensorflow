@@ -24,6 +24,7 @@ $ python3 tflite2tensorflow.py \
 import os
 import sys
 import numpy as np
+np.random.seed(0)
 import json
 import warnings
 import logging
@@ -37,6 +38,7 @@ import argparse
 from pathlib import Path
 import re
 import struct
+import itertools
 
 class Color:
     BLACK          = '\033[30m'
@@ -1151,7 +1153,8 @@ def make_graph(
                     else:
                         raise ValueError(input_tensor)
 
-            if not keep_dims:
+            pprint.pprint(output_tensor_dense)
+            if not keep_dims and not (len(output_tensor_dense.shape) == 2 and output_tensor_dense.shape[1] == 1):
                 try:
                     output_tensor_dense = tf.squeeze(output_tensor_dense, axis=-1)
                 except:
@@ -4473,7 +4476,8 @@ def main():
                     traceback.print_exc()
             else:
                 pass
-            input_shapes = tf_inputs
+        input_shapes = tf_inputs
+        input_shapes_permutations = list(itertools.permutations(input_shapes))
 
         def representative_dataset_gen():
             if calib_ds_type == 'tfds':
@@ -4486,14 +4490,23 @@ def main():
                         tmp_image = tmp_image[np.newaxis,:,:,:]
                         images.append(tmp_image)
                     yield images
+
             elif calib_ds_type == 'numpy':
                 for idx in range(raw_test_data.shape[0]):
                     image = raw_test_data[idx]
                     images = []
-                    for shape in input_shapes:
-                        data = tf.image.resize(image, (shape[1], shape[2]))
-                        tmp_image = eval(string_formulas_for_normalization) # Default: (data - [127.5,127.5,127.5]) / [127.5,127.5,127.5]
-                        tmp_image = tmp_image[np.newaxis,:,:,:]
+                    data = None
+                    tmp_image = None
+                    for shape in input_shapes_permutations[input_shapes_permutations_idx]:
+                        if len(shape) == 4 and shape[0] == 1 and shape[3] == 3:
+                            data = tf.image.resize(image, (shape[1], shape[2]))
+                            tmp_image = eval(string_formulas_for_normalization) # Default: (data - [127.5,127.5,127.5]) / [127.5,127.5,127.5]
+                            tmp_image = tmp_image[np.newaxis,:,:,:]
+                        else:
+                            # Since the input data of multiple inputs cannot be predicted, random numbers are generated and given for the time being.
+                            shape_tuple = tuple(shape)
+                            data = np.random.random_sample(shape_tuple).astype(np.float32)
+                            tmp_image = data
                         images.append(tmp_image)
                     yield images
 
@@ -4504,11 +4517,22 @@ def main():
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.SELECT_TF_OPS]
-                converter.representative_dataset = representative_dataset_gen
-                tflite_model = converter.convert()
+                tflite_model = None
+                input_shapes_permutations_idx = 0
+                for _ in input_shapes_permutations:
+                    try:
+                        converter.representative_dataset = representative_dataset_gen
+                        tflite_model = converter.convert()
+                        break
+                    except Exception as e:
+                        input_shapes_permutations_idx += 1
+                        if input_shapes_permutations_idx > len(input_shapes_permutations):
+                            print(f'{Color.RED}ERROR:{Color.RESET}', e)
+
                 with open(f'{model_output_path}/model_integer_quant.tflite', 'wb') as w:
                     w.write(tflite_model)
                 print(f'{Color.GREEN}Integer Quantization complete!{Color.RESET} - {model_output_path}/model_integer_quant.tflite')
+
             except Exception as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e)
                 import traceback
@@ -4530,11 +4554,22 @@ def main():
                     inf_type = tf.int8
                 converter.inference_input_type = inf_type
                 converter.inference_output_type = inf_type
-                converter.representative_dataset = representative_dataset_gen
-                tflite_model = converter.convert()
+                tflite_model = None
+                input_shapes_permutations_idx = 0
+                for _ in input_shapes_permutations:
+                    try:
+                        converter.representative_dataset = representative_dataset_gen
+                        tflite_model = converter.convert()
+                        break
+                    except Exception as e:
+                        input_shapes_permutations_idx += 1
+                        if input_shapes_permutations_idx > len(input_shapes_permutations):
+                            print(f'{Color.RED}ERROR:{Color.RESET}', e)
+
                 with open(f'{model_output_path}/model_full_integer_quant.tflite', 'wb') as w:
                     w.write(tflite_model)
                 print(f'{Color.GREEN}Full Integer Quantization complete!{Color.RESET} - {model_output_path}/model_full_integer_quant.tflite')
+
             except Exception as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e)
                 import traceback
@@ -4588,22 +4623,43 @@ def main():
             try:
                 def input_fn():
                     input_shapes = []
-                    for tf_input in tf_inputs:
-                        input_shapes.append(np.zeros(tf_input).astype(np.float32))
+                    for shape in input_shapes_permutations[input_shapes_permutations_idx]:
+                        shape_tuple = tuple(shape)
+                        input_shapes.append(np.zeros(shape_tuple).astype(np.float32))
                     yield input_shapes
 
                 print(f'{Color.REVERCE}TF-TRT (TensorRT) Float32 convertion started{Color.RESET}', '=' * 40)
                 params = tf.experimental.tensorrt.ConversionParams(precision_mode='FP32', maximum_cached_engines=10000)
                 converter = tf.experimental.tensorrt.Converter(input_saved_model_dir=model_output_path, conversion_params=params)
                 converter.convert()
-                converter.build(input_fn=input_fn)
+
+                input_shapes_permutations_idx = 0
+                for _ in input_shapes_permutations:
+                    try:
+                        converter.build(input_fn=input_fn)
+                        break
+                    except Exception as e:
+                        input_shapes_permutations_idx += 1
+                        if input_shapes_permutations_idx > len(input_shapes_permutations):
+                            print(f'{Color.RED}ERROR:{Color.RESET}', e)
+
                 converter.save(f'{model_output_path}/tensorrt_saved_model_float32')
                 print(f'{Color.GREEN}TF-TRT (TensorRT) convertion complete!{Color.RESET} - {model_output_path}/tensorrt_saved_model_float32')
                 print(f'{Color.REVERCE}TF-TRT (TensorRT) Float16 convertion started{Color.RESET}', '=' * 40)
                 params = tf.experimental.tensorrt.ConversionParams(precision_mode='FP16', maximum_cached_engines=10000)
                 converter = tf.experimental.tensorrt.Converter(input_saved_model_dir=model_output_path, conversion_params=params)
                 converter.convert()
-                converter.build(input_fn=input_fn)
+
+                input_shapes_permutations_idx = 0
+                for _ in input_shapes_permutations:
+                    try:
+                        converter.build(input_fn=input_fn)
+                        break
+                    except Exception as e:
+                        input_shapes_permutations_idx += 1
+                        if input_shapes_permutations_idx > len(input_shapes_permutations):
+                            print(f'{Color.RED}ERROR:{Color.RESET}', e)
+
                 converter.save(f'{model_output_path}/tensorrt_saved_model_float16')
                 print(f'{Color.GREEN}TF-TRT (TensorRT) convertion complete!{Color.RESET} - {model_output_path}/tensorrt_saved_model_float16')
             except Exception as e:
