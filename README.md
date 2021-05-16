@@ -204,15 +204,15 @@ $ sudo pip3 uninstall tensorboard-plugin-wit tb-nightly tensorboard \
                       tensorflow tf-nightly tensorflow_estimator tflite_runtime -y
 
 ### Customized version of TensorFlow Lite installation
-$ sudo gdown --id 1RWZmfFgtxm3muunv6BSf4yU29SKKFXIh
-$ sudo chmod +x tflite_runtime-2.4.1-py3-none-any.whl
-$ sudo pip3 install tflite_runtime-2.4.1-py3-none-any.whl
+$ sudo gdown --id 17ZmkAqIthgQ9x32BUYYkTBweyqIQWuRa
+$ sudo chmod +x tflite_runtime-2.5.0-cp36-none-linux_x86_64.whl
+$ sudo pip3 install tflite_runtime-2.5.0-cp36-none-linux_x86_64.whl
 
 ### Install the Customized Full TensorFlow package
 ### (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
-$ gdown --id 1nTSYsPXbZTIO2B7nIMtSpn5bBMlCr46N \
-  && pip3 install --force-reinstall tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl \
-  && rm tensorflow-2.4.1-cp36-cp36m-linux_x86_64.whl
+$ gdown --id 15TIFvuyiOeP4uHcXTkiw8RaacG3t1UPo \
+  && pip3 install --force-reinstall tensorflow-2.5.0-cp36-cp36m-linux_x86_64.whl \
+  && rm tensorflow-2.5.0-cp36-cp36m-linux_x86_64.whl
 
  or
 
