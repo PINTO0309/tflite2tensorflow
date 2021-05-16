@@ -1153,7 +1153,6 @@ def make_graph(
                     else:
                         raise ValueError(input_tensor)
 
-            pprint.pprint(output_tensor_dense)
             if not keep_dims and not (len(output_tensor_dense.shape) == 2 and output_tensor_dense.shape[1] == 1):
                 try:
                     output_tensor_dense = tf.squeeze(output_tensor_dense, axis=-1)
