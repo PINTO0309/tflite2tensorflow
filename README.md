@@ -162,7 +162,7 @@ $ docker build -t pinto0309/tflite2tensorflow:latest .
 
 # When TensorFlow Datasets are not used
 $ xhost +local: && \
-  docker run --gpus all -it --rm \
+  docker run -it --rm \
     -v `pwd`:/home/user/workdir \
     -v /tmp/.X11-unix/:/tmp/.X11-unix:rw \
     --device /dev/video0:/dev/video0:mwr \
@@ -176,7 +176,7 @@ $ cd workdir
 # For INT8 quantization and conversion to EdgeTPU model
 # "TFDS" is the folder where TensorFlow Datasets are downloaded.
 $ xhost +local: && \
-  docker run --gpus all -it --rm \
+  docker run -it --rm \
     -v `pwd`:/home/user/workdir \
     -v ${HOME}/TFDS:/workspace/TFDS \
     -v /tmp/.X11-unix/:/tmp/.X11-unix:rw \
