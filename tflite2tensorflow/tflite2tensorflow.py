@@ -1157,7 +1157,11 @@ def make_graph(
                 try:
                     output_tensor_dense = tf.squeeze(output_tensor_dense, axis=-1)
                 except:
-                    pass
+                    if len(output_tensor_dense.shape) == 3 and (output_tensor_dense.shape[1] == output_tensor_dense.shape[2]) and output_tensor_dense.shape[0] == 1:
+                        try:
+                            output_tensor_dense = tf.squeeze(output_tensor_dense, axis=0)
+                        except:
+                            pass
             else:
                 pass
 
