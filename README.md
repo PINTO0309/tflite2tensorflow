@@ -133,6 +133,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |118|ONE_HOT|tf.one_hot||
 |119|FlexMultinomial|tf.random.categorical|Flex OP|
 |120|FlexAll|tf.math.reduce_all|Flex OP|
+|121|FlexErf|tf.math.erf|Flex OP|
 
 ## 2. Environment
 - Python3.6+
