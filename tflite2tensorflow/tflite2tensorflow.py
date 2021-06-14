@@ -478,6 +478,7 @@ def make_graph(
     def get_op_name(name):
         name = re.sub('^;*', '', name)
         name = name.replace(';', '_')
+        name = name.replace(',', '_')
         rep = re.search(':.*', name)
         if rep:
             op_name = name.replace(rep.group(0), '')
@@ -4060,6 +4061,21 @@ def make_graph(
                         input_tensor1,
                         axis=input_tensor2,
                         keepdims=keepdims,
+                        name=get_op_name(output_detail['name'])
+                    )
+                    tensors[output_detail['index']] = output_tensor
+
+                elif custom_op_type == 'FlexErf':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    input_tensor2 = None
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = tf.math.erf(
+                        input_tensor1,
                         name=get_op_name(output_detail['name'])
                     )
                     tensors[output_detail['index']] = output_tensor
