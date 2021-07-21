@@ -909,7 +909,13 @@ def make_graph(
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CONCATENATION':
-            inputs = [tensors[input] for input in op['inputs']]
+            inputs = []
+            for inp_op_idx in op['inputs']:
+                try:
+                    inputs.append(tensors[inp_op_idx])
+                except:
+                    inputs.append(interpreter.get_tensor(inp_op_idx))
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
             output_tensor = tf.concat(
