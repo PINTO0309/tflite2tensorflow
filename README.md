@@ -137,8 +137,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 
 ## 2. Environment
 - Python3.6+
-- TensorFlow v2.5.0+ or tf-nightly **`pip3 install --upgrade tensorflow`** or **`pip3 install --upgrade tf-nightly`**
-- TensorFlow Lite v2.5.0 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
+- TensorFlow v2.6.0+ or tf-nightly
+- TensorFlow Lite v2.6.0 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
@@ -195,11 +195,11 @@ $ cd workdir
 ### 3-2. **[Environment construction pattern 2]** Execution by Host machine
 To install using the Python Package Index (PyPI), use the following command.
 ```
-$ pip3 install tflite2tensorflow --upgrade
+$ pip3 install --user --upgrade tflite2tensorflow
 ```
 Or, To install with the latest source code of the main branch, use the following command.
 ```
-$ pip3 install git+https://github.com/PINTO0309/tflite2tensorflow --upgrade
+$ pip3 install --user --upgrade git+https://github.com/PINTO0309/tflite2tensorflow
 ```
 Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK. If tflite_runtime does not install properly, please follow the instructions in the next article to build a custom build in the environment you are using. **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
 ```
@@ -207,21 +207,26 @@ $ sudo pip3 uninstall tensorboard-plugin-wit tb-nightly tensorboard \
                       tf-estimator-nightly tensorflow-gpu \
                       tensorflow tf-nightly tensorflow_estimator tflite_runtime -y
 
+$ APPVER=v1.10.0
+$ TENSORFLOWVER=2.6.0rc1
+
 ### Customized version of TensorFlow Lite installation
-$ sudo gdown --id 17ZmkAqIthgQ9x32BUYYkTBweyqIQWuRa
-$ sudo chmod +x tflite_runtime-2.5.0-cp36-none-linux_x86_64.whl
-$ sudo pip3 install tflite_runtime-2.5.0-cp36-none-linux_x86_64.whl
+$ wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPVER}/tflite_runtime-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && sudo chmod +x tflite_runtime-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && pip3 install --user --force-reinstall tflite_runtime-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && rm tflite_runtime-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl
 
 ### Install the Customized Full TensorFlow package
 ### (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
-$ gdown --id 15TIFvuyiOeP4uHcXTkiw8RaacG3t1UPo \
-  && pip3 install --force-reinstall tensorflow-2.5.0-cp36-cp36m-linux_x86_64.whl \
-  && rm tensorflow-2.5.0-cp36-cp36m-linux_x86_64.whl
+$ wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPVER}/tflite_runtime-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && sudo chmod +x tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && pip3 install --user --force-reinstall tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+  && rm tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl
 
  or
 
 ### Install the Non-customized TensorFlow package
-$ sudo pip3 install tf-nightly
+$ pip3 install --user tf-nightly
 
 ### Download flatc
 $ flatbuffers/1.12.0/download.sh
