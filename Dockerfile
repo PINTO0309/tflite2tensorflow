@@ -103,9 +103,9 @@ RUN wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPV
     && rm -rf /var/lib/apt/lists/*
 
 # Install Custom TensorFlow (MediaPipe Custom OP, FlexDelegate, XNNPACK enabled)
-RUN wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPVER}/tensorflow-${TENSORFLOWVER}-cp36-cp36m-linux_x86_64.whl \
-    && pip3 install --force-reinstall tensorflow-${TENSORFLOWVER}-cp36-cp36m-linux_x86_64.whl \
-    && rm tensorflow-${TENSORFLOWVER}-cp36-cp36m-linux_x86_64.whl \
+RUN wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPVER}/tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+    && pip3 install --force-reinstall tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
+    && rm tensorflow-${TENSORFLOWVER}-cp36-none-linux_x86_64.whl \
     && pip cache purge \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
