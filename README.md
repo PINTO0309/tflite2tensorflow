@@ -153,6 +153,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - **[edgetpu_compiler](https://coral.ai/docs/edgetpu/compiler/#system-requirements)**
 - **[OpenVINO - Linux](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_linux.html)**
 - **[OpenVINO - Windows](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_windows.html)**
+- Intel-Media-SDK
+- Intel iHD GPU (iGPU) support
 - Docker
 
 ## 3. Setup
