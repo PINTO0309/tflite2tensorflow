@@ -4137,6 +4137,7 @@ def main():
     parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
+    parser.add_argument('--use_experimental_new_quantizer', action='store_true', help='Use MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
     args = parser.parse_args()
 
     model, ext = os.path.splitext(args.model_path)
@@ -4175,6 +4176,7 @@ def main():
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
+    use_experimental_new_quantizer = args.use_experimental_new_quantizer
 
     if output_coreml:
         import coremltools as ct
@@ -4540,6 +4542,7 @@ def main():
             try:
                 print(f'{Color.REVERCE}Integer Quantization started{Color.RESET}', '=' * 56)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
+                converter.experimental_new_quantizer = use_experimental_new_quantizer
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.SELECT_TF_OPS]
                 tflite_model = None
@@ -4568,6 +4571,7 @@ def main():
             try:
                 print(f'{Color.REVERCE}Full Integer Quantization started{Color.RESET}', '=' * 51)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
+                converter.experimental_new_quantizer = use_experimental_new_quantizer
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.SELECT_TF_OPS]
                 inf_type = None
@@ -4714,7 +4718,7 @@ def main():
                     [
                         'edgetpu_compiler',
                         '-o', model_output_path,
-                        '-sa',
+                        '-sad',
                         f'{model_output_path}/model_full_integer_quant.tflite'
                     ],
                     stderr=subprocess.PIPE
