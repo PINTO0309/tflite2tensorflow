@@ -4086,6 +4086,34 @@ def make_graph(
                     )
                     tensors[output_detail['index']] = output_tensor
 
+                elif custom_op_type == 'FlexRoll':
+                    input_tensor1 = None
+                    try:
+                        input_tensor1 = tensors[op['inputs'][0]]
+                    except:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                        input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                    input_tensor2 = None
+                    try:
+                        input_tensor2 = tensors[op['inputs'][1]]
+                    except:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                        input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                    input_tensor3 = None
+                    try:
+                        input_tensor3 = tensors[op['inputs'][2]]
+                    except:
+                        input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                        input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    output_tensor = tf.roll(
+                        input_tensor1,
+                        shift=input_tensor2,
+                        axis=input_tensor3,
+                        name=get_op_name(output_detail['name'])
+                    )
+                    tensors[output_detail['index']] = output_tensor
+
                 else:
                     print(f'{Color.RED}ERROR:{Color.RESET} The {custom_op_type} layer is not yet implemented.')
                     pprint.pprint(op)
