@@ -2063,7 +2063,7 @@ def make_graph(
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
             try:
-                input_tensor3 = tensors[op['inputs'][1]]
+                input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
                 input_tensor3 = interpreter.get_tensor(input_detail3['index'])
