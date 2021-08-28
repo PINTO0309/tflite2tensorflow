@@ -2871,7 +2871,7 @@ def make_graph(
                 }
             )(input_tensor1)
 
-            for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name()+'_selected_indices', get_op_name(output_detail['name'])+'_valid_outputs']):
+            for output_index, output, name in zip(op['outputs'], output_tensor, [get_op_name(output_detail['name'])+'_selected_indices', get_op_name(output_detail['name'])+'_valid_outputs']):
                 tensors[output_index] = tf.identity(output, name=name)
 
         elif op_type == 'NON_MAX_SUPPRESSION_V5':
