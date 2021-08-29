@@ -4156,6 +4156,8 @@ def main():
     parser.add_argument('--output_tftrt', action='store_true', help='tftrt model output switch')
     parser.add_argument('--output_coreml', action='store_true', help='coreml model output switch')
     parser.add_argument('--output_edgetpu', action='store_true', help='edgetpu model output switch')
+    parser.add_argument('--edgetpu_compiler_timeout', type=int, default=3600, help='edgetpu_compiler timeout for one compilation process in seconds. Default: 3600')
+    parser.add_argument('--edgetpu_num_segments', type=int, default=1, help='Partition the model into [num_segments] segments. Default: 1 (no partition)')
     parser.add_argument('--output_onnx', action='store_true', help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
     parser.add_argument('--output_openvino_and_myriad', action='store_true', help='openvino model and myriad inference engine blob output switch')
@@ -4195,6 +4197,8 @@ def main():
     output_tftrt = args.output_tftrt
     output_coreml = args.output_coreml
     output_edgetpu = args.output_edgetpu
+    edgetpu_compiler_timeout = args.edgetpu_compiler_timeout
+    edgetpu_num_segments = args.edgetpu_num_segments
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
     output_openvino_and_myriad = args.output_openvino_and_myriad
@@ -4747,6 +4751,8 @@ def main():
                         'edgetpu_compiler',
                         '-o', model_output_path,
                         '-sad',
+                        '-t', edgetpu_compiler_timeout,
+                        '-n', edgetpu_num_segments,
                         f'{model_output_path}/model_full_integer_quant.tflite'
                     ],
                     stderr=subprocess.PIPE

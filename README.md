@@ -295,6 +295,8 @@ usage: tflite2tensorflow
   [--output_tftrt]
   [--output_coreml]
   [--output_edgetpu]
+  [--edgetpu_compiler_timeout EDGETPU_COMPILER_TIMEOUT]
+  [--edgetpu_num_segments EDGETPU_NUM_SEGMENTS]
   [--output_onnx]
   [--onnx_opset ONNX_OPSET]
   [--output_openvino_and_myriad]
@@ -364,6 +366,12 @@ optional arguments:
                         coreml model output switch
   --output_edgetpu
                         edgetpu model output switch
+  --edgetpu_compiler_timeout
+                        edgetpu_compiler timeout for one compilation process in seconds.
+                        Default: 3600
+  --edgetpu_num_segments
+                        Partition the model into 'num_segments' segments.
+                        Default: 1 (no partition)
   --output_onnx
                         onnx model output switch
   --onnx_opset ONNX_OPSET
