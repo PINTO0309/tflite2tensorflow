@@ -4167,7 +4167,7 @@ def main():
     parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
-    parser.add_argument('--use_experimental_new_quantizer', action='store_true', help='Use MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
+    parser.add_argument('--disable_experimental_new_quantizer', action='store_true', help='Disable MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
     args = parser.parse_args()
 
     model, ext = os.path.splitext(args.model_path)
@@ -4208,7 +4208,7 @@ def main():
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
-    use_experimental_new_quantizer = args.use_experimental_new_quantizer
+    use_experimental_new_quantizer = not args.disable_experimental_new_quantizer
 
     if output_coreml:
         import coremltools as ct

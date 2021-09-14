@@ -306,7 +306,7 @@ usage: tflite2tensorflow
   [--replace_swish_and_hardswish]
   [--optimizing_hardswish_for_edgetpu]
   [--replace_prelu_and_minmax]
-  [--use_experimental_new_quantizer]
+  [--disable_experimental_new_quantizer]
 
 optional arguments:
   -h, --help
@@ -390,8 +390,8 @@ optional arguments:
                         Optimizing hardswish for edgetpu
   --replace_prelu_and_minmax
                         Replace prelu and minimum/maximum with each other
-  --use_experimental_new_quantizer
-                        Use MLIRs new quantization feature during INT8 quantization
+  --disable_experimental_new_quantizer
+                        Disable MLIRs new quantization feature during INT8 quantization
                         in TensorFlowLite.
 ```
 ### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
