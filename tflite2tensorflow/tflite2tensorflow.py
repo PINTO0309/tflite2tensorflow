@@ -265,9 +265,10 @@ def parse_json(jsonfile_path):
         ]
         print('op_new_types:', op_types)
     ops = j['subgraphs'][0]['operators']
+    json_tensor_details = j['subgraphs'][0]['tensors']
     print('num of ops:', len(ops))
     pprint.pprint(ops)
-    return ops, op_types
+    return ops, json_tensor_details, op_types
 
 
 def read_int(buffer, offset, bit_size):
@@ -405,6 +406,7 @@ def read_flexbuffer(buffer, decode_strings=True):
 
 def make_graph(
     ops,
+    json_tensor_details,
     op_types,
     interpreter,
     replace_swish_and_hardswish,
@@ -490,6 +492,14 @@ def make_graph(
         scales = np.asarray(op_detail["quantization"][0], dtype=np.float32)
         zero_points = np.asarray(op_detail["quantization"][1], dtype=np.float32)
         return (op - zero_points) * scales
+
+    def searh_json_tensor_detail(name):
+        tensor_detail_dict = None
+        for d in json_tensor_details:
+            if d['name'] == name:
+                tensor_detail_dict = d
+                break
+        return tensor_detail_dict
 
     tensors = {}
     input_details = interpreter.get_input_details()
@@ -598,6 +608,26 @@ def make_graph(
                     bias,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.add(
                     output_tensor,
@@ -679,6 +709,26 @@ def make_graph(
                     bias,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.add(
                     output_tensor,
@@ -864,6 +914,26 @@ def make_graph(
                     input_tensor_1,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.add(
                     input_tensor_0,
@@ -915,6 +985,26 @@ def make_graph(
                     input_tensor_1,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.math.subtract(
                     input_tensor_0,
@@ -981,6 +1071,8 @@ def make_graph(
                 name=get_op_name(weights_detail['name'])
             )
 
+            weights = backward_quantization(weights_detail, weights)
+
             output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
             try:
                 output_shape_array = tensors[op['inputs'][0]]
@@ -1031,6 +1123,26 @@ def make_graph(
                     input_tensor_1,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.multiply(
                     input_tensor_0,
@@ -1090,7 +1202,7 @@ def make_graph(
                 weights = tensors[op['inputs'][1]].transpose(1,0)
             except:
                 weights = interpreter.get_tensor(weights_detail['index']).transpose(1,0)
-            
+
             bias_detail = interpreter._get_tensor_details(op['inputs'][2])
             try:
                 bias = tensors[op['inputs'][2]]
@@ -1099,6 +1211,10 @@ def make_graph(
                     bias = interpreter.get_tensor(bias_detail['index'])
                 except:
                     bias = None
+
+            weights = backward_quantization(weights_detail, weights)
+            bias = backward_quantization(bias_detail, bias)
+
             output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_shape_array = np.asarray(output_shape_detail['shape'])
 
@@ -1107,6 +1223,20 @@ def make_graph(
             keep_dims = options['keep_num_dims']
             if activation == 'NONE':
                 activation = None
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            activation = 'relu6'
+                        elif activation_min == [0.0]:
+                            activation = 'relu'
             elif activation == 'RELU':
                 activation = 'relu'
             elif activation == 'RELU6':
@@ -1943,6 +2073,26 @@ def make_graph(
                     input_tensor1,
                     name=get_op_name(output_detail['name'])
                 )
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
             elif activation == 'RELU':
                 output_tensor = tf.nn.relu(
                     tf.math.l2_normalize(
@@ -3622,27 +3772,27 @@ def make_graph(
             Convolution2DTransposeBias
             +++++++++++++++++++++++++++++++++ op
             {'builtin_options_type': 'NONE',
-             'custom_options': [1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
-             'custom_options_format': 'FLEXBUFFERS',
-             'inputs': [241, 353, 275],
-             'opcode_index': 12,
-             'outputs': [244]}
+                'custom_options': [1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+                'custom_options_format': 'FLEXBUFFERS',
+                'inputs': [241, 353, 275],
+                'opcode_index': 12,
+                'outputs': [244]}
             +++++++++++++++++++++++++++++++++ interpreter._get_tensor_details(op['outputs'][0])
             {'dtype': <class 'numpy.float32'>,
-             'index': 244,
-             'name': 'segment',
-             'quantization': (0.0, 0),
-             'quantization_parameters': {'quantized_dimension': 0,
-                                         'scales': array([], dtype=float32),
-                                         'zero_points': array([], dtype=int32)},
-             'shape': array([  1, 144, 256,   2], dtype=int32),
-             'shape_signature': array([  1, 144, 256,   2], dtype=int32),
-             'sparsity_parameters': {}},
+                'index': 244,
+                'name': 'segment',
+                'quantization': (0.0, 0),
+                'quantization_parameters': {'quantized_dimension': 0,
+                                        'scales': array([], dtype=float32),
+                                        'zero_points': array([], dtype=int32)},
+                'shape': array([  1, 144, 256,   2], dtype=int32),
+                'shape_signature': array([  1, 144, 256,   2], dtype=int32),
+                'sparsity_parameters': {}},
             +++++++++++++++++++++++++++++++++ ops_detail
             {'index': 240,
-             'inputs': array([241, 353, 275], dtype=int32),
-             'op_name': 'Convolution2DTransposeBias',
-             'outputs': array([244], dtype=int32)}
+                'inputs': array([241, 353, 275], dtype=int32),
+                'op_name': 'Convolution2DTransposeBias',
+                'outputs': array([244], dtype=int32)}
             '''
             custom_op_implementation_flg = False
             custom_op_type = None
@@ -4346,7 +4496,7 @@ def main():
 
         jsonfile_path = f'./{model}.json'
         gen_model_json(flatc_path, model_output_path, jsonfile_path, schema_path, model_path)
-        ops, op_types = parse_json(jsonfile_path)
+        ops, json_tensor_details, op_types = parse_json(jsonfile_path)
 
         interpreter = tflite_interpreter(model_path)
         interpreter.allocate_tensors()
@@ -4365,6 +4515,7 @@ def main():
         TFLite_Detection_PostProcess_flg = False
         TFLite_Detection_PostProcess_flg = make_graph(
             ops,
+            json_tensor_details,
             op_types,
             interpreter,
             replace_swish_and_hardswish,

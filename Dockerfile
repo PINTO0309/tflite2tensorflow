@@ -7,7 +7,7 @@ ARG CPVER=cp38
 ARG OPENVINOVER=2021.4.582
 ARG OPENVINOROOTDIR=/opt/intel/openvino_2021
 ARG TENSORRTVER=cuda11.3-trt8.0.1.6-ga-20210626
-ARG APPVER=v1.11.0
+ARG APPVER=v1.11.1
 ARG wkdir=/home/user
 
 # dash -> bash
@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
         libva-dev libdrm-dev xorg xorg-dev protobuf-compiler \
         openbox libx11-dev libgl1-mesa-glx libgl1-mesa-dev \
         libtbb2 libtbb-dev libopenblas-dev libopenmpi-dev \
-    && sed -i 's/# set linenumbers/set linenumbers/g' /etc/nanorc \ 
+    && sed -i 's/# set linenumbers/set linenumbers/g' /etc/nanorc \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
