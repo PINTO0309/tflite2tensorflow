@@ -495,9 +495,13 @@ def make_graph(
         return op_name
 
     def backward_quantization(op_detail, op):
-        scales = np.asarray(op_detail["quantization"][0], dtype=np.float32)
-        zero_points = np.asarray(op_detail["quantization"][1], dtype=np.float32)
-        return (op - zero_points) * scales
+        if not 'quantization' in op_detail or \
+            (input_detail['quantization'][0] == 0.0 and input_detail['quantization'][1] == 0):
+            return op
+        else:
+            scales = np.asarray(op_detail['quantization'][0], dtype=np.float32)
+            zero_points = np.asarray(op_detail['quantization'][1], dtype=np.float32)
+            return (op - zero_points) * scales
 
     def searh_json_tensor_detail(name):
         tensor_detail_dict = None
@@ -518,7 +522,7 @@ def make_graph(
 
     for input_detail in input_details:
         if not 'quantization' in input_detail or \
-            (input_detail["quantization"][0] == 0.0 and input_detail["quantization"][1] == 0):
+            (input_detail['quantization'][0] == 0.0 and input_detail['quantization'][1] == 0):
 
             tensors[input_detail['index']] = tf.placeholder(
                 dtype=input_detail['dtype'],
@@ -526,8 +530,8 @@ def make_graph(
                 name=get_op_name(input_detail['name']))
 
         else:
-            scales = np.asarray(input_detail["quantization"][0], dtype=np.float32)
-            zero_points = np.asarray(input_detail["quantization"][1], dtype=np.float32)
+            scales = np.asarray(input_detail['quantization'][0], dtype=np.float32)
+            zero_points = np.asarray(input_detail['quantization'][1], dtype=np.float32)
             inp = tf.placeholder(
                 dtype=np.float32,
                 shape=input_detail['shape'],
