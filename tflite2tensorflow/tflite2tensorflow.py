@@ -243,7 +243,13 @@ op_new_types = {
     137: 'HASHTABLE_FIND',
     138: 'HASHTABLE_IMPORT',
     139: 'HASHTABLE_SIZE',
-    140: 'REDUCE_ALL'
+    140: 'REDUCE_ALL',
+    141: 'CONV_3D_TRANSPOSE',
+    142: 'VAR_HANDLE',
+    143: 'READ_VARIABLE',
+    144: 'ASSIGN_VARIABLE',
+    145: 'BROADCAST_ARGS',
+    146: 'RANDOM_STANDARD_NORMAL'
 }
 
 
@@ -557,6 +563,8 @@ def make_graph(
                 input_tensor = tensors[op['inputs'][0]]
                 weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
                 bias = interpreter.get_tensor(bias_detail['index'])
+                weights = backward_quantization(weights_detail, weights)
+                bias = backward_quantization(bias_detail, bias)
 
             elif len(op['inputs']) == 2:
                 input_tensor = tensors[op['inputs'][0]]
@@ -564,7 +572,9 @@ def make_graph(
                     weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
                 except:
                     weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                    weights = backward_quantization(weights_detail, weights)
                 bias = interpreter.get_tensor(bias_detail['index'])
+                bias = backward_quantization(bias_detail, bias)
 
             elif len(op['inputs']) == 3:
                 input_tensor = tensors[op['inputs'][0]]
@@ -572,13 +582,12 @@ def make_graph(
                     weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
                 except:
                     weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                    weights = backward_quantization(weights_detail, weights)
                 try:
                     bias = tensors[op['inputs'][2]]
                 except:
                     bias = interpreter.get_tensor(bias_detail['index'])
-
-            weights = backward_quantization(weights_detail, weights)
-            bias = backward_quantization(bias_detail, bias)
+                    bias = backward_quantization(bias_detail, bias)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -662,26 +671,31 @@ def make_graph(
                 input_tensor = tensors[op['inputs'][0]]
                 weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
                 bias = interpreter.get_tensor(bias_detail['index'])
+                weights = backward_quantization(weights_detail, weights)
+                bias = backward_quantization(bias_detail, bias)
+
             elif len(op['inputs']) == 2:
                 input_tensor = tensors[op['inputs'][0]]
                 try:
                     weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
                 except:
                     weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                    weights = backward_quantization(weights_detail, weights)
                 bias = interpreter.get_tensor(bias_detail['index'])
+                bias = backward_quantization(bias_detail, bias)
+
             elif len(op['inputs']) == 3:
                 input_tensor = tensors[op['inputs'][0]]
                 try:
                     weights = tensors[op['inputs'][1]].transpose(1,2,3,0)
                 except:
                     weights = interpreter.get_tensor(weights_detail['index']).transpose(1,2,3,0)
+                    weights = backward_quantization(weights_detail, weights)
                 try:
                     bias = tensors[op['inputs'][2]]
                 except:
                     bias = interpreter.get_tensor(bias_detail['index'])
-
-            weights = backward_quantization(weights_detail, weights)
-            bias = backward_quantization(bias_detail, bias)
+                    bias = backward_quantization(bias_detail, bias)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -894,16 +908,20 @@ def make_graph(
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
                 input_tensor_0 = interpreter.get_tensor(input_detail['index'])
+                input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
             param = interpreter._get_tensor_details(op['inputs'][1])
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
+                input_tensor_1 = backward_quantization(param, input_tensor_1)
+
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor_1 = tensors[op['inputs'][1]]
                 except:
                     input_tensor_1 = interpreter.get_tensor(param['index'])
+                    input_tensor_1 = backward_quantization(param, input_tensor_1)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -964,16 +982,20 @@ def make_graph(
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
                 input_tensor_0 = interpreter.get_tensor(input_detail['index'])
+                input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
             param = interpreter._get_tensor_details(op['inputs'][1])
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
+                input_tensor_1 = backward_quantization(param, input_tensor_1)
+
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor_1 = tensors[op['inputs'][1]]
                 except:
                     input_tensor_1 = interpreter.get_tensor(param['index'])
+                    input_tensor_1 = backward_quantization(param, input_tensor_1)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -1065,13 +1087,13 @@ def make_graph(
                 weights_array = tensors[op['inputs'][1]]
             except:
                 weights_array = interpreter.get_tensor(weights_detail['index'])
+                weights_array = backward_quantization(weights_detail, weights_array)
+
             weights_array = np.transpose(weights_array, (1, 2, 0, 3))
             weights = tf.Variable(
                 weights_array,
                 name=get_op_name(weights_detail['name'])
             )
-
-            weights = backward_quantization(weights_detail, weights)
 
             output_shape_detail = interpreter._get_tensor_details(op['inputs'][0])
             try:
@@ -1102,16 +1124,20 @@ def make_graph(
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
                 input_tensor_0 = interpreter.get_tensor(input_detail['index'])
+                input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
             param = interpreter._get_tensor_details(op['inputs'][1])
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
+                input_tensor_1 = backward_quantization(param, input_tensor_1)
+
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor_1 = tensors[op['inputs'][1]]
                 except:
                     input_tensor_1 = interpreter.get_tensor(param['index'])
+                    input_tensor_1 = backward_quantization(param, input_tensor_1)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             options = op['builtin_options']
@@ -1202,6 +1228,7 @@ def make_graph(
                 weights = tensors[op['inputs'][1]].transpose(1,0)
             except:
                 weights = interpreter.get_tensor(weights_detail['index']).transpose(1,0)
+                weights = backward_quantization(weights_detail, weights)
 
             bias_detail = interpreter._get_tensor_details(op['inputs'][2])
             try:
@@ -1209,11 +1236,9 @@ def make_graph(
             except:
                 try:
                     bias = interpreter.get_tensor(bias_detail['index'])
+                    bias = backward_quantization(bias_detail, bias)
                 except:
                     bias = None
-
-            weights = backward_quantization(weights_detail, weights)
-            bias = backward_quantization(bias_detail, bias)
 
             output_shape_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_shape_array = np.asarray(output_shape_detail['shape'])
@@ -1450,16 +1475,20 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
             param = interpreter._get_tensor_details(op['inputs'][1])
             if len(op['inputs']) == 1:
                 input_tensor2 = interpreter.get_tensor(param['index'])
+                input_tensor2 = backward_quantization(param, input_tensor2)
+
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor2 = tensors[op['inputs'][1]]
                 except:
                     input_tensor2 = interpreter.get_tensor(param['index'])
+                    input_tensor2 = backward_quantization(param, input_tensor2)
 
             options = op['builtin_options']
             keepdims = options['keep_dims']
@@ -1479,16 +1508,20 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
             param = interpreter._get_tensor_details(op['inputs'][1])
             if len(op['inputs']) == 1:
                 input_tensor2 = interpreter.get_tensor(param['index'])
+                input_tensor2 = backward_quantization(param, input_tensor2)
+
             elif len(op['inputs']) == 2:
                 try:
                     input_tensor2 = tensors[op['inputs'][1]]
                 except:
                     input_tensor2 = interpreter.get_tensor(param['index'])
+                    input_tensor2 = backward_quantization(param, input_tensor2)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.squared_difference(
@@ -1505,6 +1538,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.rsqrt(
                 input_tensor1,
@@ -1526,6 +1561,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.floor(
                 input_tensor1,
@@ -1540,6 +1577,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.tanh(
                 input_tensor1,
@@ -1554,12 +1593,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             weights_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+                input_tensor2 = backward_quantization(weights_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.divide(
                 input_tensor1,
@@ -1575,12 +1618,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             weights_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+                input_tensor2 = backward_quantization(weights_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.floordiv(
                 input_tensor1,
@@ -1596,12 +1643,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             axis_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(axis_detail['index'])
+                input_tensor2 = backward_quantization(axis_detail, input_tensor2)
+
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -1620,12 +1671,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             weights_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(weights_detail['index'])
+                input_tensor2 = backward_quantization(weights_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.pow(
                 input_tensor1,
@@ -1683,6 +1738,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             # options = op['builtin_options']
             # beta = int(options['beta'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -1792,12 +1849,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             perm_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+                input_tensor2 = backward_quantization(perm_detail, input_tensor2)
+
             options = op['builtin_options']
             keepdims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -1832,12 +1893,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             perm_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+                input_tensor2 = backward_quantization(perm_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.maximum(
                 input_tensor1,
@@ -1853,12 +1918,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             perm_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(perm_detail['index'])
+                input_tensor2 = backward_quantization(perm_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.minimum(
                 input_tensor1,
@@ -1990,12 +2059,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             output_type = cast_type_tf[options['output_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2014,6 +2087,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.exp(
                 input_tensor1,
@@ -2051,6 +2126,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.nn.log_softmax(
                 input_tensor1,
@@ -2065,6 +2142,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             options = op['builtin_options']
             activation = options['fused_activation_function']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2123,12 +2202,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.less(
                 input_tensor1,
@@ -2144,12 +2227,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.less_equal(
                 input_tensor1,
@@ -2165,12 +2252,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.greater(
                 input_tensor1,
@@ -2186,12 +2277,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.greater_equal(
                 input_tensor1,
@@ -2207,6 +2302,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.negative(
                 input_tensor1,
@@ -2332,6 +2429,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.sin(
                 input_tensor1,
@@ -2367,12 +2466,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.equal(
                 input_tensor1,
@@ -2388,12 +2491,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.not_equal(
                 input_tensor1,
@@ -2409,6 +2516,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.log(
                 input_tensor1,
@@ -2423,6 +2532,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.sqrt(
                 input_tensor1,
@@ -2437,12 +2548,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             output_type = cast_type_tf[options['output_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2469,12 +2584,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2493,12 +2612,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2517,12 +2640,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.logical_or(
                 input_tensor1,
@@ -2538,12 +2665,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.logical_and(
                 input_tensor1,
@@ -2559,6 +2690,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.logical_not(
                 input_tensor1,
@@ -2573,12 +2706,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2605,12 +2742,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             options = op['builtin_options']
             keep_dims = options['keep_dims']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2629,6 +2770,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.square(
                 input_tensor1,
@@ -2643,6 +2786,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.zeros_like(
                 input_tensor1,
@@ -2657,12 +2802,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.fill(
                 input_tensor1,
@@ -2678,12 +2827,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             positions_detail = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
+                input_tensor2 = backward_quantization(positions_detail, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.floormod(
                 input_tensor1,
@@ -2727,6 +2880,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.abs(
                 input_tensor1,
@@ -2741,6 +2896,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             options = op['builtin_options']
             idx_out_type = cast_type_tf[options['idx_out_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
@@ -2761,6 +2918,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.ceil(
                 input_tensor1,
@@ -2798,7 +2957,10 @@ def make_graph(
                 except:
                     input_detail = interpreter._get_tensor_details(i)
                     tensor_list_details.append(input_detail)
-                    tensor_list.append(interpreter.get_tensor(input_detail['index']))
+                    add_n_t = interpreter.get_tensor(input_detail['index'])
+                    add_n_t = backward_quantization(input_detail, add_n_t)
+                    tensor_list.append(add_n_t)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.add_n(
                 tensor_list,
@@ -2834,6 +2996,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.cos(
                 input_tensor1,
@@ -2862,6 +3026,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.nn.elu(
                 input_tensor1,
@@ -2979,6 +3145,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.linalg.diag(
                 input_tensor1,
@@ -2993,6 +3161,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.round(
                 input_tensor1,
@@ -3007,30 +3177,39 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             input_tensor3 = None
             input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+                input_tensor3 = backward_quantization(input_detail3, input_tensor3)
+
             input_tensor4 = None
             input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
                 input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+                input_tensor4 = backward_quantization(input_detail4, input_tensor4)
+
             input_tensor5 = None
             input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
             try:
                 input_tensor5 = tensors[op['inputs'][4]]
             except:
                 input_tensor5 = interpreter.get_tensor(input_detail5['index'])
+                input_tensor5 = backward_quantization(input_detail5, input_tensor5)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
 
@@ -3063,36 +3242,47 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             input_tensor3 = None
             input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+                input_tensor3 = backward_quantization(input_detail3, input_tensor3)
+
             input_tensor4 = None
             input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
                 input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+                input_tensor4 = backward_quantization(input_detail4, input_tensor4)
+
             input_tensor5 = None
             input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
             try:
                 input_tensor5 = tensors[op['inputs'][4]]
             except:
                 input_tensor5 = interpreter.get_tensor(input_detail5['index'])
+                input_tensor5 = backward_quantization(input_detail5, input_tensor5)
+
             input_tensor6 = None
             input_detail6 = interpreter._get_tensor_details(op['inputs'][5])
             try:
                 input_tensor6 = tensors[op['inputs'][5]]
             except:
                 input_tensor6 = interpreter.get_tensor(input_detail6['index'])
+                input_tensor6 = backward_quantization(input_detail6, input_tensor6)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
 
@@ -3189,12 +3379,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.segment_sum(
                 input_tensor1,
@@ -3210,12 +3404,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             options = op['builtin_options']
             exclusive = options['exclusive']
             reverse = options['reverse']
@@ -3236,12 +3434,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.broadcast_to(
                 input_tensor1,
@@ -3257,12 +3459,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
 
             def rfft2d_(x, fft_length):
@@ -3308,6 +3514,7 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             options = op['builtin_options']
             alpha = options['alpha']
@@ -3388,12 +3595,16 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.linalg.set_diag(
                 input_tensor1,
@@ -3464,6 +3675,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.imag(
                 input_tensor1,
@@ -3478,6 +3691,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             output_tensor = tf.math.real(
                 input_tensor1,
@@ -3492,6 +3707,8 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
 
             def complexabs_(x, tout):
@@ -3516,24 +3733,32 @@ def make_graph(
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
             input_tensor2 = None
             input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
             input_tensor3 = None
             input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+                input_tensor3 = backward_quantization(input_detail3, input_tensor3)
+
             input_tensor4 = None
             input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
                 input_tensor4 = interpreter.get_tensor(input_detail4['index'])
+                input_tensor4 = backward_quantization(input_detail4, input_tensor4)
+
             options = op['builtin_options']
             axis = options['axis']
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
