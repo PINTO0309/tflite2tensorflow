@@ -6,18 +6,18 @@
 Command Sample:
 
 $ python3 tflite2tensorflow.py \
-  --model_path hand_landmark.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_pb True
+--model_path hand_landmark.tflite \
+--flatc_path ./flatc \
+--schema_path schema.fbs \
+--output_pb True
 
 $ python3 tflite2tensorflow.py \
-  --model_path hand_landmark.tflite \
-  --flatc_path ./flatc \
-  --schema_path schema.fbs \
-  --output_no_quant_float32_tflite True \
-  --output_weight_quant_tflite True \
-  --output_float16_quant_tflite True
+--model_path hand_landmark.tflite \
+--flatc_path ./flatc \
+--schema_path schema.fbs \
+--output_no_quant_float32_tflite True \
+--output_weight_quant_tflite True \
+--output_float16_quant_tflite True
 """
 
 
@@ -4032,6 +4032,7 @@ def make_graph(
                         anchors = tensors[op['inputs'][2]]
                     except:
                         anchors = interpreter.get_tensor(anchors_detail['index'])
+                    anchors = backward_quantization(anchors_detail, anchors)
                     """
                     custom_options = [
                         120,95,115,99,97,108,101,0, #x_scale
