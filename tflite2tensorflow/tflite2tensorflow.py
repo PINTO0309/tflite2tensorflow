@@ -3930,74 +3930,200 @@ def make_graph(
 
         #     tensors[output_detail['index']] = output_tensor
 
-        # elif op_type == 'CONV_3D':
-        #     input_tensor1 = None
-        #     try:
-        #         input_tensor1 = tensors[op['inputs'][0]]
-        #     except:
-        #         input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
-        #         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
-        #     input_tensor2 = None
-        #     try:
-        #         input_tensor2 = tensors[op['inputs'][1]].transpose(1,2,3,4,0)
-        #     except:
-        #         input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
-        #         input_tensor2 = interpreter.get_tensor(input_detail2['index']).transpose(1,2,3,4,0)
-        #     output_detail = interpreter._get_tensor_details(op['outputs'][0])
+        elif op_type == 'CONV_3D':
+            # Conv3D
+            # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv3D
+            """
+            tf : [Z, Y, X, C_IN, C_OUT] = [3,3,3,1,8] [3,3,3,8,16]
+            """
+            input_tensor1 = None
+            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
-        #     kernel_size = [output_detail['shape'][0], output_detail['shape'][1], output_detail['shape'][2]]
+            input_tensor2 = None
+            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
 
-        #     options = op['builtin_options']
-        #     dilation_rate = [options['dilation_d_factor'], options['dilation_h_factor'], options['dilation_w_factor']]
-        #     strides = [options['stride_d'], options['stride_h'], options['stride_w']]
-        #     padding = options['padding']
-        #     if padding == 0 or padding == 'VALID':
-        #         padding =='valid'
-        #     elif padding == 1 or padding == 'SAME':
-        #         padding =='same'
-        #     else:
-        #         raise ValueError(padding)
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
 
-        #     print('@@@@@@@@@@@@@@@@@@ output_detail[\'shape\']', output_detail['shape'])
+            kernel_size = [input_detail2['shape'][0], input_detail2['shape'][1], input_detail2['shape'][2]]
+            options = op['builtin_options']
+            dilation_rate = [options['dilation_d_factor'], options['dilation_h_factor'], options['dilation_w_factor']]
+            strides = [options['stride_d'], options['stride_h'], options['stride_w']]
+            padding = options['padding']
+            if padding == 0 or padding == 'VALID':
+                padding =='valid'
+            elif padding == 1 or padding == 'SAME':
+                padding =='same'
+            else:
+                raise ValueError(padding)
+            activation = options['fused_activation_function']
 
-        #     activation = options['fused_activation_function']
-        #     if activation == 'NONE' or activation == 0:
-        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
-        #                                                kernel_size=kernel_size,
-        #                                                strides=strides,
-        #                                                padding=padding,
-        #                                                dilation_rate=dilation_rate,
-        #                                             #    groups=1,
-        #                                                use_bias=False,
-        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
-        #         output_tensor = tf.identity(output_tensor, name=get_op_name(output_detail['name']))
-        #     elif activation == 'RELU':
-        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
-        #                                                kernel_size=kernel_size,
-        #                                                strides=strides,
-        #                                                padding=padding,
-        #                                                dilation_rate=dilation_rate,
-        #                                             #    groups=1,
-        #                                                use_bias=False,
-        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
-        #         output_tensor = tf.nn.relu(output_tensor, name=get_op_name(output_detail['name']))
-        #     elif activation == 'RELU6':
-        #         output_tensor = tf.keras.layers.Conv3D(filters=output_detail['shape'][4],
-        #                                                kernel_size=kernel_size,
-        #                                                strides=strides,
-        #                                                padding=padding,
-        #                                                dilation_rate=dilation_rate,
-        #                                             #    groups=1,
-        #                                                use_bias=False,
-        #                                                kernel_initializer=tf.keras.initializers.Constant(input_tensor2))(input_tensor1)
-        #         output_tensor = tf.nn.relu6(output_tensor, name=get_op_name(output_detail['name']))
-        #     else:
-        #         raise ValueError(activation)
+            if activation == 'NONE' or activation == 0:
+                output_tensor = tf.keras.layers.Conv3D(
+                    filters=output_detail['shape'][4],
+                    kernel_size=kernel_size,
+                    strides=strides,
+                    padding=padding,
+                    dilation_rate=dilation_rate,
+                    use_bias=False,
+                    kernel_initializer=tf.keras.initializers.Constant(input_tensor2)
+                )(input_tensor1)
+                output_tensor = tf.identity(output_tensor, name=get_op_name(output_detail['name']))
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
 
-        #     tensors[output_detail['index']] = output_tensor
+            elif activation == 'RELU':
+                output_tensor = tf.keras.layers.Conv3D(
+                    filters=output_detail['shape'][4],
+                    kernel_size=kernel_size,
+                    strides=strides,
+                    padding=padding,
+                    dilation_rate=dilation_rate,
+                    use_bias=False,
+                    kernel_initializer=tf.keras.initializers.Constant(input_tensor2)
+                )(input_tensor1)
+                output_tensor = tf.nn.relu(output_tensor, name=get_op_name(output_detail['name']))
+
+            elif activation == 'RELU6':
+                output_tensor = tf.keras.layers.Conv3D(
+                    filters=output_detail['shape'][4],
+                    kernel_size=kernel_size,
+                    strides=strides,
+                    padding=padding,
+                    dilation_rate=dilation_rate,
+                    use_bias=False,
+                    kernel_initializer=tf.keras.initializers.Constant(input_tensor2)
+                )(input_tensor1)
+                output_tensor = tf.nn.relu6(output_tensor, name=get_op_name(output_detail['name']))
+            else:
+                raise ValueError(activation)
+
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'CONV_3D_TRANSPOSE':
+            input_tensor1 = None
+            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+                input_tensor1 = backward_quantization(input_detail1, input_tensor1)
+
+            input_tensor2 = None
+            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+                input_tensor2 = backward_quantization(input_detail2, input_tensor2)
+
+            input_tensor3 = None
+            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+                input_tensor3 = backward_quantization(input_detail3, input_tensor3)
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            options = op['builtin_options']
+            kernel_size = [input_detail2['shape'][0], input_detail2['shape'][1], input_detail2['shape'][2]]
+            dilation_rate = [options['dilation_d_factor'], options['dilation_h_factor'], options['dilation_w_factor']]
+            strides = [options['stride_d'], options['stride_h'], options['stride_w']]
+            padding = options['padding']
+            if padding == 0 or padding == 'valid' or padding == 'VALID':
+                padding =='VALID'
+            elif padding == 1 or padding == 'same' or padding == 'SAME':
+                padding =='SAME'
+            else:
+                raise ValueError(padding)
+            activation = options['fused_activation_function']
+
+            if activation == 'NONE' or activation == 0:
+                output_tensor = tf.nn.conv3d_transpose(
+                    value=input_tensor3,
+                    filters=input_tensor2,
+                    output_shape=input_tensor1,
+                    strides=strides,
+                    padding=padding
+                )
+                output_tensor = tf.identity(output_tensor, name=get_op_name(output_detail['name']))
+                json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'])
+                if json_tensor_info:
+                    if 'quantization' in json_tensor_info:
+                        json_quant_info = json_tensor_info['quantization']
+                        activation_min = None
+                        activation_max = None
+                        if 'min' in json_quant_info:
+                            activation_min = json_quant_info['min']
+                        if 'max' in json_quant_info:
+                            activation_max = json_quant_info['max']
+                        if activation_min == [0.0] and (activation_max == [6.0] or activation_max == [5.999762]):
+                            output_tensor = tf.nn.relu6(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+                        elif activation_min == [0.0]:
+                            output_tensor = tf.nn.relu(
+                                output_tensor,
+                                name=get_op_name(output_detail['name'])
+                            )
+
+            elif activation == 'RELU':
+                output_tensor = tf.nn.conv3d_transpose(
+                    value=input_tensor3,
+                    filters=input_tensor2,
+                    output_shape=input_tensor1,
+                    strides=strides,
+                    padding=padding
+                )
+                output_tensor = tf.nn.relu(output_tensor, name=get_op_name(output_detail['name']))
+
+            elif activation == 'RELU6':
+                output_tensor = tf.nn.conv3d_transpose(
+                    value=input_tensor3,
+                    filters=input_tensor2,
+                    output_shape=input_tensor1,
+                    strides=strides,
+                    padding=padding
+                )
+                output_tensor = tf.nn.relu6(output_tensor, name=get_op_name(output_detail['name']))
+
+            else:
+                raise ValueError(activation)
+
+            tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'CUSTOM':
-            '''
+            """
             Convolution2DTransposeBias
             +++++++++++++++++++++++++++++++++ op
             {'builtin_options_type': 'NONE',
@@ -4022,7 +4148,7 @@ def make_graph(
                 'inputs': array([241, 353, 275], dtype=int32),
                 'op_name': 'Convolution2DTransposeBias',
                 'outputs': array([244], dtype=int32)}
-            '''
+            """
             custom_op_implementation_flg = False
             custom_op_type = None
             for ops_detail in ops_details:

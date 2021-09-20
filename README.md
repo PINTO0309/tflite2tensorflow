@@ -137,6 +137,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |120|FlexAll|tf.math.reduce_all|Flex OP|
 |121|FlexErf|tf.math.erf|Flex OP|
 |122|FlexRoll|tf.roll|Flex OP|
+|123|CONV_3D|tf.keras.layers.Conv3D||
+|124|CONV_3D_TRANSPOSE|tf.nn.conv3d_transpose||
 
 ## 2. Environment
 - Python3.6+
