@@ -4511,17 +4511,46 @@ def make_graph(
                             )
                         return selected_indices, selected_scores, valid_outputs
 
-                    selected_indices, selected_scores, valid_outputs = \
-                        tf.keras.layers.Lambda(
-                            NonMaxSuppressionV5_,
-                            arguments={'scores': scores_reduce_max,
-                                        'max_output_size': max_detections,
-                                        'iou_threshold': nms_iou_threshold,
-                                        'score_threshold': nms_score_threshold,
-                                        'soft_nms_sigma': 0.0,
-                                        'pad_to_max_output_size': True}
-                        )(boxes_concat)
+                    def NonMaxSuppressionV3_(boxes, scores, max_output_size: int, iou_threshold, score_threshold):
+                        selected_indices = \
+                            tf.raw_ops.NonMaxSuppressionV3(
+                                boxes=boxes,
+                                scores=scores,
+                                max_output_size=max_output_size,
+                                iou_threshold=iou_threshold,
+                                score_threshold=score_threshold
+                            )
+                        return selected_indices
 
+                    selected_indices = None
+                    selected_scores = None
+                    valid_outputs = None
+                    if not optimizing_for_openvino_and_myriad:
+                        selected_indices, selected_scores, valid_outputs = \
+                            tf.keras.layers.Lambda(
+                                NonMaxSuppressionV5_,
+                                arguments={'scores': scores_reduce_max,
+                                            'max_output_size': max_detections,
+                                            'iou_threshold': nms_iou_threshold,
+                                            'score_threshold': nms_score_threshold,
+                                            'soft_nms_sigma': 0.0,
+                                            'pad_to_max_output_size': True}
+                            )(boxes_concat)
+
+                    else:
+                        selected_indices = \
+                            tf.keras.layers.Lambda(
+                                NonMaxSuppressionV3_,
+                                arguments={'scores': scores_reduce_max,
+                                            'max_output_size': max_detections,
+                                            'iou_threshold': nms_iou_threshold,
+                                            'score_threshold': nms_score_threshold}
+                            )(boxes_concat)
+                        selected_scores = tf.gather(
+                            scores_reduce_max,
+                            selected_indices
+                        )
+                        valid_outputs = max_detections
                     ################################################################### Calculation of outputs
                     bounding_boxes = tf.identity(
                         tf.expand_dims(
