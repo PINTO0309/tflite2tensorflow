@@ -274,7 +274,7 @@ def parse_json(jsonfile_path):
     json_tensor_details = j['subgraphs'][0]['tensors']
     print('num of ops:', len(ops))
     pprint.pprint(ops)
-    return ops, json_tensor_details, op_types
+    return ops, json_tensor_details, op_types, j
 
 
 def read_int(buffer, offset, bit_size):
@@ -413,6 +413,7 @@ def read_flexbuffer(buffer, decode_strings=True):
 def make_graph(
     ops,
     json_tensor_details,
+    full_json,
     op_types,
     interpreter,
     replace_swish_and_hardswish,
@@ -441,6 +442,19 @@ def make_graph(
         'FLOAT16' : tf.float16,
         'FLOAT32' : tf.float32,
         'BFLOAT16': tf.bfloat16
+    }
+
+    cast_type_np = {
+        'UINT8'   : np.uint8,
+        'UINT16'  : np.uint16,
+        'UINT32'  : np.uint32,
+        'UINT64'  : np.uint64,
+        'INT8'    : np.int8,
+        'INT16'   : np.int16,
+        'INT32'   : np.int32,
+        'INT64'   : np.int64,
+        'FLOAT16' : np.float16,
+        'FLOAT32' : np.float32
     }
 
     class MaxUnpooling2D(Layer):
@@ -1552,9 +1566,15 @@ def make_graph(
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'DEQUANTIZE':
-            weights_detail = interpreter._get_tensor_details(op['inputs'][0])
-            weights = interpreter.get_tensor(weights_detail['index'])
-            output_tensor = weights.astype(np.float32)
+            input_tensor1 = None
+            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_tensor1 = interpreter.get_tensor(input_detail['index'])
+                input_tensor1 = backward_quantization(input_detail, input_tensor1)
+
+            output_tensor = input_tensor1.astype(np.float32)
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
             tensors[output_detail['index']] = output_tensor
 
@@ -4122,6 +4142,58 @@ def make_graph(
 
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'DENSIFY':
+            json_tensor_info = searh_json_tensor_detail(interpreter._get_tensor_details(op['outputs'][0])['name'][:-1])
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+
+            shape = json_tensor_info['shape']
+            dtype = cast_type_np[json_tensor_info['type']]
+            dim_metadata = json_tensor_info['sparsity']['dim_metadata']
+            traversal_order = json_tensor_info['sparsity']['traversal_order']
+            array_segments = None
+            array_indices = None
+            for dict_data in dim_metadata:
+                if 'format' in dict_data:
+                    if dict_data['format'] == 'SPARSE_CSR':
+                        array_segments = dict_data['array_segments']['values']
+                        array_indices = dict_data['array_indices']['values']
+
+            denj = full_json['buffers'][output_detail['index']]['data']
+            b = np.array(denj).astype(np.uint8).tobytes()
+
+            dense_list = []
+            for i in range(len(b))[::2]:
+                dense_list.append(struct.unpack_from('<e', bytes(b[i:i+2]))[0])
+
+            starting_point = 0
+            dense_shape = np.asarray(shape)
+            groups = dense_shape[-1]
+            total_number_of_elements = dense_shape[0]
+            for i in dense_shape[1:]:
+                total_number_of_elements *= i
+
+            densify_values = np.zeros((total_number_of_elements))
+            sidx = 0
+            aidx = 0
+            didx = 0
+            addition = 0
+
+            for idx in range(total_number_of_elements):
+                if array_segments[sidx] == aidx:
+                    addition = sidx * groups
+                    sidx += 1
+                if array_indices[aidx] + addition == idx:
+                    densify_values[idx] = dense_list[didx]
+                    didx += 1
+                    if aidx < len(array_indices) - 1:
+                        aidx += 1
+
+            densify_values = densify_values.reshape(dense_shape)
+            output_tensor = densify_values.astype(dtype)
+
+            tensors[output_detail['index']] = output_tensor
+
+
         elif op_type == 'CUSTOM':
             """
             Convolution2DTransposeBias
@@ -4881,7 +4953,7 @@ def main():
 
         jsonfile_path = f'./{model}.json'
         gen_model_json(flatc_path, model_output_path, jsonfile_path, schema_path, model_path)
-        ops, json_tensor_details, op_types = parse_json(jsonfile_path)
+        ops, json_tensor_details, op_types, full_json = parse_json(jsonfile_path)
 
         interpreter = tflite_interpreter(model_path)
         interpreter.allocate_tensors()
@@ -4901,6 +4973,7 @@ def main():
         TFLite_Detection_PostProcess_flg = make_graph(
             ops,
             json_tensor_details,
+            full_json,
             op_types,
             interpreter,
             replace_swish_and_hardswish,
