@@ -4778,6 +4778,7 @@ def main():
     parser.add_argument('--model_output_path', type=str, default='saved_model', help='The output folder path of the converted model file')
     parser.add_argument('--output_pb', action='store_true', help='.pb output switch')
     parser.add_argument('--output_no_quant_float32_tflite', action='store_true', help='float32 tflite output switch')
+    parser.add_argument('--output_dynamic_range_quant_tflite', action='store_true', help='dynamic quant tflite output switch')
     parser.add_argument('--output_weight_quant_tflite', action='store_true', help='weight quant tflite output switch')
     parser.add_argument('--output_float16_quant_tflite', action='store_true', help='float16 quant tflite output switch')
     parser.add_argument('--output_integer_quant_tflite', action='store_true', help='integer quant tflite output switch')
@@ -4821,6 +4822,7 @@ def main():
     model_output_path = args.model_output_path.rstrip('/')
     output_pb = args.output_pb
     output_no_quant_float32_tflite =  args.output_no_quant_float32_tflite
+    output_dynamic_range_quant_tflite = args.output_dynamic_range_quant_tflite
     output_weight_quant_tflite = args.output_weight_quant_tflite
     output_float16_quant_tflite = args.output_float16_quant_tflite
     output_integer_quant_tflite = args.output_integer_quant_tflite
@@ -4924,16 +4926,17 @@ def main():
     if output_pb:
         tfv1_flg = True
     if output_no_quant_float32_tflite or \
-        output_weight_quant_tflite or \
-            output_float16_quant_tflite or \
-                output_integer_quant_tflite or \
-                    output_full_integer_quant_tflite or \
-                        output_tfjs or \
-                            output_tftrt or \
-                                output_coreml or \
-                                    output_edgetpu or \
-                                        output_onnx or \
-                                            output_openvino_and_myriad:
+        output_dynamic_range_quant_tflite or \
+            output_weight_quant_tflite or \
+                output_float16_quant_tflite or \
+                    output_integer_quant_tflite or \
+                        output_full_integer_quant_tflite or \
+                            output_tfjs or \
+                                output_tftrt or \
+                                    output_coreml or \
+                                        output_edgetpu or \
+                                            output_onnx or \
+                                                output_openvino_and_myriad:
         tfv2_flg = True
 
     if tfv1_flg and tfv2_flg:
@@ -5092,6 +5095,22 @@ def main():
                 with open(f'{model_output_path}/model_float32.tflite', 'wb') as w:
                     w.write(tflite_model)
                 print(f'{Color.GREEN}tflite Float32 convertion complete!{Color.RESET} - {model_output_path}/model_float32.tflite')
+            except Exception as e:
+                print(f'{Color.RED}ERROR:{Color.RESET}', e)
+                import traceback
+                traceback.print_exc()
+
+        # Dynamic range Quantization - Input/Output=float32
+        if output_dynamic_range_quant_tflite:
+            try:
+                print(f'{Color.REVERCE}Dynamic Range Quantization started{Color.RESET}', '=' * 50)
+                converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
+                converter.optimizations = [tf.lite.Optimize.DEFAULT]
+                converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+                tflite_model = converter.convert()
+                with open(f'{model_output_path}/model_dynamic_range_quant.tflite', 'wb') as w:
+                    w.write(tflite_model)
+                print(f'{Color.GREEN}Dynamic Range Quantization complete!{Color.RESET} - {model_output_path}/model_dynamic_range_quant.tflite')
             except Exception as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e)
                 import traceback

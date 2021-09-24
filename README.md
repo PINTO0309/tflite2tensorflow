@@ -282,6 +282,7 @@ usage: tflite2tensorflow
   [--model_output_path MODEL_OUTPUT_PATH]
   [--output_pb]
   [--output_no_quant_float32_tflite]
+  [--output_dynamic_range_quant_tflite]
   [--output_weight_quant_tflite]
   [--output_float16_quant_tflite]
   [--output_integer_quant_tflite]
@@ -326,6 +327,8 @@ optional arguments:
                         .pb output switch
   --output_no_quant_float32_tflite
                         float32 tflite output switch
+  --output_dynamic_range_quant_tflite
+                        dynamic range quant tflite output switch
   --output_weight_quant_tflite
                         weight quant tflite output switch
   --output_float16_quant_tflite
