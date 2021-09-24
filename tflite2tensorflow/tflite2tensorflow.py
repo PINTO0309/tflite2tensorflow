@@ -574,8 +574,14 @@ def make_graph(
             input_tensor = None
             weights = None
             bias = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
-            bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
+            try:
+                bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
 
             if len(op['inputs']) == 1:
                 input_tensor = tensors[op['inputs'][0]]
@@ -682,8 +688,14 @@ def make_graph(
             input_tensor = None
             weights = None
             bias = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
-            bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
+            try:
+                bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
 
             if len(op['inputs']) == 1:
                 input_tensor = tensors[op['inputs'][0]]
@@ -921,7 +933,10 @@ def make_graph(
 
         elif op_type == 'ADD':
             input_tensor_0 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
@@ -929,7 +944,10 @@ def make_graph(
                 input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
-            param = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                param = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
                 input_tensor_1 = backward_quantization(param, input_tensor_1)
@@ -995,7 +1013,10 @@ def make_graph(
 
         elif op_type == 'SUB':
             input_tensor_0 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
@@ -1003,7 +1024,10 @@ def make_graph(
                 input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
-            param = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                param = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
                 input_tensor_1 = backward_quantization(param, input_tensor_1)
@@ -1099,8 +1123,10 @@ def make_graph(
 
             weights_detail = None
             weights_array = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
-
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 weights_array = tensors[op['inputs'][1]]
             except:
@@ -1137,7 +1163,10 @@ def make_graph(
 
         elif op_type == 'MUL':
             input_tensor_0 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor_0 = tensors[op['inputs'][0]]
             except:
@@ -1145,7 +1174,10 @@ def make_graph(
                 input_tensor_0 = backward_quantization(input_detail, input_tensor_0)
 
             input_tensor_1 = None
-            param = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                param = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             if len(op['inputs']) == 1:
                 input_tensor_1 = interpreter.get_tensor(param['index'])
                 input_tensor_1 = backward_quantization(param, input_tensor_1)
@@ -1241,14 +1273,21 @@ def make_graph(
             input_tensor = tensors[op['inputs'][0]]
             weights = None
             bias = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 weights = tensors[op['inputs'][1]].transpose(1,0)
             except:
                 weights = interpreter.get_tensor(weights_detail['index']).transpose(1,0)
                 weights = backward_quantization(weights_detail, weights)
 
-            bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            bias_detail = None
+            try:
+                bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 bias = tensors[op['inputs'][2]]
             except:
@@ -1488,7 +1527,10 @@ def make_graph(
 
         elif op_type == 'MEAN':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1496,7 +1538,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            param = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                param = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             if len(op['inputs']) == 1:
                 input_tensor2 = interpreter.get_tensor(param['index'])
                 input_tensor2 = backward_quantization(param, input_tensor2)
@@ -1521,7 +1566,10 @@ def make_graph(
 
         elif op_type == 'SQUARED_DIFFERENCE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1529,7 +1577,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            param = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                param = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             if len(op['inputs']) == 1:
                 input_tensor2 = interpreter.get_tensor(param['index'])
                 input_tensor2 = backward_quantization(param, input_tensor2)
@@ -1551,7 +1602,10 @@ def make_graph(
 
         elif op_type == 'RSQRT':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1567,7 +1621,10 @@ def make_graph(
 
         elif op_type == 'DEQUANTIZE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1580,7 +1637,10 @@ def make_graph(
 
         elif op_type == 'FLOOR':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1596,7 +1656,10 @@ def make_graph(
 
         elif op_type == 'TANH':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1612,7 +1675,10 @@ def make_graph(
 
         elif op_type == 'DIV':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1620,7 +1686,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1637,7 +1706,10 @@ def make_graph(
 
         elif op_type == 'FLOOR_DIV':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1645,7 +1717,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1662,7 +1737,10 @@ def make_graph(
 
         elif op_type == 'SUM':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1670,7 +1748,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1690,7 +1771,10 @@ def make_graph(
 
         elif op_type == 'POW':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1698,7 +1782,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1721,21 +1808,30 @@ def make_graph(
             if op['inputs'][0] < op['inputs'][1]:
                 try:
                     input_tensor1 = tensors[op['inputs'][0]]
-                    axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        axis_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
                         input_tensor2 = interpreter.get_tensor(axis_detail['index'])
                 except:
                     input_tensor1 = tensors[op['inputs'][1]]
-                    axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][0]]
                     except:
                         input_tensor2 = interpreter.get_tensor(axis_detail['index'])
             else:
                 input_tensor1 = tensors[op['inputs'][1]]
-                axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                try:
+                    axis_detail = interpreter._get_tensor_details(op['inputs'][0])
+                except:
+                    pass
                 try:
                     input_tensor2 = tensors[op['inputs'][0]]
                 except:
@@ -1757,7 +1853,10 @@ def make_graph(
 
         elif op_type == 'SOFTMAX':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1775,25 +1874,37 @@ def make_graph(
 
         elif op_type == 'STRIDED_SLICE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(begin_detail['index'])
             input_tensor3 = None
-            end_detail = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                end_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_tensor3 = interpreter.get_tensor(end_detail['index'])
             input_tensor4 = None
-            strides_detail = interpreter._get_tensor_details(op['inputs'][3])
+            try:
+                strides_detail = interpreter._get_tensor_details(op['inputs'][3])
+            except:
+                pass
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
@@ -1823,13 +1934,19 @@ def make_graph(
 
         elif op_type == 'TRANSPOSE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1868,7 +1985,10 @@ def make_graph(
 
         elif op_type == 'REDUCE_MAX':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1876,7 +1996,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1912,7 +2035,10 @@ def make_graph(
 
         elif op_type == 'MAXIMUM':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1920,7 +2046,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1937,7 +2066,10 @@ def make_graph(
 
         elif op_type == 'MINIMUM':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -1945,7 +2077,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                perm_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -1962,13 +2097,19 @@ def make_graph(
 
         elif op_type == 'GATHER':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2005,19 +2146,28 @@ def make_graph(
 
         elif op_type == 'SLICE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                begin_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(begin_detail['index'])
             input_tensor3 = None
-            size_detail = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                size_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -2053,7 +2203,10 @@ def make_graph(
 
         elif op_type == 'UNPACK':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2078,7 +2231,10 @@ def make_graph(
 
         elif op_type == 'ARG_MAX':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2086,7 +2242,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2106,7 +2265,10 @@ def make_graph(
 
         elif op_type == 'EXP':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2122,13 +2284,19 @@ def make_graph(
 
         elif op_type == 'TOPK_V2':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2145,7 +2313,10 @@ def make_graph(
 
         elif op_type == 'LOG_SOFTMAX':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2161,7 +2332,10 @@ def make_graph(
 
         elif op_type == 'L2_NORMALIZATION':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2221,7 +2395,10 @@ def make_graph(
 
         elif op_type == 'LESS':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2229,7 +2406,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2246,7 +2426,10 @@ def make_graph(
 
         elif op_type == 'LESS_EQUAL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2254,7 +2437,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2271,7 +2457,10 @@ def make_graph(
 
         elif op_type == 'GREATER':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2279,7 +2468,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2296,7 +2488,10 @@ def make_graph(
 
         elif op_type == 'GREATER_EQUAL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2304,7 +2499,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2321,7 +2519,10 @@ def make_graph(
 
         elif op_type == 'NEG':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2337,7 +2538,10 @@ def make_graph(
 
         elif op_type == 'WHERE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2351,19 +2555,28 @@ def make_graph(
 
         elif op_type == 'SELECT':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -2379,19 +2592,28 @@ def make_graph(
 
         elif op_type == 'SELECT_V2':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][1]]
             except:
@@ -2407,19 +2629,28 @@ def make_graph(
 
         elif op_type == 'PADV2':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][1]]
             except:
@@ -2448,7 +2679,10 @@ def make_graph(
 
         elif op_type == 'SIN':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2464,13 +2698,19 @@ def make_graph(
 
         elif op_type == 'TILE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2485,7 +2725,10 @@ def make_graph(
 
         elif op_type == 'EQUAL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2493,7 +2736,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2510,7 +2756,10 @@ def make_graph(
 
         elif op_type == 'NOT_EQUAL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2518,7 +2767,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2535,7 +2787,10 @@ def make_graph(
 
         elif op_type == 'LOG':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2551,7 +2806,10 @@ def make_graph(
 
         elif op_type == 'SQRT':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2567,7 +2825,10 @@ def make_graph(
 
         elif op_type == 'ARG_MIN':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2575,7 +2836,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2603,7 +2867,10 @@ def make_graph(
 
         elif op_type == 'REDUCE_PROD':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2611,7 +2878,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2631,7 +2901,10 @@ def make_graph(
 
         elif op_type == 'REDUCE_MAX':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2639,7 +2912,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2659,7 +2935,10 @@ def make_graph(
 
         elif op_type == 'LOGICAL_OR':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2667,7 +2946,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2684,7 +2966,10 @@ def make_graph(
 
         elif op_type == 'LOGICAL_AND':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2692,7 +2977,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2709,7 +2997,10 @@ def make_graph(
 
         elif op_type == 'LOGICAL_NOT':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2725,7 +3016,10 @@ def make_graph(
 
         elif op_type == 'REDUCE_MIN':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2733,7 +3027,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2761,7 +3058,10 @@ def make_graph(
 
         elif op_type == 'REDUCE_ANY':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2769,7 +3069,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2789,7 +3092,10 @@ def make_graph(
 
         elif op_type == 'SQUARE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2805,7 +3111,10 @@ def make_graph(
 
         elif op_type == 'ZEROS_LIKE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2821,7 +3130,10 @@ def make_graph(
 
         elif op_type == 'FILL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2829,7 +3141,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2846,7 +3161,10 @@ def make_graph(
 
         elif op_type == 'FLOOR_MOD':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2854,7 +3172,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2871,19 +3192,28 @@ def make_graph(
 
         elif op_type == 'RANGE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            limit_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                limit_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(limit_detail['index'])
             input_tensor3 = None
-            delta_detail = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                delta_detail = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -2899,7 +3229,10 @@ def make_graph(
 
         elif op_type == 'ABS':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2915,7 +3248,10 @@ def make_graph(
 
         elif op_type == 'UNIQUE':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2937,7 +3273,10 @@ def make_graph(
 
         elif op_type == 'CEIL':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -2953,13 +3292,19 @@ def make_graph(
 
         elif op_type == 'REVERSE_V2':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -2994,13 +3339,19 @@ def make_graph(
 
         elif op_type == 'GATHER_ND':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_tensor2 = None
-            positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                positions_detail = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3015,7 +3366,10 @@ def make_graph(
 
         elif op_type == 'COS':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3031,7 +3385,10 @@ def make_graph(
 
         elif op_type == 'RANK':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3045,7 +3402,10 @@ def make_graph(
 
         elif op_type == 'ELU':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3062,28 +3422,40 @@ def make_graph(
         elif op_type == 'WHILE':
             input_list = []
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail['index'])
             input_list.append(input_tensor1)
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_list.append(input_tensor2)
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
                 input_tensor3 = interpreter.get_tensor(input_detail3['index'])
             input_list.append(input_tensor3)
             input_tensor4 = None
-            input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            try:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            except:
+                pass
             try:
                 try:
                     input_tensor4 = tensors[op['inputs'][3]]
@@ -3129,13 +3501,19 @@ def make_graph(
 
         elif op_type == 'REVERSE_SEQUENCE':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3164,7 +3542,10 @@ def make_graph(
 
         elif op_type == 'MATRIX_DIAG':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3180,7 +3561,10 @@ def make_graph(
 
         elif op_type == 'ROUND':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3196,7 +3580,10 @@ def make_graph(
 
         elif op_type == 'NON_MAX_SUPPRESSION_V4':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3204,7 +3591,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3212,7 +3602,10 @@ def make_graph(
                 input_tensor2 = backward_quantization(input_detail2, input_tensor2)
 
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -3220,7 +3613,10 @@ def make_graph(
                 input_tensor3 = backward_quantization(input_detail3, input_tensor3)
 
             input_tensor4 = None
-            input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            try:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            except:
+                pass
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
@@ -3228,7 +3624,10 @@ def make_graph(
                 input_tensor4 = backward_quantization(input_detail4, input_tensor4)
 
             input_tensor5 = None
-            input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+            try:
+                input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+            except:
+                pass
             try:
                 input_tensor5 = tensors[op['inputs'][4]]
             except:
@@ -3261,7 +3660,10 @@ def make_graph(
 
         elif op_type == 'NON_MAX_SUPPRESSION_V5':
             input_tensor1 = None
-            input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3269,7 +3671,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3277,7 +3682,10 @@ def make_graph(
                 input_tensor2 = backward_quantization(input_detail2, input_tensor2)
 
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -3285,7 +3693,10 @@ def make_graph(
                 input_tensor3 = backward_quantization(input_detail3, input_tensor3)
 
             input_tensor4 = None
-            input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            try:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            except:
+                pass
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
@@ -3293,7 +3704,10 @@ def make_graph(
                 input_tensor4 = backward_quantization(input_detail4, input_tensor4)
 
             input_tensor5 = None
-            input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+            try:
+                input_detail5 = interpreter._get_tensor_details(op['inputs'][4])
+            except:
+                pass
             try:
                 input_tensor5 = tensors[op['inputs'][4]]
             except:
@@ -3301,7 +3715,10 @@ def make_graph(
                 input_tensor5 = backward_quantization(input_detail5, input_tensor5)
 
             input_tensor6 = None
-            input_detail6 = interpreter._get_tensor_details(op['inputs'][5])
+            try:
+                input_detail6 = interpreter._get_tensor_details(op['inputs'][5])
+            except:
+                pass
             try:
                 input_tensor6 = tensors[op['inputs'][5]]
             except:
@@ -3370,19 +3787,28 @@ def make_graph(
 
         elif op_type == 'SCATTER_ND':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -3398,7 +3824,10 @@ def make_graph(
 
         elif op_type == 'SEGMENT_SUM':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3406,7 +3835,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3423,7 +3855,10 @@ def make_graph(
 
         elif op_type == 'CUMSUM':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3431,7 +3866,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3453,7 +3891,10 @@ def make_graph(
 
         elif op_type == 'BROADCAST_TO':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3461,7 +3902,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3478,7 +3922,10 @@ def make_graph(
 
         elif op_type == 'RFFT2D':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3486,7 +3933,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3533,7 +3983,10 @@ def make_graph(
 
         elif op_type == 'LOCAL_RESPONSE_NORMALIZATION':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3558,7 +4011,10 @@ def make_graph(
 
         elif op_type == 'RELU_N1_TO_1':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3573,19 +4029,28 @@ def make_graph(
 
         elif op_type == 'SPLIT_V':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
                 input_tensor2 = interpreter.get_tensor(input_detail2['index'])
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -3614,7 +4079,10 @@ def make_graph(
 
         elif op_type == 'MATRIX_SET_DIAG':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3622,7 +4090,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3639,7 +4110,10 @@ def make_graph(
 
         elif op_type == 'SHAPE':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3656,13 +4130,19 @@ def make_graph(
 
         elif op_type == 'EXPAND_DIMS':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
                 input_tensor1 = interpreter.get_tensor(input_detail1['index'])
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3677,7 +4157,10 @@ def make_graph(
 
         elif op_type == 'SQUEEZE':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3694,7 +4177,10 @@ def make_graph(
 
         elif op_type == 'IMAG':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3710,7 +4196,10 @@ def make_graph(
 
         elif op_type == 'REAL':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3726,7 +4215,10 @@ def make_graph(
 
         elif op_type == 'COMPLEX_ABS':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3752,7 +4244,10 @@ def make_graph(
 
         elif op_type == 'ONE_HOT':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3760,7 +4255,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -3768,7 +4266,10 @@ def make_graph(
                 input_tensor2 = backward_quantization(input_detail2, input_tensor2)
 
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -3776,7 +4277,10 @@ def make_graph(
                 input_tensor3 = backward_quantization(input_detail3, input_tensor3)
 
             input_tensor4 = None
-            input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            try:
+                input_detail4 = interpreter._get_tensor_details(op['inputs'][3])
+            except:
+                pass
             try:
                 input_tensor4 = tensors[op['inputs'][3]]
             except:
@@ -3957,7 +4461,10 @@ def make_graph(
             tf : [Z, Y, X, C_IN, C_OUT] = [3,3,3,1,8] [3,3,3,8,16]
             """
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -3965,7 +4472,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -4049,7 +4559,10 @@ def make_graph(
 
         elif op_type == 'CONV_3D_TRANSPOSE':
             input_tensor1 = None
-            input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
             try:
                 input_tensor1 = tensors[op['inputs'][0]]
             except:
@@ -4057,7 +4570,10 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail1, input_tensor1)
 
             input_tensor2 = None
-            input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
             try:
                 input_tensor2 = tensors[op['inputs'][1]]
             except:
@@ -4065,7 +4581,10 @@ def make_graph(
                 input_tensor2 = backward_quantization(input_detail2, input_tensor2)
 
             input_tensor3 = None
-            input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
             try:
                 input_tensor3 = tensors[op['inputs'][2]]
             except:
@@ -4236,8 +4755,14 @@ def make_graph(
                     weights = None
                     bias = None
 
-                    weights_detail = interpreter._get_tensor_details(op['inputs'][1])
-                    bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    try:
+                        weights_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
+                    try:
+                        bias_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    except:
+                        pass
 
                     if len(op['inputs']) == 1:
                         input_tensor = tensors[op['inputs'][0]]
@@ -4328,13 +4853,19 @@ def make_graph(
 
                 elif custom_op_type == 'FlexRFFT':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
                         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
                     input_tensor2 = None
-                    input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
@@ -4358,7 +4889,10 @@ def make_graph(
 
                 elif custom_op_type == 'FlexImag':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
@@ -4372,7 +4906,10 @@ def make_graph(
 
                 elif custom_op_type == 'FlexReal':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
@@ -4386,13 +4923,19 @@ def make_graph(
 
                 elif custom_op_type == 'FlexRFFT2D':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
                         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
                     input_tensor2 = None
-                    input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
@@ -4416,7 +4959,10 @@ def make_graph(
 
                 elif custom_op_type == 'FlexComplexAbs':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
@@ -4442,19 +4988,28 @@ def make_graph(
                     TFLite_Detection_PostProcess_flg = True
                     ################################################################### Extraction of boxes, scores, anchors, options
                     boxes = None
-                    boxes_detail = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        boxes_detail = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         boxes = tensors[op['inputs'][0]]
                     except:
                         boxes = interpreter.get_tensor(boxes_detail['index'])
                     scores = None
-                    scores_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        scores_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         scores = tensors[op['inputs'][1]]
                     except:
                         scores = interpreter.get_tensor(scores_detail['index'])
                     anchors = None
-                    anchors_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    try:
+                        anchors_detail = interpreter._get_tensor_details(op['inputs'][2])
+                    except:
+                        pass
                     try:
                         anchors = tensors[op['inputs'][2]]
                     except:
@@ -4512,7 +5067,6 @@ def make_graph(
                         print(struct.unpack_from('<f', bytes([0,0,32,65]))[0]) #y_scale
                     """
                     options = op['custom_options']
-
                     custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())
                     print('custom_options:')
                     pprint.pprint(custom_options)
@@ -4665,13 +5219,19 @@ def make_graph(
 
                 elif custom_op_type == 'FlexMultinomial':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
                         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
                     input_tensor2 = None
-                    input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
@@ -4686,13 +5246,19 @@ def make_graph(
 
                 elif custom_op_type == 'FlexAll':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
                         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
                     input_tensor2 = None
-                    input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
@@ -4713,7 +5279,10 @@ def make_graph(
 
                 elif custom_op_type == 'FlexErf':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
@@ -4728,19 +5297,28 @@ def make_graph(
 
                 elif custom_op_type == 'FlexRoll':
                     input_tensor1 = None
-                    input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    try:
+                        input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+                    except:
+                        pass
                     try:
                         input_tensor1 = tensors[op['inputs'][0]]
                     except:
                         input_tensor1 = interpreter.get_tensor(input_detail1['index'])
                     input_tensor2 = None
-                    input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    try:
+                        input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+                    except:
+                        pass
                     try:
                         input_tensor2 = tensors[op['inputs'][1]]
                     except:
                         input_tensor2 = interpreter.get_tensor(input_detail2['index'])
                     input_tensor3 = None
-                    input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                    try:
+                        input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+                    except:
+                        pass
                     try:
                         input_tensor3 = tensors[op['inputs'][2]]
                     except:
