@@ -433,6 +433,7 @@ $ tflite2tensorflow \
   --flatc_path ../flatc \
   --schema_path ../schema.fbs \
   --output_no_quant_float32_tflite \
+  --output_dynamic_range_quant_tflite \
   --output_weight_quant_tflite \
   --output_float16_quant_tflite \
   --output_integer_quant_tflite \
@@ -451,6 +452,7 @@ $ tflite2tensorflow \
   --flatc_path ../flatc \
   --schema_path ../schema.fbs \
   --output_no_quant_float32_tflite \
+  --output_dynamic_range_quant_tflite \
   --output_weight_quant_tflite \
   --output_float16_quant_tflite \
   --output_integer_quant_tflite \
