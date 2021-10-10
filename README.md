@@ -296,7 +296,8 @@ usage: tflite2tensorflow
   [--tfds_download_flg]
   [--load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY]
   [--output_tfjs]
-  [--output_tftrt]
+  [--output_tftrt_float32]
+  [--output_tftrt_float16]
   [--output_coreml]
   [--output_edgetpu]
   [--edgetpu_compiler_timeout EDGETPU_COMPILER_TIMEOUT]
@@ -366,8 +367,10 @@ optional arguments:
                         [20, 513, 513, 3] -> [Number of images, h, w, c]
   --output_tfjs
                         tfjs model output switch
-  --output_tftrt
-                        tftrt model output switch
+  --output_tftrt32
+                        tftrt float32 model output switch
+  --output_tftrt16
+                        tftrt float16 model output switch
   --output_coreml
                         coreml model output switch
   --output_edgetpu
@@ -440,7 +443,8 @@ $ tflite2tensorflow \
   --string_formulas_for_normalization 'data / 255.0' \
   --output_tfjs \
   --output_coreml \
-  --output_tftrt \
+  --output_tftrt_float32 \
+  --output_tftrt_float16 \
   --output_onnx \
   --onnx_opset 13 \
   --output_openvino_and_myriad
@@ -460,7 +464,8 @@ $ tflite2tensorflow \
   --string_formulas_for_normalization 'data / 255.0' \
   --output_tfjs \
   --output_coreml \
-  --output_tftrt \
+  --output_tftrt_float32 \
+  --output_tftrt_float16 \
   --output_onnx \
   --onnx_opset 13
 ```
