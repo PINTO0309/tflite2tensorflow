@@ -397,6 +397,7 @@ optional arguments:
   --rigorous_optimization_for_myriad
                         Replace operations that are not supported by myriad with operations
                         that are as feasible as possible.
+                        e.g. 'Abs' -> 'Square' + 'Sqrt'
   --replace_swish_and_hardswish
                         Replace swish and hard-swish with each other
   --optimizing_hardswish_for_edgetpu
