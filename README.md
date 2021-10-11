@@ -308,6 +308,7 @@ usage: tflite2tensorflow
   [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
   [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
   [--optimizing_for_openvino_and_myriad]
+  [--rigorous_optimization_for_myriad]
   [--replace_swish_and_hardswish]
   [--optimizing_hardswish_for_edgetpu]
   [--replace_prelu_and_minmax]
@@ -393,6 +394,8 @@ optional arguments:
                         vpu number of cmx slices. Default: 4
   --optimizing_for_openvino_and_myriad
                         Optimizing graph for openvino/myriad
+  --rigorous_optimization_for_myriad
+                        Replace operations that are not supported by myriad with operations that are as feasible as possible.
   --replace_swish_and_hardswish
                         Replace swish and hard-swish with each other
   --optimizing_hardswish_for_edgetpu
@@ -419,6 +422,16 @@ $ tflite2tensorflow \
   --schema_path ../schema.fbs \
   --output_pb \
   --optimizing_for_openvino_and_myriad
+```
+or
+```
+$ tflite2tensorflow \
+  --model_path segm_full_v679.tflite \
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb \
+  --optimizing_for_openvino_and_myriad \
+  --rigorous_optimization_for_myriad
 ```
 or
 ```

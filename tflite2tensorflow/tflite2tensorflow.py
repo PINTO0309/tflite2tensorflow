@@ -419,7 +419,8 @@ def make_graph(
     replace_swish_and_hardswish,
     replace_prelu_and_minmax,
     optimizing_for_edgetpu_flg,
-    optimizing_for_openvino_and_myriad):
+    optimizing_for_openvino_and_myriad,
+    rigorous_optimization_for_myriad):
 
     import tensorflow.compat.v1 as tf
     tf.get_logger().setLevel('INFO')
@@ -3240,10 +3241,22 @@ def make_graph(
                 input_tensor1 = backward_quantization(input_detail, input_tensor1)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.abs(
-                input_tensor1,
-                name=get_op_name(output_detail['name'])
-            )
+            if not optimizing_for_openvino_and_myriad:
+                output_tensor = tf.math.abs(
+                    input_tensor1,
+                    name=get_op_name(output_detail['name'])
+                )
+            elif optimizing_for_openvino_and_myriad and not rigorous_optimization_for_myriad:
+                output_tensor = tf.math.abs(
+                    input_tensor1,
+                    name=get_op_name(output_detail['name'])
+                )
+            elif optimizing_for_openvino_and_myriad and rigorous_optimization_for_myriad:
+                output_tensor = tf.math.sqrt(
+                    tf.math.square(input_tensor1),
+                    name=get_op_name(output_detail['name'])
+                )
+
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'UNIQUE':
@@ -5384,6 +5397,7 @@ def main():
     parser.add_argument('--vpu_number_of_shaves', type=int, default=4, help='vpu number of shaves. Default: 4')
     parser.add_argument('--vpu_number_of_cmx_slices', type=int, default=4, help='vpu number of cmx slices. Default: 4')
     parser.add_argument('--optimizing_for_openvino_and_myriad', action='store_true', help='Optimizing graph for openvino/myriad')
+    parser.add_argument('--rigorous_optimization_for_myriad', action='store_true', help='Replace operations that are not supported by myriad with operations that are as feasible as possible.')
     parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='Replace swish and hard-swish with each other')
     parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
@@ -5427,6 +5441,7 @@ def main():
     vpu_number_of_shaves = args.vpu_number_of_shaves
     vpu_number_of_cmx_slices = args.vpu_number_of_cmx_slices
     optimizing_for_openvino_and_myriad = args.optimizing_for_openvino_and_myriad
+    rigorous_optimization_for_myriad = args.rigorous_optimization_for_myriad
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
@@ -5530,6 +5545,9 @@ def main():
         print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu cannot be True at the same time.')
         sys.exit(-1)
 
+    if not optimizing_for_openvino_and_myriad and rigorous_optimization_for_myriad:
+        optimizing_for_openvino_and_myriad = True
+
     if tfv1_flg:
         from tensorflow.lite.python.interpreter import Interpreter as tflite_interpreter
 
@@ -5563,7 +5581,8 @@ def main():
             replace_swish_and_hardswish,
             replace_prelu_and_minmax,
             optimizing_for_edgetpu_flg,
-            optimizing_for_openvino_and_myriad)
+            optimizing_for_openvino_and_myriad,
+            rigorous_optimization_for_myriad)
         print('outputs:')
         if not TFLite_Detection_PostProcess_flg:
             for output in output_details:
