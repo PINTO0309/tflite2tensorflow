@@ -1729,11 +1729,27 @@ def make_graph(
                 input_tensor2 = backward_quantization(weights_detail, input_tensor2)
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.floordiv(
-                input_tensor1,
-                input_tensor2,
-                name=get_op_name(output_detail['name'])
-            )
+
+            output_tensor = None
+            if not rigorous_optimization_for_myriad:
+                output_tensor = tf.math.floordiv(
+                    input_tensor1,
+                    input_tensor2,
+                    name=get_op_name(output_detail['name'])
+                )
+            else:
+                tmp_div = tf.math.divide(input_tensor1, input_tensor2)
+                tmp_dtype = input_tensor1.dtype
+                tmp_cast = tf.cast(
+                    tmp_div,
+                    dtype=tf.float32
+                )
+                tmp_floor = tf.math.floor(tmp_cast)
+                output_tensor = tf.cast(
+                    tmp_floor,
+                    tmp_dtype,
+                    name=get_op_name(output_detail['name'])
+                )
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'SUM':
@@ -2717,11 +2733,29 @@ def make_graph(
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.tile(
-                input_tensor1,
-                input_tensor2,
-                name=get_op_name(output_detail['name'])
-            )
+
+            output_tensor = None
+            if not rigorous_optimization_for_myriad:
+                output_tensor = tf.tile(
+                    input_tensor1,
+                    input_tensor2,
+                    name=get_op_name(output_detail['name'])
+                )
+            else:
+                tmp_dtype = input_tensor1.dtype
+                tmp_cast = tf.cast(
+                    input_tensor1,
+                    dtype=tf.float32
+                )
+                tmp_tile = tf.tile(
+                    tmp_cast,
+                    input_tensor2
+                )
+                output_tensor = tf.cast(
+                    tmp_tile,
+                    tmp_dtype,
+                    name=get_op_name(output_detail['name'])
+                )
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'EQUAL':
