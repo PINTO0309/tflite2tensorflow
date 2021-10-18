@@ -916,6 +916,12 @@ def make_graph(
             try:
                 options = op['builtin_options']
                 new_shape = options['new_shape']
+                if new_shape == []:
+                    shape_detail = interpreter._get_tensor_details(op['inputs'][1])
+                    if shape_detail['shape'] != [0]:
+                        new_shape = interpreter.get_tensor(shape_detail['index'])
+                    else:
+                        new_shape = []
             except:
                 try:
                     new_shape = tensors[op['inputs'][1]]
@@ -6180,6 +6186,15 @@ def main():
                 print(f'{Color.REVERCE}Myriad Inference Engine blob convertion started{Color.RESET}', '=' * 44)
                 os.makedirs(f'{model_output_path}/openvino/myriad', exist_ok=True)
                 INTEL_OPENVINO_DIR = os.environ['INTEL_OPENVINO_DIR']
+
+                shutil.copy(f'{model_output_path}/openvino/FP16/saved_model.xml', f'{model_output_path}/openvino/FP16/saved_model_vino.xml')
+                result = subprocess.check_output(
+                    [
+                        "sed", "-i", 's/sort_result_descending=\"true\"/sort_result_descending=\"false\"/g', f"{model_output_path}/openvino/FP16/saved_model.xml"
+                    ],
+                    stderr=subprocess.PIPE
+                ).decode('utf-8')
+
                 result = subprocess.check_output(
                     [
                         f'{INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/myriad_compile',
@@ -6191,7 +6206,11 @@ def main():
                     stderr=subprocess.PIPE
                 ).decode('utf-8')
                 print(result)
+                shutil.copy(f'{model_output_path}/openvino/FP16/saved_model.xml', f'{model_output_path}/openvino/FP16/saved_model_myriad.xml')
+                shutil.copy(f'{model_output_path}/openvino/FP16/saved_model_vino.xml', f'{model_output_path}/openvino/FP16/saved_model.xml')
+
                 print(f'{Color.GREEN}Myriad Inference Engine blob convertion complete!{Color.RESET} - {model_output_path}/openvino/myriad')
+
             except subprocess.CalledProcessError as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
                 import traceback
