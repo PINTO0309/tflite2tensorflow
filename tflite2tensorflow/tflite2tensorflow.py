@@ -6005,6 +6005,8 @@ def main():
                         if input_shapes_permutations_idx > len(input_shapes_permutations):
                             print(f'{Color.RED}ERROR:{Color.RESET}', e)
 
+                converter.save(f'{model_output_path}/tensorrt_saved_model_float32')
+                print(f'{Color.GREEN}TF-TRT (TensorRT) convertion complete!{Color.RESET} - {model_output_path}/tensorrt_saved_model_float32')
             except Exception as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e)
                 import traceback
