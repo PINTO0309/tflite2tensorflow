@@ -6089,17 +6089,33 @@ def main():
             import subprocess
             try:
                 print(f'{Color.REVERCE}ONNX convertion started{Color.RESET}', '=' * 61)
-                result = subprocess.check_output(
-                    [
-                        'python3',
-                        '-m', 'tf2onnx.convert',
-                        '--saved-model', model_output_path,
-                        '--opset', str(onnx_opset),
-                        '--output', f'{model_output_path}/model_float32.onnx'
-                    ],
-                    stderr=subprocess.PIPE
-                ).decode('utf-8')
-                print(result)
+                try:
+                    loaded = tf.saved_model.load(model_output_path).signatures['serving_default']
+                    inputs = ",".join(map(str, [inp.name for inp in loaded.inputs if 'unknown' not in inp.name]))
+                    result = subprocess.check_output(
+                        [
+                            'python3',
+                            '-m', 'tf2onnx.convert',
+                            '--saved-model', model_output_path,
+                            '--opset', str(onnx_opset),
+                            '--output', f'{model_output_path}/model_float32.onnx',
+                            '--inputs-as-nchw', f'{inputs}'
+                        ],
+                        stderr=subprocess.PIPE
+                    ).decode('utf-8')
+                    print(result)
+                except:
+                    result = subprocess.check_output(
+                        [
+                            'python3',
+                            '-m', 'tf2onnx.convert',
+                            '--saved-model', model_output_path,
+                            '--opset', str(onnx_opset),
+                            '--output', f'{model_output_path}/model_float32.onnx'
+                        ],
+                        stderr=subprocess.PIPE
+                    ).decode('utf-8')
+                    print(result)
                 print(f'{Color.GREEN}ONNX convertion complete!{Color.RESET} - {model_output_path}/model_float32.onnx')
             except subprocess.CalledProcessError as e:
                 print(f'{Color.RED}ERROR:{Color.RESET}', e.stderr.decode('utf-8'))
