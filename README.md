@@ -165,7 +165,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 ### 3-1. **[Environment construction pattern 1]** Execution by Docker (`strongly recommended`)
 You do not need to install any packages other than Docker. It consumes about 12GB of host storage.
 ```bash
-$ docker pull ghcr.io/pinto0309/tflite2tensorflow
+$ docker pull ghcr.io/pinto0309/tflite2tensorflow:latest
 or
 $ docker build -t pinto0309/tflite2tensorflow:latest .
 
