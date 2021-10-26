@@ -167,12 +167,12 @@ You do not need to install any packages other than Docker. It consumes about 12G
 ```bash
 $ docker pull ghcr.io/pinto0309/tflite2tensorflow:latest
 or
-$ docker build -t pinto0309/tflite2tensorflow:latest .
+$ docker build -t ghcr.io/pinto0309/tflite2tensorflow:latest .
 
 # If you don't need to access the GUI of the HostPC and the USB camera.
 $ docker run -it --rm \
   -v `pwd`:/home/user/workdir \
-  pinto0309/tflite2tensorflow:latest
+  ghcr.io/pinto0309/tflite2tensorflow:latest
 
 # If conversion to TF-TRT is not required. And if you need to access the HostPC GUI and USB camera.
 $ xhost +local: && \
@@ -184,7 +184,7 @@ $ xhost +local: && \
   -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
   -e DISPLAY=$DISPLAY \
   --privileged \
-  pinto0309/tflite2tensorflow:latest
+  ghcr.io/pinto0309/tflite2tensorflow:latest
 $ cd workdir
 
 # If you need to convert to TF-TRT. And if you need to access the HostPC GUI and USB camera.
@@ -197,7 +197,7 @@ $ xhost +local: && \
   -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
   -e DISPLAY=$DISPLAY \
   --privileged \
-  pinto0309/tflite2tensorflow:latest
+  ghcr.io/pinto0309/tflite2tensorflow:latest
 $ cd workdir
 
 # If you are using iGPU (OpenCL). And if you need to access the HostPC GUI and USB camera.
@@ -211,7 +211,7 @@ $ xhost +local: && \
   -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
   -e DISPLAY=$DISPLAY \
   --privileged \
-  pinto0309/tflite2tensorflow:latest
+  ghcr.io/pinto0309/tflite2tensorflow:latest
 $ cd workdir
 ```
 ### 3-2. **[Environment construction pattern 2]** Execution by Host machine
