@@ -39,6 +39,7 @@ from pathlib import Path
 import re
 import struct
 import itertools
+import pandas as pd
 
 class Color:
     BLACK          = '\033[30m'
@@ -410,11 +411,24 @@ def read_flexbuffer(buffer, decode_strings=True):
     return read_buffer(buffer, offset, bit_size, packed_type, decode_strings)
 
 
+def get_op_name(name):
+    name = re.sub('^;*', '', name)
+    name = name.replace(';', '_')
+    name = name.replace(',', '_')
+    rep = re.search(':.*', name)
+    if rep:
+        op_name = name.replace(rep.group(0), '')
+    else:
+        op_name = name
+    return op_name
+
+
 def make_graph(
     ops,
     json_tensor_details,
     full_json,
     op_types,
+    ops_details,
     interpreter,
     replace_swish_and_hardswish,
     replace_prelu_and_minmax,
@@ -498,17 +512,6 @@ def make_graph(
             ret_op = input_op * tf.nn.relu6(input_op + 3) * 0.16666666
         return ret_op
 
-    def get_op_name(name):
-        name = re.sub('^;*', '', name)
-        name = name.replace(';', '_')
-        name = name.replace(',', '_')
-        rep = re.search(':.*', name)
-        if rep:
-            op_name = name.replace(rep.group(0), '')
-        else:
-            op_name = name
-        return op_name
-
     def backward_quantization(op_detail, op):
         if not 'quantization' in op_detail or \
             (input_detail['quantization'][0] == 0.0 and input_detail['quantization'][1] == 0):
@@ -528,7 +531,6 @@ def make_graph(
 
     tensors = {}
     input_details = interpreter.get_input_details()
-    ops_details = interpreter._get_ops_details()
     TFLite_Detection_PostProcess_flg = False
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ op:', f'{Color.GREEN}Placeholder{Color.RESET}')
@@ -5442,6 +5444,7 @@ def main():
     parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
     parser.add_argument('--disable_experimental_new_quantizer', action='store_true', help='Disable MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
+    parser.add_argument('--locationids_of_the_terminating_output', type=str, default='', help='A comma-separated list of location IDs to be used as output layers. Default: \'\'')
     args = parser.parse_args()
 
     model, ext = os.path.splitext(args.model_path)
@@ -5486,6 +5489,10 @@ def main():
     optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
     use_experimental_new_quantizer = not args.disable_experimental_new_quantizer
+    locationids_of_the_terminating_output_tmp = args.locationids_of_the_terminating_output
+    locationids_of_the_terminating_output = None
+    if locationids_of_the_terminating_output_tmp:
+        locationids_of_the_terminating_output = [int(ids.strip()) for ids in locationids_of_the_terminating_output_tmp.split(',')]
 
     if output_coreml:
         import coremltools as ct
@@ -5601,6 +5608,9 @@ def main():
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
+        ops_details = interpreter._get_ops_details()
+        ops_details_pd = pd.json_normalize(ops_details, sep='_')
+
         print('inputs:')
         input_node_names = []
         tf_inputs = []
@@ -5617,19 +5627,38 @@ def main():
             json_tensor_details,
             full_json,
             op_types,
+            ops_details,
             interpreter,
             replace_swish_and_hardswish,
             replace_prelu_and_minmax,
             optimizing_for_edgetpu_flg,
             optimizing_for_openvino_and_myriad,
             rigorous_optimization_for_myriad)
+        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
         print('outputs:')
+        dummy_outputs = []
+        if locationids_of_the_terminating_output:
+            print('locationids_of_the_terminating_output')
+            outputs_filtered = ops_details_pd[ops_details_pd['index'].isin(locationids_of_the_terminating_output)]
+            print(outputs_filtered)
+            ops_pd = pd.json_normalize(ops, sep='_')
+            for outputs in outputs_filtered['outputs']:
+                output_detail = interpreter._get_tensor_details(outputs[0])
+                dummy_outputs.append(get_op_name(output_detail['name']))
+
         if not TFLite_Detection_PostProcess_flg:
-            for output in output_details:
-                pprint.pprint(output)
-                name_count = output_node_names_non_suffix.count(output['name'])
-                output_node_names.append(output['name']+f':{name_count}')
-                output_node_names_non_suffix.append(output['name'])
+            if len(dummy_outputs) == 0:
+                for output in output_details:
+                    pprint.pprint(output)
+                    name_count = output_node_names_non_suffix.count(output['name'])
+                    output_node_names.append(output['name']+f':{name_count}')
+                    output_node_names_non_suffix.append(output['name'])
+            else:
+                for output_name in dummy_outputs:
+                    print(f'name: {output_name}')
+                    name_count = output_node_names_non_suffix.count(output_name)
+                    output_node_names.append(output_name+f':{name_count}')
+                    output_node_names_non_suffix.append(output_name)
         else:
             for output in output_details:
                 pprint.pprint(output)

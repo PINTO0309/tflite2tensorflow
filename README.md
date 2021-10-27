@@ -313,6 +313,7 @@ usage: tflite2tensorflow
   [--optimizing_hardswish_for_edgetpu]
   [--replace_prelu_and_minmax]
   [--disable_experimental_new_quantizer]
+  [--locationids_of_the_terminating_output]
 
 optional arguments:
   -h, --help
@@ -407,6 +408,10 @@ optional arguments:
   --disable_experimental_new_quantizer
                         Disable MLIRs new quantization feature during INT8 quantization
                         in TensorFlowLite.
+  --locationids_of_the_terminating_output
+                        A comma-separated list of LocationIDs to be used as output layers.
+                        e.g. --locationids_of_the_terminating_output 100,201,560
+                        Default: ''
 ```
 ### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
