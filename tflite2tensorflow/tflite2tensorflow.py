@@ -4766,15 +4766,37 @@ def make_graph(
             densify_values = []
             before_val_start_idx = 0
 
-            for indices_list in array_indices_total:
+            if groups > 1 and len(dense_shape) >= 4:
+                for indices_list in array_indices_total:
+                    if not indices_list == []:
+                        indices_list_idx = 0
+                        if (before_indices_list == indices_list):
+                            val_idx = before_val_start_idx
+                        else:
+                            before_val_start_idx = val_idx
 
-                if not indices_list == []:
-                    indices_list_idx = 0
-                    if (before_indices_list == indices_list):
-                        val_idx = before_val_start_idx
+                        for idx in range(elements):
+                            if indices_list_idx >= len(indices_list):
+                                densify_values.append(0.0)
+                            else:
+                                if indices_list[indices_list_idx] == idx:
+                                    if val_idx <= len(dense_list)-1:
+                                        densify_values.append(dense_list[val_idx])
+                                        val_idx += 1
+                                    else:
+                                        densify_values.append(0.0)
+                                    indices_list_idx += 1
+                                else:
+                                    densify_values.append(0.0)
+                        before_indices_list = indices_list.copy()
+                    
                     else:
-                        before_val_start_idx = val_idx
+                        for idx in range(elements):
+                            densify_values.append(0.0)
 
+            else:
+                for indices_list in array_indices_total:
+                    indices_list_idx = 0
                     for idx in range(elements):
                         if indices_list_idx >= len(indices_list):
                             densify_values.append(0.0)
@@ -4785,15 +4807,9 @@ def make_graph(
                                     val_idx += 1
                                 else:
                                     densify_values.append(0.0)
-
                                 indices_list_idx += 1
                             else:
                                 densify_values.append(0.0)
-                    before_indices_list = indices_list.copy()
-                
-                else:
-                    for idx in range(elements):
-                        densify_values.append(0.0)
 
             # interpolation
             interpolation_size = groups - len(array_indices_total)
