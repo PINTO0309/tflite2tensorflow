@@ -4741,28 +4741,68 @@ def make_graph(
 
             starting_point = 0
             dense_shape = np.asarray(shape)
-            groups = dense_shape[-1]
-            total_number_of_elements = dense_shape[0]
-            for i in dense_shape[1:]:
-                total_number_of_elements *= i
+            groups = dense_shape[0]
+            elements = dense_shape[-1]
+            array_indices_total = []
 
-            densify_values = np.zeros((total_number_of_elements))
-            sidx = 0
-            aidx = 0
-            didx = 0
-            addition = 0
+            for idx, s in enumerate(array_segments[:-1]):
+                try:
+                    before = array_indices[s:][0]
+                    array_indices_part = []
+                    append_count = 0
+                    for i in array_indices[s:]:
+                        if append_count >= (array_segments[idx + 1] - array_segments[idx]):
+                            break
+                        else:
+                            before = i
+                            array_indices_part.append(i)
+                            append_count += 1
+                    array_indices_total.append(array_indices_part)
+                except:
+                    pass
 
-            for idx in range(total_number_of_elements):
-                if array_segments[sidx] == aidx:
-                    addition = sidx * groups
-                    sidx += 1
-                if array_indices[aidx] + addition == idx:
-                    densify_values[idx] = dense_list[didx]
-                    didx += 1
-                    if aidx < len(array_indices) - 1:
-                        aidx += 1
+            val_idx = 0
+            before_indices_list = []
+            densify_values = []
+            before_val_start_idx = 0
 
-            densify_values = densify_values.reshape(dense_shape)
+            for indices_list in array_indices_total:
+
+                if not indices_list == []:
+                    indices_list_idx = 0
+                    if (before_indices_list == indices_list):
+                        val_idx = before_val_start_idx
+                    else:
+                        before_val_start_idx = val_idx
+
+                    for idx in range(elements):
+                        if indices_list_idx >= len(indices_list):
+                            densify_values.append(0.0)
+                        else:
+                            if indices_list[indices_list_idx] == idx:
+                                if val_idx <= len(dense_list)-1:
+                                    densify_values.append(dense_list[val_idx])
+                                    val_idx += 1
+                                else:
+                                    densify_values.append(0.0)
+
+                                indices_list_idx += 1
+                            else:
+                                densify_values.append(0.0)
+                    before_indices_list = indices_list.copy()
+                
+                else:
+                    for idx in range(elements):
+                        densify_values.append(0.0)
+
+            # interpolation
+            interpolation_size = groups - len(array_indices_total)
+            if interpolation_size > 0:
+                for i in range(interpolation_size):
+                    for idx in range(elements):
+                        densify_values.append(0.0)
+
+            densify_values = np.asarray(densify_values).reshape(dense_shape)
             output_tensor = densify_values.astype(dtype)
 
             tensors[output_detail['index']] = output_tensor
