@@ -148,17 +148,36 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
-- tensorflowjs **`pip3 install --upgrade tensorflowjs`**
-- **[tensorrt](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)**
-- coremltools **`pip3 install --upgrade coremltools`**
-- onnx **`pip3 install --upgrade onnx`**
-- tf2onnx **`pip3 install --upgrade tf2onnx`**
-- tensorflow-datasets **`pip3 install --upgrade tensorflow-datasets`**
-- **[edgetpu_compiler](https://coral.ai/docs/edgetpu/compiler/#system-requirements)**
-- **[OpenVINO - Linux](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_linux.html)**
-- **[OpenVINO - Windows](https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_windows.html)**
+- PyTorch v1.10.0+
+- TorchVision
+- TorchAudio
+- OpenVINO 2021.4.582+
+- TensorRT 8.2+
+- pycuda 2021.1
+- tensorflowjs
+- coremltools
+- onnx
+- onnxruntime
+- onnx_graphsurgeon
+- onnx-simplifier
+- onnxconverter-common
+- onnx-tensorrt
+- onnx2json
+- json2onnx
+- tf2onnx
+- torch2trt
+- onnx-tf
+- tensorflow-datasets
+- tf_slim
+- edgetpu_compiler
+- tflite2tensorflow
+- openvino2tensorflow
+- gdown
+- pandas
+- matplotlib
 - Intel-Media-SDK
 - Intel iHD GPU (iGPU) support
+- OpenCL
 - Docker
 
 ## 3. Setup
