@@ -204,7 +204,6 @@ $ xhost +local: && \
   -e DISPLAY=$DISPLAY \
   --privileged \
   ghcr.io/pinto0309/tflite2tensorflow:latest
-$ cd workdir
 
 # If you need to convert to TF-TRT. And if you need to access the HostPC GUI and USB camera.
 $ xhost +local: && \
@@ -217,7 +216,6 @@ $ xhost +local: && \
   -e DISPLAY=$DISPLAY \
   --privileged \
   ghcr.io/pinto0309/tflite2tensorflow:latest
-$ cd workdir
 
 # If you are using iGPU (OpenCL). And if you need to access the HostPC GUI and USB camera.
 $ xhost +local: && \
@@ -231,7 +229,6 @@ $ xhost +local: && \
   -e DISPLAY=$DISPLAY \
   --privileged \
   ghcr.io/pinto0309/tflite2tensorflow:latest
-$ cd workdir
 ```
 ### 3-2. **[Environment construction pattern 2]** Execution by Host machine
 To install using the Python Package Index (PyPI), use the following command.
