@@ -166,8 +166,8 @@ ENV USERNAME=user
 RUN echo "root:root" | chpasswd \
     && adduser --disabled-password --gecos "" "${USERNAME}" \
     && echo "${USERNAME}:${USERNAME}" | chpasswd \
-    && echo "%${USERNAME}    ALL=(ALL)   NOPASSWD:    ALL" >> /etc/sudoers.d/${username} \
-    && chmod 0440 /etc/sudoers.d/${username}
+    && echo "%${USERNAME}    ALL=(ALL)   NOPASSWD:    ALL" >> /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 USER ${USERNAME}
 RUN sudo chown ${USERNAME}:${USERNAME} ${WKDIR}\
     && sudo chmod 777 ${WKDIR}/.bashrc
