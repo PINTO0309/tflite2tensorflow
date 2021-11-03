@@ -156,6 +156,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - pycuda 2021.1
 - tensorflowjs
 - coremltools
+- paddle2onnx
 - onnx
 - onnxruntime
 - onnx_graphsurgeon
