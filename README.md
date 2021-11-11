@@ -177,6 +177,10 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - gdown
 - pandas
 - matplotlib
+- paddlepaddle
+- paddle2onnx
+- pycocotools
+- scipy
 - Intel-Media-SDK
 - Intel iHD GPU (iGPU) support
 - OpenCL
