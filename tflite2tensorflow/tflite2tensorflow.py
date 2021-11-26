@@ -4823,6 +4823,82 @@ def make_graph(
 
             tensors[output_detail['index']] = output_tensor
 
+        elif op_type == 'BATCH_TO_SPACE_ND':
+            input_tensor1 = None
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.compat.v1.batch_to_space_nd(
+                input=input_tensor1,
+                block_shape=input_tensor2,
+                crops=input_tensor3,
+                name=get_op_name(output_detail['name'])
+            )
+            tensors[output_detail['index']] = output_tensor
+
+        elif op_type == 'SPACE_TO_BATCH_ND':
+            input_tensor1 = None
+            try:
+                input_detail1 = interpreter._get_tensor_details(op['inputs'][0])
+            except:
+                pass
+            try:
+                input_tensor1 = tensors[op['inputs'][0]]
+            except:
+                input_tensor1 = interpreter.get_tensor(input_detail1['index'])
+            input_tensor2 = None
+            try:
+                input_detail2 = interpreter._get_tensor_details(op['inputs'][1])
+            except:
+                pass
+            try:
+                input_tensor2 = tensors[op['inputs'][1]]
+            except:
+                input_tensor2 = interpreter.get_tensor(input_detail2['index'])
+            input_tensor3 = None
+            try:
+                input_detail3 = interpreter._get_tensor_details(op['inputs'][2])
+            except:
+                pass
+            try:
+                input_tensor3 = tensors[op['inputs'][2]]
+            except:
+                input_tensor3 = interpreter.get_tensor(input_detail3['index'])
+
+            output_detail = interpreter._get_tensor_details(op['outputs'][0])
+            output_tensor = tf.space_to_batch_nd(
+                input=input_tensor1,
+                block_shape=input_tensor2,
+                paddings=input_tensor3,
+                name=get_op_name(output_detail['name'])
+            )
+            tensors[output_detail['index']] = output_tensor
+
 
         elif op_type == 'CUSTOM':
             """

@@ -140,6 +140,8 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |123|CONV_3D|tf.keras.layers.Conv3D||
 |124|CONV_3D_TRANSPOSE|tf.nn.conv3d_transpose||
 |125|Densify|(const)||
+|126|SpaceToBatchNd|tf.space_to_batch_nd||
+|127|BatchToSpaceNd|tf.compat.v1.batch_to_space_nd||
 
 ## 2. Environment
 - Python3.6+
