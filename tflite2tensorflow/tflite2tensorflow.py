@@ -873,8 +873,12 @@ def make_graph(
 
         elif op_type == 'PRELU':
             input_tensor = tensors[op['inputs'][0]]
-            alpha_detail = interpreter._get_tensor_details(op['inputs'][1])
-            alpha_array = interpreter.get_tensor(alpha_detail['index'])
+            alpha_array = None
+            try:
+                alpha_array = tensors[op['inputs'][1]]
+            except:
+                alpha_detail = interpreter._get_tensor_details(op['inputs'][1])
+                alpha_array = interpreter.get_tensor(alpha_detail['index'])
             alpha_len = len(alpha_array.shape)
 
             shared_axes = []
