@@ -2,25 +2,6 @@
 
 ### https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html
 
-"""
-Command Sample:
-
-$ python3 tflite2tensorflow.py \
---model_path hand_landmark.tflite \
---flatc_path ./flatc \
---schema_path schema.fbs \
---output_pb True
-
-$ python3 tflite2tensorflow.py \
---model_path hand_landmark.tflite \
---flatc_path ./flatc \
---schema_path schema.fbs \
---output_no_quant_float32_tflite True \
---output_weight_quant_tflite True \
---output_float16_quant_tflite True
-"""
-
-
 import os
 import sys
 import numpy as np
