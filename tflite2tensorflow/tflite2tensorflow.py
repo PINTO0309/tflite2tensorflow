@@ -5799,10 +5799,36 @@ def main():
             with tf.Session(config=config, graph=graph) as sess:
                 sess.run(tf.global_variables_initializer())
                 if not TFLite_Detection_PostProcess_flg:
-                    graph_def = tf.graph_util.convert_variables_to_constants(
-                        sess=sess,
-                        input_graph_def=graph.as_graph_def(),
-                        output_node_names=[re.sub(':0*', '', name) for name in output_node_names])
+                    try:
+                        graph_def = tf.graph_util.convert_variables_to_constants(
+                            sess=sess,
+                            input_graph_def=graph.as_graph_def(),
+                            output_node_names=[re.sub(':0*', '', name) for name in output_node_names]
+                        )
+                    except:
+                        tmp_output_node_names = []
+                        for oname in output_node_names:
+                            try:
+                                try:
+                                    graph.get_tensor_by_name(oname)
+                                    tmp_output_node_names.append(oname)
+                                except:
+                                    graph.get_tensor_by_name(re.sub(':0*', '', oname))
+                                    tmp_output_node_names.append(re.sub(':0*', '', oname))         
+                            except:
+                                for idx in range(1,10001):
+                                    try:
+                                        graph.get_tensor_by_name(f"{re.sub(':0*', '', oname)}_{idx}:0")
+                                        tmp_output_node_names.append(f"{re.sub(':0*', '', oname)}_{idx}:0")
+                                        break
+                                    except:
+                                        pass
+                        output_node_names = tmp_output_node_names
+                        graph_def = tf.graph_util.convert_variables_to_constants(
+                            sess=sess,
+                            input_graph_def=graph.as_graph_def(),
+                            output_node_names=[re.sub(':0*', '', name) for name in output_node_names]
+                        )
 
                     tf.saved_model.simple_save(
                         sess,
