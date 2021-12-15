@@ -165,6 +165,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - onnx_graphsurgeon
 - onnx-simplifier
 - onnxconverter-common
+- onnxmltools
 - onnx-tensorrt
 - onnx2json
 - json2onnx
