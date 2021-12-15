@@ -5814,7 +5814,7 @@ def main():
                                     tmp_output_node_names.append(oname)
                                 except:
                                     graph.get_tensor_by_name(re.sub(':0*', '', oname))
-                                    tmp_output_node_names.append(re.sub(':0*', '', oname))         
+                                    tmp_output_node_names.append(re.sub(':0*', '', oname))
                             except:
                                 for idx in range(1,10001):
                                     try:
@@ -6260,6 +6260,8 @@ def main():
 
         # ONNX convert
         if output_onnx:
+            import onnx
+            import onnxoptimizer
             import subprocess
             try:
                 print(f'{Color.REVERCE}ONNX convertion started{Color.RESET}', '=' * 61)
@@ -6277,6 +6279,14 @@ def main():
                         ],
                         stderr=subprocess.PIPE
                     ).decode('utf-8')
+                    try:
+                        onnx_model = onnx.load(f'{model_output_path}/model_float32.onnx')
+                        onnx_model = onnx.shape_inference.infer_shapes(onnx_model)
+                        onnx.save(onnx_model, f'{model_output_path}/model_float32.onnx')
+                    except Exception as e:
+                        print(f'{Color.YELLOW}WARNING:{Color.RESET}', e)
+                        import traceback
+                        traceback.print_exc()
                     print(result)
                 except:
                     result = subprocess.check_output(
@@ -6289,6 +6299,14 @@ def main():
                         ],
                         stderr=subprocess.PIPE
                     ).decode('utf-8')
+                    try:
+                        onnx_model = onnx.load(f'{model_output_path}/model_float32.onnx')
+                        onnx_model = onnx.shape_inference.infer_shapes(onnx_model)
+                        onnx.save(onnx_model, f'{model_output_path}/model_float32.onnx')
+                    except Exception as e:
+                        print(f'{Color.YELLOW}WARNING:{Color.RESET}', e)
+                        import traceback
+                        traceback.print_exc()
                     print(result)
                 print(f'{Color.GREEN}ONNX convertion complete!{Color.RESET} - {model_output_path}/model_float32.onnx')
             except subprocess.CalledProcessError as e:
@@ -6301,8 +6319,6 @@ def main():
                     print(f'{Color.REVERCE}ONNX optimization started{Color.RESET}', '=' * 59)
 
                     # onnxoptimizer
-                    import onnx
-                    import onnxoptimizer
                     onnx_model = onnx.load(f'{model_output_path}/model_float32.onnx')
                     passes = [
                         "extract_constant_to_initializer",
