@@ -162,6 +162,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - paddle2onnx
 - onnx
 - onnxruntime
+- onnxruntime-extensions
 - onnx_graphsurgeon
 - onnx-simplifier
 - onnxconverter-common
