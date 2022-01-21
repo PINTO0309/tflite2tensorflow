@@ -5552,6 +5552,7 @@ def main():
     parser.add_argument('--edgetpu_num_segments', type=int, default=1, help='Partition the model into [num_segments] segments. Default: 1 (no partition)')
     parser.add_argument('--output_onnx', action='store_true', help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
+    parser.add_argument('--onnx_extra_opset', type=str, default='', help='The name of the onnx extra_opset to enable. Default: \'\'. "com.microsoft:1" or "ai.onnx.contrib:1" or "ai.onnx.ml:1"')
     parser.add_argument('--disable_onnx_optimization', action='store_true', help='Disable onnx optimization.')
     parser.add_argument('--output_openvino_and_myriad', action='store_true', help='openvino model and myriad inference engine blob output switch')
     parser.add_argument('--vpu_number_of_shaves', type=int, default=4, help='vpu number of shaves. Default: 4')
@@ -5598,6 +5599,7 @@ def main():
     edgetpu_num_segments = args.edgetpu_num_segments
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
+    onnx_extra_opset = args.onnx_extra_opset
     use_onnx_optimization = not args.disable_onnx_optimization
     output_openvino_and_myriad = args.output_openvino_and_myriad
     vpu_number_of_shaves = args.vpu_number_of_shaves
@@ -6265,10 +6267,12 @@ def main():
             import subprocess
             try:
                 print(f'{Color.REVERCE}ONNX convertion started{Color.RESET}', '=' * 61)
+                loaded = tf.saved_model.load(model_output_path).signatures['serving_default']
+                inputs = ",".join(map(str, [inp.name for inp in loaded.inputs if 'unknown' not in inp.name]))
                 try:
-                    loaded = tf.saved_model.load(model_output_path).signatures['serving_default']
-                    inputs = ",".join(map(str, [inp.name for inp in loaded.inputs if 'unknown' not in inp.name]))
-                    result = subprocess.check_output(
+                    onnx_convert_command = None
+                    if not onnx_extra_opset:
+                        onnx_convert_command = \
                         [
                             'python3',
                             '-m', 'tf2onnx.convert',
@@ -6276,7 +6280,20 @@ def main():
                             '--opset', str(onnx_opset),
                             '--output', f'{model_output_path}/model_float32.onnx',
                             '--inputs-as-nchw', f'{inputs}'
-                        ],
+                        ]
+                    else:
+                        onnx_convert_command = \
+                        [
+                            'python3',
+                            '-m', 'tf2onnx.convert',
+                            '--saved-model', model_output_path,
+                            '--opset', str(onnx_opset),
+                            '--output', f'{model_output_path}/model_float32.onnx',
+                            '--extra_opset', onnx_extra_opset,
+                            '--inputs-as-nchw', f'{inputs}'
+                        ]
+                    result = subprocess.check_output(
+                        onnx_convert_command,
                         stderr=subprocess.PIPE
                     ).decode('utf-8')
                     try:
@@ -6289,14 +6306,28 @@ def main():
                         traceback.print_exc()
                     print(result)
                 except:
-                    result = subprocess.check_output(
+                    onnx_convert_command = None
+                    if not onnx_extra_opset:
+                        onnx_convert_command = \
                         [
                             'python3',
                             '-m', 'tf2onnx.convert',
                             '--saved-model', model_output_path,
                             '--opset', str(onnx_opset),
                             '--output', f'{model_output_path}/model_float32.onnx'
-                        ],
+                        ]
+                    else:
+                        onnx_convert_command = \
+                        [
+                            'python3',
+                            '-m', 'tf2onnx.convert',
+                            '--saved-model', model_output_path,
+                            '--opset', str(onnx_opset),
+                            '--output', f'{model_output_path}/model_float32.onnx',
+                            '--extra_opset', onnx_extra_opset
+                        ]
+                    result = subprocess.check_output(
+                        onnx_convert_command,
                         stderr=subprocess.PIPE
                     ).decode('utf-8')
                     try:

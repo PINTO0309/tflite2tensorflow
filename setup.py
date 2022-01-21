@@ -11,7 +11,7 @@ if __name__ == "__main__":
     setup(
         name="tflite2tensorflow",
         scripts=scripts,
-        version="1.17.2",
+        version="1.18.0",
         description="Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, OpenVINO, Myriad Inference Engine blob and .pb from .tflite.",
         long_description=long_description,
         long_description_content_type="text/markdown",
