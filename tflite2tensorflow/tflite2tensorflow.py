@@ -495,7 +495,7 @@ def make_graph(
 
     def backward_quantization(op_detail, op):
         if not 'quantization' in op_detail or \
-            (input_detail['quantization'][0] == 0.0 and input_detail['quantization'][1] == 0):
+            (op_detail['quantization'][0] == 0.0 and op_detail['quantization'][1] == 0):
             return op
         else:
             scales = np.asarray(op_detail['quantization'][0], dtype=np.float32)
