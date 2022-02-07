@@ -331,7 +331,7 @@ usage: tflite2tensorflow
   [--output_onnx]
   [--onnx_opset ONNX_OPSET]
   [--onnx_extra_opset ONNX_EXTRA_OPSET]
-  [--disable_onnx_optimization]
+  [--disable_onnx_nchw_conversion]
   [--disable_onnx_optimization]
   [--output_openvino_and_myriad]
   [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
