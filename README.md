@@ -332,6 +332,7 @@ usage: tflite2tensorflow
   [--onnx_opset ONNX_OPSET]
   [--onnx_extra_opset ONNX_EXTRA_OPSET]
   [--disable_onnx_optimization]
+  [--disable_onnx_optimization]
   [--output_openvino_and_myriad]
   [--vpu_number_of_shaves VPU_NUMBER_OF_SHAVES]
   [--vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES]
@@ -419,6 +420,8 @@ optional arguments:
                         The name of the onnx 'extra_opset' to enable.
                         Default: ''
                         'com.microsoft:1' or 'ai.onnx.contrib:1' or 'ai.onnx.ml:1'
+  --disable_onnx_nchw_conversion
+                        Disable onnx NCHW conversion
   --disable_onnx_optimization
                         Disable onnx optimization
   --output_openvino_and_myriad

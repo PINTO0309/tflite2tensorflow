@@ -5553,6 +5553,7 @@ def main():
     parser.add_argument('--output_onnx', action='store_true', help='onnx model output switch')
     parser.add_argument('--onnx_opset', type=int, default=13, help='onnx opset version number')
     parser.add_argument('--onnx_extra_opset', type=str, default='', help='The name of the onnx extra_opset to enable. Default: \'\'. "com.microsoft:1" or "ai.onnx.contrib:1" or "ai.onnx.ml:1"')
+    parser.add_argument('--disable_onnx_nchw_conversion', action='store_true', help='Disable onnx NCHW conversion.')
     parser.add_argument('--disable_onnx_optimization', action='store_true', help='Disable onnx optimization.')
     parser.add_argument('--output_openvino_and_myriad', action='store_true', help='openvino model and myriad inference engine blob output switch')
     parser.add_argument('--vpu_number_of_shaves', type=int, default=4, help='vpu number of shaves. Default: 4')
@@ -5600,6 +5601,7 @@ def main():
     output_onnx = args.output_onnx
     onnx_opset = args.onnx_opset
     onnx_extra_opset = args.onnx_extra_opset
+    use_onnx_nchw_conversion = not args.disable_onnx_nchw_conversion
     use_onnx_optimization = not args.disable_onnx_optimization
     output_openvino_and_myriad = args.output_openvino_and_myriad
     vpu_number_of_shaves = args.vpu_number_of_shaves
@@ -6279,8 +6281,11 @@ def main():
                             '--saved-model', model_output_path,
                             '--opset', str(onnx_opset),
                             '--output', f'{model_output_path}/model_float32.onnx',
-                            '--inputs-as-nchw', f'{inputs}'
                         ]
+                        if use_onnx_nchw_conversion:
+                            onnx_convert_command.append(
+                                '--inputs-as-nchw', f'{inputs}'
+                            )
                     else:
                         onnx_convert_command = \
                         [
@@ -6290,8 +6295,11 @@ def main():
                             '--opset', str(onnx_opset),
                             '--output', f'{model_output_path}/model_float32.onnx',
                             '--extra_opset', onnx_extra_opset,
-                            '--inputs-as-nchw', f'{inputs}'
                         ]
+                        if use_onnx_nchw_conversion:
+                            onnx_convert_command.append(
+                                '--inputs-as-nchw', f'{inputs}'
+                            )
                     result = subprocess.check_output(
                         onnx_convert_command,
                         stderr=subprocess.PIPE
