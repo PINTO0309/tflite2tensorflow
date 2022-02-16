@@ -325,6 +325,7 @@ usage: tflite2tensorflow
   [--output_tftrt_float32]
   [--output_tftrt_float16]
   [--output_coreml]
+  [--optimizing_coreml]
   [--output_edgetpu]
   [--edgetpu_compiler_timeout EDGETPU_COMPILER_TIMEOUT]
   [--edgetpu_num_segments EDGETPU_NUM_SEGMENTS]
@@ -339,7 +340,7 @@ usage: tflite2tensorflow
   [--optimizing_for_openvino_and_myriad]
   [--rigorous_optimization_for_myriad]
   [--replace_swish_and_hardswish]
-  [--optimizing_hardswish_for_edgetpu]
+  [--optimizing_for_edgetpu]
   [--replace_prelu_and_minmax]
   [--disable_experimental_new_quantizer]
   [--locationids_of_the_terminating_output]
@@ -404,6 +405,8 @@ optional arguments:
                         tftrt float16 model output switch
   --output_coreml
                         coreml model output switch
+  --optimizing_for_coreml
+                         Optimizing graph for coreml
   --output_edgetpu
                         edgetpu model output switch
   --edgetpu_compiler_timeout
@@ -438,8 +441,8 @@ optional arguments:
                         e.g. 'Abs' -> 'Square' + 'Sqrt'
   --replace_swish_and_hardswish
                         Replace swish and hard-swish with each other
-  --optimizing_hardswish_for_edgetpu
-                        Optimizing hardswish for edgetpu
+  --optimizing_for_edgetpu
+                        Optimizing for edgetpu
   --replace_prelu_and_minmax
                         Replace prelu and minimum/maximum with each other
   --disable_experimental_new_quantizer
@@ -484,8 +487,18 @@ $ tflite2tensorflow \
   --flatc_path ../flatc \
   --schema_path ../schema.fbs \
   --output_pb \
-  --optimizing_hardswish_for_edgetpu
+  --optimizing_for_edgetpu
 ```
+or
+```
+$ tflite2tensorflow \
+  --model_path segm_full_v679.tflite \
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb \
+  --optimizing_for_coreml
+```
+
 ### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, CoreML and ONNX
 ```
 $ tflite2tensorflow \

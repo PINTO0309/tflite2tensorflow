@@ -415,7 +415,9 @@ def make_graph(
     replace_prelu_and_minmax,
     optimizing_for_edgetpu_flg,
     optimizing_for_openvino_and_myriad,
-    rigorous_optimization_for_myriad):
+    rigorous_optimization_for_myriad,
+    optimizing_for_coreml,
+):
 
     import tensorflow.compat.v1 as tf
     tf.get_logger().setLevel('INFO')
@@ -1443,6 +1445,12 @@ def make_graph(
                                 align_corners=True,
                                 half_pixel_centers=half_pixel_centers
                             )
+                    elif optimizing_for_coreml:
+                        return tf.image.resize_bilinear(
+                            x,
+                            (size_height, size_width),
+                            align_corners=True
+                        )
                     else:
                         return tfv2.image.resize(
                             x,
@@ -1496,6 +1504,12 @@ def make_graph(
                                 align_corners=True,
                                 half_pixel_centers=half_pixel_centers
                             )
+                    elif optimizing_for_coreml:
+                        return tf.image.resize_nearest_neighbor(
+                            x,
+                            (size_height, size_width),
+                            align_corners=True
+                        )
                     else:
                         return tfv2.image.resize(
                             x,
@@ -5547,6 +5561,7 @@ def main():
     parser.add_argument('--output_tftrt_float32', action='store_true', help='tftrt float32 model output switch')
     parser.add_argument('--output_tftrt_float16', action='store_true', help='tftrt float16 model output switch')
     parser.add_argument('--output_coreml', action='store_true', help='coreml model output switch')
+    parser.add_argument('--optimizing_for_coreml', action='store_true', help='Optimizing graph for coreml')
     parser.add_argument('--output_edgetpu', action='store_true', help='edgetpu model output switch')
     parser.add_argument('--edgetpu_compiler_timeout', type=int, default=3600, help='edgetpu_compiler timeout for one compilation process in seconds. Default: 3600')
     parser.add_argument('--edgetpu_num_segments', type=int, default=1, help='Partition the model into [num_segments] segments. Default: 1 (no partition)')
@@ -5561,7 +5576,7 @@ def main():
     parser.add_argument('--optimizing_for_openvino_and_myriad', action='store_true', help='Optimizing graph for openvino/myriad')
     parser.add_argument('--rigorous_optimization_for_myriad', action='store_true', help='Replace operations that are not supported by myriad with operations that are as feasible as possible.')
     parser.add_argument('--replace_swish_and_hardswish', action='store_true', help='Replace swish and hard-swish with each other')
-    parser.add_argument('--optimizing_hardswish_for_edgetpu', action='store_true', help='Optimizing hardswish for edgetpu')
+    parser.add_argument('--optimizing_for_edgetpu', action='store_true', help='Optimizing for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
     parser.add_argument('--disable_experimental_new_quantizer', action='store_true', help='Disable MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
     parser.add_argument('--locationids_of_the_terminating_output', type=str, default='', help='A comma-separated list of location IDs to be used as output layers. Default: \'\'')
@@ -5595,6 +5610,7 @@ def main():
     output_tftrt_float32 = args.output_tftrt_float32
     output_tftrt_float16 = args.output_tftrt_float16
     output_coreml = args.output_coreml
+    optimizing_for_coreml = args.optimizing_for_coreml
     output_edgetpu = args.output_edgetpu
     edgetpu_compiler_timeout = args.edgetpu_compiler_timeout
     edgetpu_num_segments = args.edgetpu_num_segments
@@ -5609,7 +5625,7 @@ def main():
     optimizing_for_openvino_and_myriad = args.optimizing_for_openvino_and_myriad
     rigorous_optimization_for_myriad = args.rigorous_optimization_for_myriad
     replace_swish_and_hardswish = args.replace_swish_and_hardswish
-    optimizing_hardswish_for_edgetpu = args.optimizing_hardswish_for_edgetpu
+    optimizing_for_edgetpu = args.optimizing_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
     use_experimental_new_quantizer = not args.disable_experimental_new_quantizer
     locationids_of_the_terminating_output_tmp = args.locationids_of_the_terminating_output
@@ -5626,7 +5642,7 @@ def main():
         output_full_integer_quant_tflite = True
         optimizing_for_edgetpu_flg = True
 
-    if optimizing_hardswish_for_edgetpu:
+    if optimizing_for_edgetpu:
         optimizing_for_edgetpu_flg = True
 
     from pkg_resources import working_set
@@ -5711,8 +5727,16 @@ def main():
         print('[Group.2] output_no_quant_float32_tflite, output_weight_quant_tflite, output_float16_quant_tflite, output_integer_quant_tflite, output_full_integer_quant_tflite, output_tfjs, output_tftrt_float32, output_tftrt_float16, output_coreml, output_edgetpu, output_onnx, output_openvino_and_myriad')
         sys.exit(-1)
 
-    if optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu:
-        print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_hardswish_for_edgetpu cannot be True at the same time.')
+    if optimizing_for_openvino_and_myriad and optimizing_for_edgetpu:
+        print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_for_edgetpu cannot be True at the same time.')
+        sys.exit(-1)
+
+    if optimizing_for_openvino_and_myriad and optimizing_for_coreml:
+        print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_openvino_and_myriad and optimizing_for_coreml cannot be True at the same time.')
+        sys.exit(-1)
+
+    if optimizing_for_edgetpu and optimizing_for_coreml:
+        print(f'{Color.RED}ERROR:{Color.RESET} optimizing_for_edgetpu and optimizing_for_coreml cannot be True at the same time.')
         sys.exit(-1)
 
     if not optimizing_for_openvino_and_myriad and rigorous_optimization_for_myriad:
@@ -5756,7 +5780,9 @@ def main():
             replace_prelu_and_minmax,
             optimizing_for_edgetpu_flg,
             optimizing_for_openvino_and_myriad,
-            rigorous_optimization_for_myriad)
+            rigorous_optimization_for_myriad,
+            optimizing_for_coreml
+        )
         print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
         print('outputs:')
         dummy_outputs = []
