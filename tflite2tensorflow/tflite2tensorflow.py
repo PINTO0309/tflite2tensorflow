@@ -1505,11 +1505,7 @@ def make_graph(
                                 half_pixel_centers=half_pixel_centers
                             )
                     elif optimizing_for_coreml:
-                        return tf.image.resize_nearest_neighbor(
-                            x,
-                            (size_height, size_width),
-                            align_corners=True
-                        )
+                        return tf.image.resize_nearest_neighbor(x, (size_height, size_width))
                     else:
                         return tfv2.image.resize(
                             x,
@@ -3524,7 +3520,7 @@ def make_graph(
             body_subgraph_index = options['body_subgraph_index'] - 1
 
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            if input_tensor4:
+            if input_tensor4 is not None:
                 output_tensor = tf.while_loop(
                     input_list[cond_subgraph_index],
                     input_list[body_subgraph_index],
