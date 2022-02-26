@@ -188,7 +188,11 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - Intel-Media-SDK
 - Intel iHD GPU (iGPU) support
 - OpenCL
-- Docker
+- gluoncv
+- TVM (ONNX, CUDA, TensorRT, TensorFlow, PyTorch)
+- LLVM
+- NNPACK
+- WSL2 OpenCL
 
 ## 3. Setup
 ### 3-1. **[Environment construction pattern 1]** Execution by Docker (`strongly recommended`)
