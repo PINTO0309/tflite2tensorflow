@@ -2271,16 +2271,63 @@ def make_graph(
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
                 input_tensor2 = backward_quantization(positions_detail, input_tensor2)
-
             options = op['builtin_options']
             output_type = cast_type_tf[options['output_type']]
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.math.argmax(
-                input_tensor1,
-                axis=input_tensor2,
-                output_type=output_type,
-                name=get_op_name(output_detail['name'])
-            )
+
+            def _nnapi_scalar(value, dtype):
+                return tf.constant(value, dtype=dtype, shape=(1,))
+
+            def _alternative_argmax(
+                input_tensor,
+                axis=-1,
+                output_type = tf.dtypes.float32,
+                name = None,
+                keepdims = False,
+                epsilon = None
+            ):
+                safe_axis = axis
+                if safe_axis < 0:
+                    safe_axis = len(input_tensor.shape) + safe_axis
+                reduction_size = input_tensor.shape[axis]
+                axis_max = tf.math.reduce_max(input_tensor, axis=axis, keepdims=True)
+                zero_if_max = tf.subtract(axis_max, input_tensor)
+                eps = epsilon if epsilon else 1e-6
+                if input_tensor.dtype.is_floating:
+                    zero_if_max_else_eps = tf.math.minimum(_nnapi_scalar(eps, input_tensor.dtype), zero_if_max)
+                    zero_if_max_else_one = zero_if_max_else_eps * _nnapi_scalar(1 / eps, input_tensor.dtype)
+                elif input_tensor.dtype.is_integer:
+                    zero_if_max_else_one = tf.math.minimum(_nnapi_scalar(1, input_tensor.dtype), zero_if_max)
+                else:
+                    raise ValueError('Please specify epsilon for unknown input data type')
+
+                zero_if_max_else_one = tf.cast(zero_if_max_else_one, dtype=output_type)
+                zero_if_max_else_one = zero_if_max_else_one
+                one_if_max_else_zero = tf.math.subtract(_nnapi_scalar(1, output_type), zero_if_max_else_one)
+                rev_index = tf.range(reduction_size, 0, -1, dtype=output_type)
+                for index in range(safe_axis + 1, len(input_tensor.shape)):
+                    rev_index = tf.expand_dims(rev_index, axis=index - safe_axis)
+                rev_index = rev_index
+                rev_index_if_max_else_zero = tf.math.multiply(one_if_max_else_zero, rev_index)
+                reverse_argmax = tf.math.reduce_max(rev_index_if_max_else_zero, axis=axis, keepdims=keepdims, name=name)
+                return tf.cast(tf.math.subtract(_nnapi_scalar(reduction_size, output_type), reverse_argmax, name=name), dtype=tf.int32)
+
+            output_tensor = None
+            if not optimizing_for_edgetpu_flg:
+                output_tensor = tf.math.argmax(
+                    input_tensor1,
+                    axis=input_tensor2,
+                    output_type=output_type,
+                    name=get_op_name(output_detail['name'])
+                )
+            else:
+                output_tensor = _alternative_argmax(
+                    input_tensor=input_tensor1,
+                    axis=input_tensor2,
+                    output_type=tf.float32,
+                    name=get_op_name(output_detail['name'])
+                )
+
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'EXP':

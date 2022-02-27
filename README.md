@@ -63,7 +63,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |46|SLICE|tf.slice||
 |47|PACK|tf.stack||
 |48|UNPACK|tf.unstack||
-|49|ARG_MAX|tf.math.argmax||
+|49|ARG_MAX|tf.math.argmax Or tf.math.reduce_max, tf.subtract, tf.math.minimum, tf.multiply|The behavior differs depending on the optimization options of edgetpu.|
 |50|EXP|tf.exp||
 |51|TOPK_V2|tf.math.top_k||
 |52|LOG_SOFTMAX|tf.nn.log_softmax||
