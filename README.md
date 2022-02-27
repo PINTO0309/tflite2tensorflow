@@ -535,6 +535,7 @@ $ tflite2tensorflow \
   --output_float16_quant_tflite \
   --output_integer_quant_tflite \
   --output_edgetpu \
+  --output_integer_quant_typ 'uint8' \
   --string_formulas_for_normalization 'data / 255.0' \
   --output_tfjs \
   --output_coreml \
