@@ -142,6 +142,9 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 |125|Densify|(const)||
 |126|SPACE_TO_BATCH_ND|tf.space_to_batch_nd||
 |127|BATCH_TO_SPACE_ND|tf.compat.v1.batch_to_space_nd||
+|128|TransformLandmarks|tf.reshape, tf.linalg.matmul, tf.math.add|CUSTOM, MediaPipe|
+|129|TransformTensorBilinear|tf.reshape, tf.linalg.matmul, tf.math.add, tf.tile, tf.math.floor, tf.math.subtract, tf.math.multiply, tf.math.reduce_prod, tf.cast, tf.math.maximum, tf.math.maximum, tf.concat, tf.gather_nd|CUSTOM, MediaPipe|
+|130|Landmarks2TransformMatrix|tf.constant, tf.math.subtract, tf.math.norm, tf.math.divide, tf.linalg.matmul, tf.concat, tf.transpose, tf.gather, tf.math.reduce_min, tf.math.reduce_max, tf.math.multiply, tf.zeros, tf.math.add, tf.tile|CUSTOM, MediaPipe|
 
 ## 2. Environment
 - Python3.8+
@@ -549,7 +552,9 @@ $ tflite2tensorflow \
 $ view_npy --npy_file_path calibration_data_img_sample.npy
 ```
 Press the **`Q`** button to display the next image. **`calibration_data_img_sample.npy`** contains 20 images extracted from the MS-COCO data set.
-![ezgif com-gif-maker](https://user-images.githubusercontent.com/33194443/109318923-aba15480-7891-11eb-84aa-034f77125f34.gif)
+
+![image](https://user-images.githubusercontent.com/33194443/160409583-66c45d47-636b-442c-94d6-51ad4170cc9b.png)
+
 ## 5. Sample image
 This is the result of converting MediaPipe's Meet Segmentation model (segm_full_v679.tflite / Float16 / Google Meet) to **`saved_model`** and then reconverting it to Float32 tflite. Replace the GPU-optimized **`Convolution2DTransposeBias`** layer with the standard **`TransposeConv`** and **`BiasAdd`** layers in a fully automatic manner. The weights and biases of the Float16 **`Dequantize`** layer are automatically back-quantized to Float32 precision. The generated **`saved_model`** in Float32 precision can be easily converted to **`Float16`**, **`INT8`**, **`EdgeTPU`**, **`TFJS`**, **`TF-TRT`**, **`CoreML`**, **`ONNX`**, **`OpenVINO`**, **`Myriad Inference Engine blob`**.
 

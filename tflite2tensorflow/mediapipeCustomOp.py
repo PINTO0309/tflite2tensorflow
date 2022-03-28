@@ -3,19 +3,19 @@
 ###############################################################################
 #
 # MIT License
-# 
+#
 # Copyright (c) 2022 Akiya Research Institute, Inc.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -87,7 +87,7 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, feat
     weight_ceil_ = tf.reduce_prod(weight_ceil_, axis=3, keepdims=True) #[b,h,w,1]
     weight_floor = tf.reduce_prod(weight_floor, axis=3, keepdims=True) #[b,h,w,1]
 
-    # Find nearest 4 points. 
+    # Find nearest 4 points.
     # Make sure they are in the input image
     in_coord_floor = tf.cast(in_coord_floor, dtype=tf.int32) #[b,h,w,XY]
     in_coord_floor = tf.maximum(in_coord_floor, tf.zeros(2, dtype=tf.int32)) #[b,h,w,XY]
@@ -97,7 +97,7 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, feat
     # in_coord_ceil_ = tf.maximum(in_coord_ceil_, tf.zeros(2, dtype=tf.int32)) #[b,h,w,XY]
     in_coord_ceil_ = tf.minimum(in_coord_ceil_, [input_w, input_h]) #[b,h,w,XY]
 
-    in_coord_ceilX = tf.concat([in_coord_floor[:,:,:,1:2], in_coord_ceil_[:,:,:,0:1]], axis=3) #[b,h,w,YX] YX for BHWC 
+    in_coord_ceilX = tf.concat([in_coord_floor[:,:,:,1:2], in_coord_ceil_[:,:,:,0:1]], axis=3) #[b,h,w,YX] YX for BHWC
     in_coord_ceilY = tf.concat([in_coord_ceil_[:,:,:,1:2], in_coord_floor[:,:,:,0:1]], axis=3) #[b,h,w,YX]
     in_coord_floor = tf.concat([in_coord_floor[:,:,:,1:2], in_coord_floor[:,:,:,0:1]], axis=3) #[b,h,w,YX]
     in_coord_ceil_ = tf.concat([in_coord_ceil_[:,:,:,1:2], in_coord_ceil_[:,:,:,0:1]], axis=3) #[b,h,w,YX]
@@ -122,7 +122,7 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, feat
 
 # Left indexとRight indexで指定されたLandmarkを結ぶ線が水平になり、Subset indicesで指定されたLandmrakをちょうど含むような範囲をcropするように、元の画像をAffine変換する行列
 # の逆行列を求める。なぜ、逆行列かといういうと、後の計算で使うのが逆行列だから。
-# Calc inverse of the matrix which represetns the affine transform which crops the area which covers all the landmarks specified by "subset indices" and rotates so that the landmarks specified by "Left index" and "Right index" are horizontally aligned. 
+# Calc inverse of the matrix which represetns the affine transform which crops the area which covers all the landmarks specified by "subset indices" and rotates so that the landmarks specified by "Left index" and "Right index" are horizontally aligned.
 def Landmarks2TransformMatrix(operator, custom_options, tensors, interpreter, landmarks3d=None):
     if landmarks3d is None:
         landmarks3d = tensors[operator['inputs'][0]] #float32 [b,468,3] landmarks
@@ -189,7 +189,7 @@ def Landmarks2TransformMatrix(operator, custom_options, tensors, interpreter, la
     #
     # t = center - shift
     #
-    # shift = -0.5 * output_w * sx * u 
+    # shift = -0.5 * output_w * sx * u
     #       + -0.5 * output_h * sy * v
     sxu = tf.multiply(u, scale[:,:,0:1]) #[b,1,2]
     syv = tf.multiply(v, scale[:,:,1:2]) #[b,1,2]
