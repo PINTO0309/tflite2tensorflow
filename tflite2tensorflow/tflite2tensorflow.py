@@ -21,6 +21,7 @@ import re
 import struct
 import itertools
 import pandas as pd
+from mediapipeCustomOp import Landmarks2TransformMatrix, TransformTensorBilinear, TransformLandmarks
 
 class Color:
     BLACK          = '\033[30m'
@@ -5079,6 +5080,25 @@ def make_graph(
                         name=get_op_name(output_detail['name'])
                     )
                     tensors[output_detail['index']] = output_tensor
+
+
+                # MediaPipe v0.8.9
+                elif custom_op_type == 'Landmarks2TransformMatrix':
+                    options = op['custom_options']
+                    custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())                    
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    tensors[output_detail['index']] = Landmarks2TransformMatrix(op, custom_options, tensors, interpreter)
+
+                elif custom_op_type == 'TransformTensorBilinear':
+                    options = op['custom_options']
+                    custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())                    
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    tensors[output_detail['index']] = TransformTensorBilinear(op, custom_options, tensors, interpreter)
+
+                elif custom_op_type == 'TransformLandmarks':
+                    custom_options = None                  
+                    output_detail = interpreter._get_tensor_details(op['outputs'][0])
+                    tensors[output_detail['index']] = TransformLandmarks(op, custom_options, tensors, interpreter)
 
                 elif custom_op_type == 'FlexRFFT':
                     input_tensor1 = None
