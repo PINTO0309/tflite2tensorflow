@@ -509,6 +509,15 @@ $ tflite2tensorflow \
   --output_pb \
   --optimizing_for_coreml
 ```
+or
+```
+$ tflite2tensorflow \
+  --model_path segm_full_v679.tflite \
+  --flatc_path ../flatc \
+  --schema_path ../schema.fbs \
+  --output_pb \
+  --optimizing_barracuda
+```
 
 ### 4-3. Step 2 : Generation of quantized tflite, TFJS, TF-TRT, EdgeTPU, CoreML and ONNX
 ```
