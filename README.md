@@ -457,8 +457,8 @@ optional arguments:
                         Disable MLIRs new quantization feature during INT8 quantization
                         in TensorFlowLite.
   --optimizing_barracuda
-                      Generates ONNX by replacing Barracuda unsupported layers
-                      with standard layers. For example, GatherND.
+                        Generates ONNX by replacing Barracuda unsupported layers
+                        with standard layers. For example, GatherND.
   --locationids_of_the_terminating_output
                         A comma-separated list of LocationIDs to be used as output layers.
                         e.g. --locationids_of_the_terminating_output 100,201,560
