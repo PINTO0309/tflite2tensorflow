@@ -536,7 +536,7 @@ $ tflite2tensorflow \
   --output_tftrt_float32 \
   --output_tftrt_float16 \
   --output_onnx \
-  --onnx_opset 13 \
+  --onnx_opset 11 \
   --output_openvino_and_myriad
 ```
 or
@@ -558,7 +558,7 @@ $ tflite2tensorflow \
   --output_tftrt_float32 \
   --output_tftrt_float16 \
   --output_onnx \
-  --onnx_opset 13
+  --onnx_opset 11
 ```
 ### 4-4. Check the contents of the .npy file, which is a binary version of the image file
 ```
