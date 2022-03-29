@@ -181,9 +181,12 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, opti
 
     return value
 
-# Left indexとRight indexで指定されたLandmarkを結ぶ線が水平になり、Subset indicesで指定されたLandmrakをちょうど含むような範囲をcropするように、元の画像をAffine変換する行列
+# Left indexとRight indexで指定されたLandmarkを結ぶ線が水平になり、
+# Subset indicesで指定されたLandmrakをちょうど含むような範囲をcropするように、元の画像をAffine変換する行列
 # の逆行列を求める。なぜ、逆行列かといういうと、後の計算で使うのが逆行列だから。
-# Calc inverse of the matrix which represetns the affine transform which crops the area which covers all the landmarks specified by "subset indices" and rotates so that the landmarks specified by "Left index" and "Right index" are horizontally aligned.
+# Calc inverse of the matrix which represetns the affine transform which crops the area
+# which covers all the landmarks specified by "subset indices" and rotates
+# so that the landmarks specified by "Left index" and "Right index" are horizontally aligned.
 def Landmarks2TransformMatrix(operator, custom_options, tensors, interpreter, landmarks3d=None):
     if landmarks3d is None:
         landmarks3d = tensors[operator['inputs'][0]] #float32 [b,468,3] landmarks
