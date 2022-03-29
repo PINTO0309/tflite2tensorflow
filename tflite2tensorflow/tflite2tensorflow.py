@@ -418,6 +418,7 @@ def make_graph(
     optimizing_for_openvino_and_myriad,
     rigorous_optimization_for_myriad,
     optimizing_for_coreml,
+    optimizing_barracuda,
 ):
 
     import tensorflow.compat.v1 as tf
@@ -3455,11 +3456,44 @@ def make_graph(
             except:
                 input_tensor2 = interpreter.get_tensor(positions_detail['index'])
             output_detail = interpreter._get_tensor_details(op['outputs'][0])
-            output_tensor = tf.gather_nd(
-                input_tensor1,
-                input_tensor2,
-                name=get_op_name(output_detail['name'])
-            )
+
+            def barracuda_gather_nd(params, indices):
+                if len(indices.shape) == 4 and indices.shape[0] == 1:
+                    indices = indices[0]
+                elif len(indices.shape) == 3:
+                    pass
+                else:
+                    print(f'{Color.RED}ERROR:{Color.RESET} gather_nd when optimizing_barracuda is enabled must have 4 dimensions and batch size = 1 or 3 dimensions.')
+                    print(f'{Color.RED}ERROR:{Color.RESET} params.shape: {params.shape}, indices.shape: {indices.shape}')
+                    sys.exit(-1)
+                if len(params.shape) == 4 and params.shape[0] == 1:
+                    params = params[0]
+                elif len(params.shape) == 3:
+                    pass
+                else:
+                    print(f'{Color.RED}ERROR:{Color.RESET} gather_nd when optimizing_barracuda is enabled must have 4 dimensions and batch size = 1 or 3 dimensions.')
+                    print(f'{Color.RED}ERROR:{Color.RESET} params.shape: {params.shape}, indices.shape: {indices.shape}')
+                    sys.exit(-1)
+                idx_shape = indices.shape
+                params_shape = params.shape
+                idx_dims = idx_shape[-1]
+                gather_shape = params_shape[idx_dims:]
+                params_flat = tf.reshape(params, tf.concat([[-1], gather_shape], axis=0))
+                axis_step = tf.math.cumprod(params_shape[:idx_dims], exclusive=True, reverse=True)
+                mul = tf.math.multiply(indices, axis_step)
+                indices_flat = tf.reduce_sum(mul, axis=-1)
+                result_flat = tf.gather(params_flat, indices_flat)
+                return tf.expand_dims(tf.reshape(result_flat, tf.concat([idx_shape[:-1], gather_shape], axis=0)), axis=0)
+
+            if not optimizing_barracuda:
+                output_tensor = tf.gather_nd(
+                    input_tensor1,
+                    input_tensor2,
+                    name=get_op_name(output_detail['name'])
+                )
+            else:
+                output_tensor = barracuda_gather_nd(input_tensor1, input_tensor2)
+
             tensors[output_detail['index']] = output_tensor
 
         elif op_type == 'COS':
@@ -5081,7 +5115,6 @@ def make_graph(
                     )
                     tensors[output_detail['index']] = output_tensor
 
-
                 # MediaPipe v0.8.9
                 elif custom_op_type == 'Landmarks2TransformMatrix':
                     options = op['custom_options']
@@ -5093,7 +5126,7 @@ def make_graph(
                     options = op['custom_options']
                     custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())
                     output_detail = interpreter._get_tensor_details(op['outputs'][0])
-                    tensors[output_detail['index']] = TransformTensorBilinear(op, custom_options, tensors, interpreter)
+                    tensors[output_detail['index']] = TransformTensorBilinear(op, custom_options, tensors, interpreter, optimizing_barracuda)
 
                 elif custom_op_type == 'TransformLandmarks':
                     custom_options = None
@@ -5642,6 +5675,7 @@ def main():
     parser.add_argument('--optimizing_for_edgetpu', action='store_true', help='Optimizing for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
     parser.add_argument('--disable_experimental_new_quantizer', action='store_true', help='Disable MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
+    parser.add_argument('--optimizing_barracuda', action='store_true', help='Generates ONNX by replacing Barracuda\'s unsupported layers with standard layers.')
     parser.add_argument('--locationids_of_the_terminating_output', type=str, default='', help='A comma-separated list of location IDs to be used as output layers. Default: \'\'')
     args = parser.parse_args()
 
@@ -5691,6 +5725,7 @@ def main():
     optimizing_for_edgetpu = args.optimizing_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
     use_experimental_new_quantizer = not args.disable_experimental_new_quantizer
+    optimizing_barracuda = args.optimizing_barracuda
     locationids_of_the_terminating_output_tmp = args.locationids_of_the_terminating_output
     locationids_of_the_terminating_output = None
     if locationids_of_the_terminating_output_tmp:
@@ -5844,7 +5879,8 @@ def main():
             optimizing_for_edgetpu_flg,
             optimizing_for_openvino_and_myriad,
             rigorous_optimization_for_myriad,
-            optimizing_for_coreml
+            optimizing_for_coreml,
+            optimizing_barracuda
         )
         print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
         print('outputs:')

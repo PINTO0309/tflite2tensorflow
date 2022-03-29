@@ -24,8 +24,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
 import tensorflow.compat.v1 as tf
 import numpy as np
+
+class Color:
+    BLACK          = '\033[30m'
+    RED            = '\033[31m'
+    GREEN          = '\033[32m'
+    YELLOW         = '\033[33m'
+    BLUE           = '\033[34m'
+    MAGENTA        = '\033[35m'
+    CYAN           = '\033[36m'
+    WHITE          = '\033[37m'
+    COLOR_DEFAULT  = '\033[39m'
+    BOLD           = '\033[1m'
+    UNDERLINE      = '\033[4m'
+    INVISIBLE      = '\033[08m'
+    REVERCE        = '\033[07m'
+    BG_BLACK       = '\033[40m'
+    BG_RED         = '\033[41m'
+    BG_GREEN       = '\033[42m'
+    BG_YELLOW      = '\033[43m'
+    BG_BLUE        = '\033[44m'
+    BG_MAGENTA     = '\033[45m'
+    BG_CYAN        = '\033[46m'
+    BG_WHITE       = '\033[47m'
+    BG_DEFAULT     = '\033[49m'
+    RESET          = '\033[0m'
 
 #Affine transform points
 def TransformLandmarks(operator, custom_options, tensors, interpreter, landmarks2d=None, mat=None):
@@ -46,7 +72,7 @@ def TransformLandmarks(operator, custom_options, tensors, interpreter, landmarks
     return landmarks2d_transformed
 
 #Affine transform images using bilinear interpolation
-def TransformTensorBilinear(operator, custom_options, tensors, interpreter, features=None, mat=None):
+def TransformTensorBilinear(operator, custom_options, tensors, interpreter, optimizing_barracuda, features=None, mat=None):
     if features is None:
         features = tensors[operator['inputs'][0]] #float32 [b,48,48,32] feature maps
     if mat is None:
@@ -102,11 +128,46 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, feat
     in_coord_floor = tf.concat([in_coord_floor[:,:,:,1:2], in_coord_floor[:,:,:,0:1]], axis=3) #[b,h,w,YX]
     in_coord_ceil_ = tf.concat([in_coord_ceil_[:,:,:,1:2], in_coord_ceil_[:,:,:,0:1]], axis=3) #[b,h,w,YX]
 
+    def barracuda_gather_nd(params, indices):
+        if len(indices.shape) == 4 and indices.shape[0] == 1:
+            indices = indices[0]
+        elif len(indices.shape) == 3:
+            pass
+        else:
+            print(f'{Color.RED}ERROR:{Color.RESET} gather_nd when optimizing_barracuda is enabled must have 4 dimensions and batch size = 1 or 3 dimensions.')
+            print(f'{Color.RED}ERROR:{Color.RESET} params.shape: {params.shape}, indices.shape: {indices.shape}')
+            sys.exit(-1)
+        if len(params.shape) == 4 and params.shape[0] == 1:
+            params = params[0]
+        elif len(params.shape) == 3:
+            pass
+        else:
+            print(f'{Color.RED}ERROR:{Color.RESET} gather_nd when optimizing_barracuda is enabled must have 4 dimensions and batch size = 1 or 3 dimensions.')
+            print(f'{Color.RED}ERROR:{Color.RESET} params.shape: {params.shape}, indices.shape: {indices.shape}')
+            sys.exit(-1)
+        idx_shape = indices.shape
+        params_shape = params.shape
+        idx_dims = idx_shape[-1]
+        gather_shape = params_shape[idx_dims:]
+        params_flat = tf.reshape(params, tf.concat([[-1], gather_shape], axis=0))
+        axis_step = tf.math.cumprod(params_shape[:idx_dims], exclusive=True, reverse=True)
+        mul = tf.math.multiply(indices, axis_step)
+        indices_flat = tf.reduce_sum(mul, axis=-1)
+        result_flat = tf.gather(params_flat, indices_flat)
+        return tf.expand_dims(tf.reshape(result_flat, tf.concat([idx_shape[:-1], gather_shape], axis=0)), axis=0)
+
     # calc final pixel value
-    value_floor = tf.gather_nd(params=features, indices=in_coord_floor, batch_dims=1) #[b,h,w,32]
-    value_ceilX = tf.gather_nd(params=features, indices=in_coord_ceilX, batch_dims=1) #[b,h,w,32]
-    value_ceilY = tf.gather_nd(params=features, indices=in_coord_ceilY, batch_dims=1) #[b,h,w,32]
-    value_ceil_ = tf.gather_nd(params=features, indices=in_coord_ceil_, batch_dims=1) #[b,h,w,32]
+    if not optimizing_barracuda:
+        value_floor = tf.gather_nd(params=features, indices=in_coord_floor, batch_dims=1) #[b,h,w,32]
+        value_ceilX = tf.gather_nd(params=features, indices=in_coord_ceilX, batch_dims=1) #[b,h,w,32]
+        value_ceilY = tf.gather_nd(params=features, indices=in_coord_ceilY, batch_dims=1) #[b,h,w,32]
+        value_ceil_ = tf.gather_nd(params=features, indices=in_coord_ceil_, batch_dims=1) #[b,h,w,32]
+    else:
+        value_floor = barracuda_gather_nd(params=features, indices=in_coord_floor) #[b,h,w,32]
+        value_ceilX = barracuda_gather_nd(params=features, indices=in_coord_ceilX) #[b,h,w,32]
+        value_ceilY = barracuda_gather_nd(params=features, indices=in_coord_ceilY) #[b,h,w,32]
+        value_ceil_ = barracuda_gather_nd(params=features, indices=in_coord_ceil_) #[b,h,w,32]
+
     value_floor_fraction = tf.multiply(value_floor, weight_floor)
     value_ceil__fraction = tf.multiply(value_ceil_, weight_ceil_)
     value_ceilX_fraction = tf.multiply(value_ceilX, weight_ceilX)
@@ -132,8 +193,12 @@ def Landmarks2TransformMatrix(operator, custom_options, tensors, interpreter, la
     ######################################
     # calc rotation
     ######################################
-    rot90_t = tf.constant([[  0.0,  1.0],
-                           [ -1.0,  0.0]]) #[2,2], already transposed
+    rot90_t = tf.constant(
+        [
+            [  0.0,  1.0],
+            [ -1.0,  0.0]
+        ]
+    ) #[2,2], already transposed
 
     idx_rot_l = custom_options['left_rotation_idx']
     idx_rot_r = custom_options['right_rotation_idx']

@@ -350,6 +350,7 @@ usage: tflite2tensorflow
   [--optimizing_for_edgetpu]
   [--replace_prelu_and_minmax]
   [--disable_experimental_new_quantizer]
+  [--optimizing_barracuda]
   [--locationids_of_the_terminating_output]
 
 optional arguments:
@@ -455,6 +456,9 @@ optional arguments:
   --disable_experimental_new_quantizer
                         Disable MLIRs new quantization feature during INT8 quantization
                         in TensorFlowLite.
+  --optimizing_barracuda
+                      Generates ONNX by replacing Barracuda unsupported layers
+                      with standard layers. For example, GatherND.
   --locationids_of_the_terminating_output
                         A comma-separated list of LocationIDs to be used as output layers.
                         e.g. --locationids_of_the_terminating_output 100,201,560
