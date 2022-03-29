@@ -355,114 +355,114 @@ usage: tflite2tensorflow
 
 optional arguments:
   -h, --help
-                        show this help message and exit
+          show this help message and exit
   --model_path MODEL_PATH
-                        input tflite model path (*.tflite)
+          input tflite model path (*.tflite)
   --flatc_path FLATC_PATH
-                        flatc file path (flatc)
+          flatc file path (flatc)
   --schema_path SCHEMA_PATH
-                        schema.fbs path (schema.fbs)
+          schema.fbs path (schema.fbs)
   --model_output_path MODEL_OUTPUT_PATH
-                        The output folder path of the converted model file
+          The output folder path of the converted model file
   --output_pb
-                        .pb output switch
+          .pb output switch
   --output_no_quant_float32_tflite
-                        float32 tflite output switch
+          float32 tflite output switch
   --output_dynamic_range_quant_tflite
-                        dynamic range quant tflite output switch
+          dynamic range quant tflite output switch
   --output_weight_quant_tflite
-                        weight quant tflite output switch
+          weight quant tflite output switch
   --output_float16_quant_tflite
-                        float16 quant tflite output switch
+          float16 quant tflite output switch
   --output_integer_quant_tflite
-                        integer quant tflite output switch
+          integer quant tflite output switch
   --output_full_integer_quant_tflite
-                        full integer quant tflite output switch
+          full integer quant tflite output switch
   --output_integer_quant_type OUTPUT_INTEGER_QUANT_TYPE
-                        Input and output types when doing Integer Quantization
-                        ('int8 (default)' or 'uint8')
+          Input and output types when doing Integer Quantization
+          ('int8 (default)' or 'uint8')
   --string_formulas_for_normalization STRING_FORMULAS_FOR_NORMALIZATION
-                        String formulas for normalization. It is evaluated by
-                        Python's eval() function. Default: '(data -
-                        [127.5,127.5,127.5]) / [127.5,127.5,127.5]'
+          String formulas for normalization. It is evaluated by
+          Python's eval() function. Default: '(data -
+          [127.5,127.5,127.5]) / [127.5,127.5,127.5]'
   --calib_ds_type CALIB_DS_TYPE
-                        Types of data sets for calibration. tfds or numpy
-                        Default: numpy
+          Types of data sets for calibration. tfds or numpy
+          Default: numpy
   --ds_name_for_tfds_for_calibration DS_NAME_FOR_TFDS_FOR_CALIBRATION
-                        Dataset name for TensorFlow Datasets for calibration.
-                        https://www.tensorflow.org/datasets/catalog/overview
+          Dataset name for TensorFlow Datasets for calibration.
+          https://www.tensorflow.org/datasets/catalog/overview
   --split_name_for_tfds_for_calibration SPLIT_NAME_FOR_TFDS_FOR_CALIBRATION
-                        Split name for TensorFlow Datasets for calibration.
-                        https://www.tensorflow.org/datasets/catalog/overview
+          Split name for TensorFlow Datasets for calibration.
+          https://www.tensorflow.org/datasets/catalog/overview
   --download_dest_folder_path_for_the_calib_tfds DOWNLOAD_DEST_FOLDER_PATH_FOR_THE_CALIB_TFDS
-                        Download destination folder path for the calibration
-                        dataset. Default: $HOME/TFDS
+          Download destination folder path for the calibration
+          dataset. Default: $HOME/TFDS
   --tfds_download_flg
-                        True to automatically download datasets from
-                        TensorFlow Datasets. True or False
+          True to automatically download datasets from
+          TensorFlow Datasets. True or False
   --load_dest_file_path_for_the_calib_npy LOAD_DEST_FILE_PATH_FOR_THE_CALIB_NPY
-                        The path from which to load the .npy file containing
-                        the numpy binary version of the calibration data.
-                        Default: sample_npy/calibration_data_img_sample.npy
-                        [20, 513, 513, 3] -> [Number of images, h, w, c]
+          The path from which to load the .npy file containing
+          the numpy binary version of the calibration data.
+          Default: sample_npy/calibration_data_img_sample.npy
+          [20, 513, 513, 3] -> [Number of images, h, w, c]
   --output_tfjs
-                        tfjs model output switch
+          tfjs model output switch
   --output_tftrt32
-                        tftrt float32 model output switch
+          tftrt float32 model output switch
   --output_tftrt16
-                        tftrt float16 model output switch
+          tftrt float16 model output switch
   --output_coreml
-                        coreml model output switch
+          coreml model output switch
   --optimizing_for_coreml
-                         Optimizing graph for coreml
+          Optimizing graph for coreml
   --output_edgetpu
-                        edgetpu model output switch
+          edgetpu model output switch
   --edgetpu_compiler_timeout
-                        edgetpu_compiler timeout for one compilation process in seconds.
-                        Default: 3600
+          edgetpu_compiler timeout for one compilation process in seconds.
+          Default: 3600
   --edgetpu_num_segments
-                        Partition the model into 'num_segments' segments.
-                        Default: 1 (no partition)
+          Partition the model into 'num_segments' segments.
+          Default: 1 (no partition)
   --output_onnx
-                        onnx model output switch
+          onnx model output switch
   --onnx_opset ONNX_OPSET
-                        onnx opset version number
+          onnx opset version number
   --onnx_extra_opset ONNX_EXTRA_OPSET
-                        The name of the onnx 'extra_opset' to enable.
-                        Default: ''
-                        'com.microsoft:1' or 'ai.onnx.contrib:1' or 'ai.onnx.ml:1'
+          The name of the onnx 'extra_opset' to enable.
+          Default: ''
+          'com.microsoft:1' or 'ai.onnx.contrib:1' or 'ai.onnx.ml:1'
   --disable_onnx_nchw_conversion
-                        Disable onnx NCHW conversion
+          Disable onnx NCHW conversion
   --disable_onnx_optimization
-                        Disable onnx optimization
+          Disable onnx optimization
   --output_openvino_and_myriad
-                        openvino model and myriad inference engine blob output switch
+          openvino model and myriad inference engine blob output switch
   --vpu_number_of_shaves VPU_NUMBER_OF_SHAVES
-                        vpu number of shaves. Default: 4
+          vpu number of shaves. Default: 4
   --vpu_number_of_cmx_slices VPU_NUMBER_OF_CMX_SLICES
-                        vpu number of cmx slices. Default: 4
+          vpu number of cmx slices. Default: 4
   --optimizing_for_openvino_and_myriad
-                        Optimizing graph for openvino/myriad
+          Optimizing graph for openvino/myriad
   --rigorous_optimization_for_myriad
-                        Replace operations that are not supported by myriad with operations
-                        that are as feasible as possible.
-                        e.g. 'Abs' -> 'Square' + 'Sqrt'
+          Replace operations that are not supported by myriad with operations
+          that are as feasible as possible.
+          e.g. 'Abs' -> 'Square' + 'Sqrt'
   --replace_swish_and_hardswish
-                        Replace swish and hard-swish with each other
+          Replace swish and hard-swish with each other
   --optimizing_for_edgetpu
-                        Optimizing for edgetpu
+          Optimizing for edgetpu
   --replace_prelu_and_minmax
-                        Replace prelu and minimum/maximum with each other
+          Replace prelu and minimum/maximum with each other
   --disable_experimental_new_quantizer
-                        Disable MLIRs new quantization feature during INT8 quantization
-                        in TensorFlowLite.
+          Disable MLIRs new quantization feature during INT8 quantization
+          in TensorFlowLite.
   --optimizing_barracuda
-                        Generates ONNX by replacing Barracuda unsupported layers
-                        with standard layers. For example, GatherND.
+          Generates ONNX by replacing Barracuda unsupported layers
+          with standard layers. For example, GatherND.
   --locationids_of_the_terminating_output
-                        A comma-separated list of LocationIDs to be used as output layers.
-                        e.g. --locationids_of_the_terminating_output 100,201,560
-                        Default: ''
+          A comma-separated list of LocationIDs to be used as output layers.
+          e.g. --locationids_of_the_terminating_output 100,201,560
+          Default: ''
 ```
 ### 4-2. Step 1 : Generating saved_model and FreezeGraph (.pb)
 ```
