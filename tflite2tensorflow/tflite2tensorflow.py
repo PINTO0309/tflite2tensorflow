@@ -3485,7 +3485,8 @@ def make_graph(
                 result_flat = tf.gather(params_flat, indices_flat)
                 return tf.expand_dims(tf.reshape(result_flat, tf.concat([idx_shape[:-1], gather_shape], axis=0)), axis=0)
 
-            if not optimizing_barracuda:
+            optimaization_for_myriad = (optimizing_for_openvino_and_myriad and rigorous_optimization_for_myriad)
+            if not optimizing_barracuda and not optimaization_for_myriad:
                 output_tensor = tf.gather_nd(
                     input_tensor1,
                     input_tensor2,
@@ -5126,7 +5127,15 @@ def make_graph(
                     options = op['custom_options']
                     custom_options = read_flexbuffer(np.array(options, dtype=np.uint8).tobytes())
                     output_detail = interpreter._get_tensor_details(op['outputs'][0])
-                    tensors[output_detail['index']] = TransformTensorBilinear(op, custom_options, tensors, interpreter, optimizing_barracuda)
+                    optimaization_for_myriad = (optimizing_for_openvino_and_myriad and rigorous_optimization_for_myriad)
+                    tensors[output_detail['index']] = TransformTensorBilinear(
+                        op,
+                        custom_options,
+                        tensors,
+                        interpreter,
+                        optimizing_barracuda,
+                        optimaization_for_myriad,
+                    )
 
                 elif custom_op_type == 'TransformLandmarks':
                     custom_options = None

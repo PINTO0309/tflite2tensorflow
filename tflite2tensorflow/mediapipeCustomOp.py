@@ -72,7 +72,7 @@ def TransformLandmarks(operator, custom_options, tensors, interpreter, landmarks
     return landmarks2d_transformed
 
 #Affine transform images using bilinear interpolation
-def TransformTensorBilinear(operator, custom_options, tensors, interpreter, optimizing_barracuda, features=None, mat=None):
+def TransformTensorBilinear(operator, custom_options, tensors, interpreter, optimizing_barracuda, optimaization_for_myriad, features=None, mat=None):
     if features is None:
         features = tensors[operator['inputs'][0]] #float32 [b,48,48,32] feature maps
     if mat is None:
@@ -110,8 +110,8 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, opti
     weight_floor = tf.subtract(tf.ones(2), weight_ceil_) #[b,h,w,2]
     weight_ceilX = tf.multiply(weight_ceil_[:,:,:,0:1], weight_floor[:,:,:,1:2]) #[b,h,w]
     weight_ceilY = tf.multiply(weight_floor[:,:,:,0:1], weight_ceil_[:,:,:,1:2]) #[b,h,w]
-    weight_ceil_ = tf.reduce_prod(weight_ceil_, axis=3, keepdims=True) #[b,h,w,1]
-    weight_floor = tf.reduce_prod(weight_floor, axis=3, keepdims=True) #[b,h,w,1]
+    weight_ceil_ = tf.multiply(weight_ceil_[:,:,:,0:1], weight_ceil_[:,:,:,1:2]) #[b,h,w]
+    weight_floor = tf.multiply(weight_floor[:,:,:,0:1], weight_floor[:,:,:,1:2]) #[b,h,w]
 
     # Find nearest 4 points.
     # Make sure they are in the input image
@@ -157,7 +157,7 @@ def TransformTensorBilinear(operator, custom_options, tensors, interpreter, opti
         return tf.expand_dims(tf.reshape(result_flat, tf.concat([idx_shape[:-1], gather_shape], axis=0)), axis=0)
 
     # calc final pixel value
-    if not optimizing_barracuda:
+    if not optimizing_barracuda and not optimaization_for_myriad:
         value_floor = tf.gather_nd(params=features, indices=in_coord_floor, batch_dims=1) #[b,h,w,32]
         value_ceilX = tf.gather_nd(params=features, indices=in_coord_ceilX, batch_dims=1) #[b,h,w,32]
         value_ceilY = tf.gather_nd(params=features, indices=in_coord_ceilY, batch_dims=1) #[b,h,w,32]
