@@ -173,6 +173,14 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - onnx-tensorrt
 - onnx2json
 - json2onnx
+- sne4onnx
+- snd4onnx
+- snc4onnx
+- scs4onnx
+- sog4onnx
+- sam4onnx
+- soc4onnx
+- scc4onnx
 - tf2onnx
 - torch2trt
 - onnx-tf
