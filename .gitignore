@@ -1,3 +1,11 @@
 build/
 dist/
 tflite2tensorflow.egg-info/
+tflite2tensorflow/debug/
+tflite2tensorflow/saved_model/
+.vscode
+
+*.bin
+*.xml
+saved_model/
+packages/
