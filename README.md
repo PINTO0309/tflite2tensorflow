@@ -9,7 +9,9 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 [Special custom TensorFlow binaries](https://github.com/PINTO0309/Tensorflow-bin) and [special custom TensorFLow Lite binaries](https://github.com/PINTO0309/TensorflowLite-bin) are used.
 
 [![Downloads](https://static.pepy.tech/personalized-badge/tflite2tensorflow?period=total&units=none&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/tflite2tensorflow) ![GitHub](https://img.shields.io/github/license/PINTO0309/tflite2tensorflow?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/tflite2tensorflow?color=2BAF2B)](https://pypi.org/project/tflite2tensorflow/) [![CodeQL](https://github.com/PINTO0309/tflite2tensorflow/workflows/CodeQL/badge.svg)](https://github.com/PINTO0309/tflite2tensorflow/actions?query=workflow%3ACodeQL)
-![01](media/01.gif)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/33194443/166147152-79cd691e-7b47-4338-acee-34791ac2d1f3.gif" />
+</p>
 
 ## 1. Supported Layers
 
