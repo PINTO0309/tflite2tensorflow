@@ -183,6 +183,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - sam4onnx
 - soc4onnx
 - scc4onnx
+- sna4onnx
 - tf2onnx
 - torch2trt
 - onnx-tf
@@ -202,7 +203,6 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - Intel iHD GPU (iGPU) support
 - OpenCL
 - gluoncv
-- TVM (ONNX, CUDA, TensorRT, TensorFlow, PyTorch)
 - LLVM
 - NNPACK
 - WSL2 OpenCL
