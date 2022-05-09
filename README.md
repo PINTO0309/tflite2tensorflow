@@ -15,144 +15,148 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 
 ## 1. Supported Layers
 
-|No.|TFLite Layer|TF Layer|Remarks|
-|:--:|:--|:--|:--|
-|1|CONV_2D|tf.nn.conv2d||
-|2|DEPTHWISE_CONV_2D|tf.nn.depthwise_conv2d||
-|3|MAX_POOL_2D|tf.nn.max_pool||
-|4|PAD|tf.pad||
-|5|MIRROR_PAD|tf.raw_ops.MirrorPad||
-|6|RELU|tf.nn.relu||
-|7|PRELU|tf.keras.layers.PReLU||
-|8|RELU6|tf.nn.relu6||
-|9|RESHAPE|tf.reshape||
-|10|ADD|tf.add||
-|11|SUB|tf.math.subtract||
-|12|CONCATENATION|tf.concat||
-|13|LOGISTIC|tf.math.sigmoid||
-|14|TRANSPOSE_CONV|tf.nn.conv2d_transpose||
-|15|MUL|tf.multiply||
-|16|HARD_SWISH|x\*tf.nn.relu6(x+3)\*0.16666667 Or x\*tf.nn.relu6(x+3)\*0.16666666||
-|17|AVERAGE_POOL_2D|tf.keras.layers.AveragePooling2D||
-|18|FULLY_CONNECTED|tf.keras.layers.Dense||
-|19|RESIZE_BILINEAR|tf.image.resize Or tf.image.resize_bilinear|The behavior differs depending on the optimization options of openvino and edgetpu.|
-|20|RESIZE_NEAREST_NEIGHBOR|tf.image.resize Or tf.image.resize_nearest_neighbor|The behavior differs depending on the optimization options of openvino and edgetpu.|
-|21|MEAN|tf.math.reduce_mean||
-|22|SQUARED_DIFFERENCE|tf.math.squared_difference||
-|23|RSQRT|tf.math.rsqrt||
-|24|DEQUANTIZE|(const)||
-|25|FLOOR|tf.math.floor||
-|26|TANH|tf.math.tanh||
-|27|DIV|tf.math.divide||
-|28|FLOOR_DIV|tf.math.floordiv||
-|29|SUM|tf.math.reduce_sum||
-|30|POW|tf.math.pow||
-|31|SPLIT|tf.split||
-|32|SOFTMAX|tf.nn.softmax||
-|33|STRIDED_SLICE|tf.strided_slice||
-|34|TRANSPOSE|ttf.transpose||
-|35|SPACE_TO_DEPTH|tf.nn.space_to_depth||
-|36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
-|37|REDUCE_MAX|tf.math.reduce_max||
-|38|Convolution2DTransposeBias|tf.nn.conv2d_transpose, tf.math.add|CUSTOM, MediaPipe|
-|39|LEAKY_RELU|tf.keras.layers.LeakyReLU||
-|40|MAXIMUM|tf.math.maximum||
-|41|MINIMUM|tf.math.minimum||
-|42|MaxPoolingWithArgmax2D|tf.raw_ops.MaxPoolWithArgmax|CUSTOM, MediaPipe|
-|43|MaxUnpooling2D|tf.cast, tf.shape, tf.math.floordiv, tf.math.floormod, tf.ones_like, tf.shape, tf.concat, tf.reshape, tf.transpose, tf.scatter_nd|CUSTOM, MediaPipe|
-|44|GATHER|tf.gather||
-|45|CAST|tf.cast||
-|46|SLICE|tf.slice||
-|47|PACK|tf.stack||
-|48|UNPACK|tf.unstack||
-|49|ARG_MAX|tf.math.argmax Or tf.math.reduce_max, tf.subtract, tf.math.minimum, tf.multiply|The behavior differs depending on the optimization options of edgetpu.|
-|50|EXP|tf.exp||
-|51|TOPK_V2|tf.math.top_k||
-|52|LOG_SOFTMAX|tf.nn.log_softmax||
-|53|L2_NORMALIZATION|tf.math.l2_normalize||
-|54|LESS|tf.math.less||
-|55|LESS_EQUAL|tf.math.less_equal||
-|56|GREATER|tf.math.greater||
-|57|GREATER_EQUAL|tf.math.greater_equal||
-|58|NEG|tf.math.negative||
-|59|WHERE|tf.where||
-|60|SELECT|tf.where||
-|61|SELECT_V2|tf.where||
-|62|PADV2|tf.raw_ops.PadV2||
-|63|SIN|tf.math.sin||
-|64|TILE|tf.tile||
-|65|EQUAL|tf.math.equal||
-|66|NOT_EQUAL|tf.math.not_equal||
-|67|LOG|tf.math.log||
-|68|SQRT|tf.math.sqrt||
-|69|ARG_MIN|tf.math.argmin or tf.math.negative,tf.math.argmax||
-|70|REDUCE_PROD|tf.math.reduce_prod||
-|71|LOGICAL_OR|tf.math.logical_or||
-|72|LOGICAL_AND|tf.math.logical_and||
-|73|LOGICAL_NOT|tf.math.logical_not||
-|74|REDUCE_MIN|tf.math.reduce_min or tf.math.negative,tf.math.reduce_max||
-|75|REDUCE_ANY|tf.math.reduce_any||
-|76|SQUARE|tf.math.square||
-|77|ZEROS_LIKE|tf.zeros_like||
-|78|FILL|tf.fill||
-|79|FLOOR_MOD|tf.math.floormod||
-|80|RANGE|tf.range||
-|81|ABS|tf.math.abs||
-|82|UNIQUE|tf.unique||
-|83|CEIL|tf.math.ceil||
-|84|REVERSE_V2|tf.reverse||
-|85|ADD_N|tf.math.add_n||
-|86|GATHER_ND|tf.gather_nd||
-|87|COS|tf.math.cos||
-|88|RANK|tf.math.rank||
-|89|ELU|tf.nn.elu||
-|90|WHILE|tf.while_loop||
-|91|REVERSE_SEQUENCE|tf.reverse_sequence||
-|92|MATRIX_DIAG|tf.linalg.diag||
-|93|ROUND|tf.math.round||
-|94|NON_MAX_SUPPRESSION_V4|tf.raw_ops.NonMaxSuppressionV4||
-|95|NON_MAX_SUPPRESSION_V5|tf.raw_ops.NonMaxSuppressionV5, tf.raw_ops.NonMaxSuppressionV4, tf.raw_ops.NonMaxSuppressionV3||
-|96|SCATTER_ND|tf.scatter_nd||
-|97|SEGMENT_SUM|tf.math.segment_sum||
-|98|CUMSUM|tf.math.cumsum||
-|99|BROADCAST_TO|tf.broadcast_to||
-|100|RFFT2D|tf.signal.rfft2d||
-|101|L2_POOL_2D|tf.square, tf.keras.layers.AveragePooling2D, tf.sqrt||
-|102|LOCAL_RESPONSE_NORMALIZATION|tf.nn.local_response_normalization||
-|103|RELU_N1_TO_1|tf.minimum, tf.maximum||
-|104|SPLIT_V|tf.raw_ops.SplitV||
-|105|MATRIX_SET_DIAG|tf.linalg.set_diag||
-|106|SHAPE|tf.shape||
-|107|EXPAND_DIMS|tf.expand_dims||
-|108|SQUEEZE|tf.squeeze||
-|109|FlexRFFT|tf.signal.rfft|Flex OP|
-|110|FlexImag|tf.math.imag|Flex OP|
-|111|FlexReal|tf.math.real|Flex OP|
-|112|FlexRFFT2D|tf.signal.rfft2d|Flex OP|
-|113|FlexComplexAbs|tf.raw_ops.ComplexAbs|Flex OP|
-|114|IMAG|tf.math.imag||
-|115|REAL|tf.math.real||
-|116|COMPLEX_ABS|tf.raw_ops.ComplexAbs||
-|117|TFLite_Detection_PostProcess|tf.divide, tf.strided_slice, tf.math.argmax, tf.math.reduce_max, tf.math.multiply, tf.math.add, tf.math.exp, tf.math.subtract, tf.expand_dims, tf.gather, tf.reshape, tf.identity, tf.raw_ops.NonMaxSuppressionV5|CUSTOM|
-|118|ONE_HOT|tf.one_hot||
-|119|FlexMultinomial|tf.random.categorical|Flex OP|
-|120|FlexAll|tf.math.reduce_all|Flex OP|
-|121|FlexErf|tf.math.erf|Flex OP|
-|122|FlexRoll|tf.roll|Flex OP|
-|123|CONV_3D|tf.keras.layers.Conv3D||
-|124|CONV_3D_TRANSPOSE|tf.nn.conv3d_transpose||
-|125|Densify|(const)||
-|126|SPACE_TO_BATCH_ND|tf.space_to_batch_nd||
-|127|BATCH_TO_SPACE_ND|tf.compat.v1.batch_to_space_nd||
-|128|TransformLandmarks|tf.reshape, tf.linalg.matmul, tf.math.add|CUSTOM, MediaPipe|
-|129|TransformTensorBilinear|tf.reshape, tf.linalg.matmul, tf.math.add, tf.tile, tf.math.floor, tf.math.subtract, tf.math.multiply, tf.math.reduce_prod, tf.cast, tf.math.maximum, tf.math.maximum, tf.concat, tf.gather_nd|CUSTOM, MediaPipe|
-|130|Landmarks2TransformMatrix|tf.constant, tf.math.subtract, tf.math.norm, tf.math.divide, tf.linalg.matmul, tf.concat, tf.transpose, tf.gather, tf.math.reduce_min, tf.math.reduce_max, tf.math.multiply, tf.zeros, tf.math.add, tf.tile|CUSTOM, MediaPipe|
+  **<details><summary>Supported Layers</summary><div>**
+
+  |No.|TFLite Layer|TF Layer|Remarks|
+  |:--:|:--|:--|:--|
+  |1|CONV_2D|tf.nn.conv2d||
+  |2|DEPTHWISE_CONV_2D|tf.nn.depthwise_conv2d||
+  |3|MAX_POOL_2D|tf.nn.max_pool||
+  |4|PAD|tf.pad||
+  |5|MIRROR_PAD|tf.raw_ops.MirrorPad||
+  |6|RELU|tf.nn.relu||
+  |7|PRELU|tf.keras.layers.PReLU||
+  |8|RELU6|tf.nn.relu6||
+  |9|RESHAPE|tf.reshape||
+  |10|ADD|tf.add||
+  |11|SUB|tf.math.subtract||
+  |12|CONCATENATION|tf.concat||
+  |13|LOGISTIC|tf.math.sigmoid||
+  |14|TRANSPOSE_CONV|tf.nn.conv2d_transpose||
+  |15|MUL|tf.multiply||
+  |16|HARD_SWISH|x\*tf.nn.relu6(x+3)\*0.16666667 Or x\*tf.nn.relu6(x+3)\*0.16666666||
+  |17|AVERAGE_POOL_2D|tf.keras.layers.AveragePooling2D||
+  |18|FULLY_CONNECTED|tf.keras.layers.Dense||
+  |19|RESIZE_BILINEAR|tf.image.resize Or tf.image.resize_bilinear|The behavior differs depending on the optimization options of openvino and edgetpu.|
+  |20|RESIZE_NEAREST_NEIGHBOR|tf.image.resize Or tf.image.resize_nearest_neighbor|The behavior differs depending on the optimization options of openvino and edgetpu.|
+  |21|MEAN|tf.math.reduce_mean||
+  |22|SQUARED_DIFFERENCE|tf.math.squared_difference||
+  |23|RSQRT|tf.math.rsqrt||
+  |24|DEQUANTIZE|(const)||
+  |25|FLOOR|tf.math.floor||
+  |26|TANH|tf.math.tanh||
+  |27|DIV|tf.math.divide||
+  |28|FLOOR_DIV|tf.math.floordiv||
+  |29|SUM|tf.math.reduce_sum||
+  |30|POW|tf.math.pow||
+  |31|SPLIT|tf.split||
+  |32|SOFTMAX|tf.nn.softmax||
+  |33|STRIDED_SLICE|tf.strided_slice||
+  |34|TRANSPOSE|ttf.transpose||
+  |35|SPACE_TO_DEPTH|tf.nn.space_to_depth||
+  |36|DEPTH_TO_SPACE|tf.nn.depth_to_space||
+  |37|REDUCE_MAX|tf.math.reduce_max||
+  |38|Convolution2DTransposeBias|tf.nn.conv2d_transpose, tf.math.add|CUSTOM, MediaPipe|
+  |39|LEAKY_RELU|tf.keras.layers.LeakyReLU||
+  |40|MAXIMUM|tf.math.maximum||
+  |41|MINIMUM|tf.math.minimum||
+  |42|MaxPoolingWithArgmax2D|tf.raw_ops.MaxPoolWithArgmax|CUSTOM, MediaPipe|
+  |43|MaxUnpooling2D|tf.cast, tf.shape, tf.math.floordiv, tf.math.floormod, tf.ones_like, tf.shape, tf.concat, tf.reshape, tf.transpose, tf.scatter_nd|CUSTOM, MediaPipe|
+  |44|GATHER|tf.gather||
+  |45|CAST|tf.cast||
+  |46|SLICE|tf.slice||
+  |47|PACK|tf.stack||
+  |48|UNPACK|tf.unstack||
+  |49|ARG_MAX|tf.math.argmax Or tf.math.reduce_max, tf.subtract, tf.math.minimum, tf.multiply|The behavior differs depending on the optimization options of edgetpu.|
+  |50|EXP|tf.exp||
+  |51|TOPK_V2|tf.math.top_k||
+  |52|LOG_SOFTMAX|tf.nn.log_softmax||
+  |53|L2_NORMALIZATION|tf.math.l2_normalize||
+  |54|LESS|tf.math.less||
+  |55|LESS_EQUAL|tf.math.less_equal||
+  |56|GREATER|tf.math.greater||
+  |57|GREATER_EQUAL|tf.math.greater_equal||
+  |58|NEG|tf.math.negative||
+  |59|WHERE|tf.where||
+  |60|SELECT|tf.where||
+  |61|SELECT_V2|tf.where||
+  |62|PADV2|tf.raw_ops.PadV2||
+  |63|SIN|tf.math.sin||
+  |64|TILE|tf.tile||
+  |65|EQUAL|tf.math.equal||
+  |66|NOT_EQUAL|tf.math.not_equal||
+  |67|LOG|tf.math.log||
+  |68|SQRT|tf.math.sqrt||
+  |69|ARG_MIN|tf.math.argmin or tf.math.negative,tf.math.argmax||
+  |70|REDUCE_PROD|tf.math.reduce_prod||
+  |71|LOGICAL_OR|tf.math.logical_or||
+  |72|LOGICAL_AND|tf.math.logical_and||
+  |73|LOGICAL_NOT|tf.math.logical_not||
+  |74|REDUCE_MIN|tf.math.reduce_min or tf.math.negative,tf.math.reduce_max||
+  |75|REDUCE_ANY|tf.math.reduce_any||
+  |76|SQUARE|tf.math.square||
+  |77|ZEROS_LIKE|tf.zeros_like||
+  |78|FILL|tf.fill||
+  |79|FLOOR_MOD|tf.math.floormod||
+  |80|RANGE|tf.range||
+  |81|ABS|tf.math.abs||
+  |82|UNIQUE|tf.unique||
+  |83|CEIL|tf.math.ceil||
+  |84|REVERSE_V2|tf.reverse||
+  |85|ADD_N|tf.math.add_n||
+  |86|GATHER_ND|tf.gather_nd||
+  |87|COS|tf.math.cos||
+  |88|RANK|tf.math.rank||
+  |89|ELU|tf.nn.elu||
+  |90|WHILE|tf.while_loop||
+  |91|REVERSE_SEQUENCE|tf.reverse_sequence||
+  |92|MATRIX_DIAG|tf.linalg.diag||
+  |93|ROUND|tf.math.round||
+  |94|NON_MAX_SUPPRESSION_V4|tf.raw_ops.NonMaxSuppressionV4||
+  |95|NON_MAX_SUPPRESSION_V5|tf.raw_ops.NonMaxSuppressionV5, tf.raw_ops.NonMaxSuppressionV4, tf.raw_ops.NonMaxSuppressionV3||
+  |96|SCATTER_ND|tf.scatter_nd||
+  |97|SEGMENT_SUM|tf.math.segment_sum||
+  |98|CUMSUM|tf.math.cumsum||
+  |99|BROADCAST_TO|tf.broadcast_to||
+  |100|RFFT2D|tf.signal.rfft2d||
+  |101|L2_POOL_2D|tf.square, tf.keras.layers.AveragePooling2D, tf.sqrt||
+  |102|LOCAL_RESPONSE_NORMALIZATION|tf.nn.local_response_normalization||
+  |103|RELU_N1_TO_1|tf.minimum, tf.maximum||
+  |104|SPLIT_V|tf.raw_ops.SplitV||
+  |105|MATRIX_SET_DIAG|tf.linalg.set_diag||
+  |106|SHAPE|tf.shape||
+  |107|EXPAND_DIMS|tf.expand_dims||
+  |108|SQUEEZE|tf.squeeze||
+  |109|FlexRFFT|tf.signal.rfft|Flex OP|
+  |110|FlexImag|tf.math.imag|Flex OP|
+  |111|FlexReal|tf.math.real|Flex OP|
+  |112|FlexRFFT2D|tf.signal.rfft2d|Flex OP|
+  |113|FlexComplexAbs|tf.raw_ops.ComplexAbs|Flex OP|
+  |114|IMAG|tf.math.imag||
+  |115|REAL|tf.math.real||
+  |116|COMPLEX_ABS|tf.raw_ops.ComplexAbs||
+  |117|TFLite_Detection_PostProcess|tf.divide, tf.strided_slice, tf.math.argmax, tf.math.reduce_max, tf.math.multiply, tf.math.add, tf.math.exp, tf.math.subtract, tf.expand_dims, tf.gather, tf.reshape, tf.identity, tf.raw_ops.NonMaxSuppressionV5|CUSTOM|
+  |118|ONE_HOT|tf.one_hot||
+  |119|FlexMultinomial|tf.random.categorical|Flex OP|
+  |120|FlexAll|tf.math.reduce_all|Flex OP|
+  |121|FlexErf|tf.math.erf|Flex OP|
+  |122|FlexRoll|tf.roll|Flex OP|
+  |123|CONV_3D|tf.keras.layers.Conv3D||
+  |124|CONV_3D_TRANSPOSE|tf.nn.conv3d_transpose||
+  |125|Densify|(const)||
+  |126|SPACE_TO_BATCH_ND|tf.space_to_batch_nd||
+  |127|BATCH_TO_SPACE_ND|tf.compat.v1.batch_to_space_nd||
+  |128|TransformLandmarks|tf.reshape, tf.linalg.matmul, tf.math.add|CUSTOM, MediaPipe|
+  |129|TransformTensorBilinear|tf.reshape, tf.linalg.matmul, tf.math.add, tf.tile, tf.math.floor, tf.math.subtract, tf.math.multiply, tf.math.reduce_prod, tf.cast, tf.math.maximum, tf.math.maximum, tf.concat, tf.gather_nd|CUSTOM, MediaPipe|
+  |130|Landmarks2TransformMatrix|tf.constant, tf.math.subtract, tf.math.norm, tf.math.divide, tf.linalg.matmul, tf.concat, tf.transpose, tf.gather, tf.math.reduce_min, tf.math.reduce_max, tf.math.multiply, tf.zeros, tf.math.add, tf.tile|CUSTOM, MediaPipe|
+
+  </div></details>
 
 ## 2. Environment
 - Python3.8+
 - TensorFlow v2.9.0+
 - TensorFlow Lite v2.9.0 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
-  - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
+  - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**, **`TransformLandmarks`**, **`TransformTensorBilinear`**, **`Landmarks2TransformMatrix`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
 - PyTorch v1.11.0+
@@ -173,17 +177,6 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - onnxconverter-common
 - onnxmltools
 - onnx-tensorrt
-- onnx2json
-- json2onnx
-- sne4onnx
-- snd4onnx
-- snc4onnx
-- scs4onnx
-- sog4onnx
-- sam4onnx
-- soc4onnx
-- scc4onnx
-- sna4onnx
 - tf2onnx
 - torch2trt
 - onnx-tf
@@ -192,6 +185,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - edgetpu_compiler
 - tflite2tensorflow
 - openvino2tensorflow
+- simple-onnx-processing-tools
 - gdown
 - pandas
 - matplotlib
@@ -266,7 +260,7 @@ Or, To install with the latest source code of the main branch, use the following
 ```
 $ pip3 install --user --upgrade git+https://github.com/PINTO0309/tflite2tensorflow
 ```
-Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK. If tflite_runtime does not install properly, please follow the instructions in the next article to build a custom build in the environment you are using. **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**
+Installs a customized TensorFlow Lite runtime with support for MediaPipe Custom OP, FlexDelegate, and XNNPACK. If tflite_runtime does not install properly, please follow the instructions in the next article to build a custom build in the environment you are using. **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**, **`TransformLandmarks`**, **`TransformTensorBilinear`**, **`Landmarks2TransformMatrix`**
 ```
 $ sudo pip3 uninstall -y \
     tensorboard-plugin-wit \
