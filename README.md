@@ -159,7 +159,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**, **`TransformLandmarks`**, **`TransformTensorBilinear`**, **`Landmarks2TransformMatrix`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
 - flatc v1.12.0
-- PyTorch v1.11.0+
+- PyTorch v1.12.0 (with grid_sample)
 - TorchVision
 - TorchAudio
 - OpenVINO 2021.4.582+
