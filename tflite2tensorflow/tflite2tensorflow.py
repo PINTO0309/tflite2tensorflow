@@ -5684,6 +5684,7 @@ def main():
     parser.add_argument('--optimizing_for_edgetpu', action='store_true', help='Optimizing for edgetpu')
     parser.add_argument('--replace_prelu_and_minmax', action='store_true', help='Replace prelu and minimum/maximum with each other')
     parser.add_argument('--disable_experimental_new_quantizer', action='store_true', help='Disable MLIR\'s new quantization feature during INT8 quantization in TensorFlowLite.')
+    parser.add_argument('--disable_per_channel', action='store_true', help='Disable per-channel quantization for tflite')
     parser.add_argument('--optimizing_barracuda', action='store_true', help='Generates ONNX by replacing Barracuda\'s unsupported layers with standard layers.')
     parser.add_argument('--locationids_of_the_terminating_output', type=str, default='', help='A comma-separated list of location IDs to be used as output layers. Default: \'\'')
     args = parser.parse_args()
@@ -5734,6 +5735,7 @@ def main():
     optimizing_for_edgetpu = args.optimizing_for_edgetpu
     replace_prelu_and_minmax = args.replace_prelu_and_minmax
     use_experimental_new_quantizer = not args.disable_experimental_new_quantizer
+    use_per_channel = not args.disable_per_channel
     optimizing_barracuda = args.optimizing_barracuda
     locationids_of_the_terminating_output_tmp = args.locationids_of_the_terminating_output
     locationids_of_the_terminating_output = None
@@ -6057,6 +6059,7 @@ def main():
             try:
                 print(f'{Color.REVERCE}Dynamic Range Quantization started{Color.RESET}', '=' * 50)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
+                converter._experimental_disable_per_channel = not use_per_channel
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
                 tflite_model = converter.convert()
@@ -6073,6 +6076,7 @@ def main():
             try:
                 print(f'{Color.REVERCE}Weight Quantization started{Color.RESET}', '=' * 57)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
+                converter._experimental_disable_per_channel = not use_per_channel
                 converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
                 tflite_model = converter.convert()
@@ -6188,6 +6192,7 @@ def main():
                 print(f'{Color.REVERCE}Integer Quantization started{Color.RESET}', '=' * 56)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
                 converter.experimental_new_quantizer = use_experimental_new_quantizer
+                converter._experimental_disable_per_channel = not use_per_channel
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.SELECT_TF_OPS]
                 tflite_model = None
@@ -6217,6 +6222,7 @@ def main():
                 print(f'{Color.REVERCE}Full Integer Quantization started{Color.RESET}', '=' * 51)
                 converter = tf.lite.TFLiteConverter.from_saved_model(model_output_path)
                 converter.experimental_new_quantizer = use_experimental_new_quantizer
+                converter._experimental_disable_per_channel = not use_per_channel
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.SELECT_TF_OPS]
                 inf_type = None

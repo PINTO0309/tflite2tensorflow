@@ -361,6 +361,7 @@ usage: tflite2tensorflow
   [--optimizing_for_edgetpu]
   [--replace_prelu_and_minmax]
   [--disable_experimental_new_quantizer]
+  [--disable_per_channel]
   [--optimizing_barracuda]
   [--locationids_of_the_terminating_output]
 
@@ -467,6 +468,8 @@ optional arguments:
   --disable_experimental_new_quantizer
           Disable MLIRs new quantization feature during INT8 quantization
           in TensorFlowLite.
+  --disable_per_channel
+          Disable per-channel quantization for tflite.
   --optimizing_barracuda
           Generates ONNX by replacing Barracuda unsupported layers
           with standard layers. For example, GatherND.
