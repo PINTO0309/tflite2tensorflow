@@ -158,7 +158,7 @@ Generate saved_model, tfjs, tf-trt, EdgeTPU, CoreML, quantized tflite, ONNX, Ope
 - TensorFlow Lite v2.9.0 with MediaPipe Custom OP, FlexDelegate and XNNPACK enabled
   - **[Add a custom OP to the TFLite runtime to build the whl installer (for Python)](https://zenn.dev/pinto0309/articles/a0e40c2817f2ee)**, **`MaxPoolingWithArgmax2D`**, **`MaxUnpooling2D`**, **`Convolution2DTransposeBias`**, **`TransformLandmarks`**, **`TransformTensorBilinear`**, **`Landmarks2TransformMatrix`**
   - **https://github.com/PINTO0309/TensorflowLite-bin**
-- flatc v1.12.0
+- flatc v2.0.8
 - PyTorch v1.12.0 (with grid_sample)
 - TorchVision
 - TorchAudio
@@ -294,16 +294,12 @@ $ wget https://github.com/PINTO0309/tflite2tensorflow/releases/download/${APPVER
 ### Install the Non-customized TensorFlow package
 $ pip3 install --user tf-nightly
 
-### Download flatc
-$ flatbuffers/1.12.0/download.sh
-$ sudo chmod +x flatc
-
 ### Download schema.fbs
 $ wget https://github.com/PINTO0309/tflite2tensorflow/raw/main/schema/schema.fbs
 ```
-If the downloaded **`flatc`** does not work properly, please build it in your environment.
+### Build flatc
 ```
-$ git clone -b v1.12.0 https://github.com/google/flatbuffers.git
+$ git clone -b v2.0.8 https://github.com/google/flatbuffers.git
 $ cd flatbuffers && mkdir build && cd build
 $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 $ make -j$(nproc)
@@ -312,8 +308,8 @@ $ make -j$(nproc)
 ![vvtvsu0y1791ow2ybdk61s9fv7e4](https://user-images.githubusercontent.com/33194443/105578192-badc4080-5dc1-11eb-8fda-4eaf0d8a63e4.png)
 ![saxqukktcjncsk2hp7m8p2cns4q4](https://user-images.githubusercontent.com/33194443/105578219-d6dfe200-5dc1-11eb-9026-42104fdcc727.png)
 
-The Windows version of flatc v1.12.0 can be downloaded from here.
-**https://github.com/google/flatbuffers/releases/download/v1.12.0/flatc_windows.zip**
+The Windows version of flatc v2.0.8 can be downloaded from here.
+**https://github.com/google/flatbuffers/releases/download/v2.0.8/Windows.flatc.binary.zip**
 
 ## 4. Usage / Execution sample
 ### 4-1. Command line options
